@@ -1,13 +1,7 @@
-/*
-Emulate the KBC Poker 3 keyboard layout on a standard keyboard by remapping the
-Caps_Lock as the Poker 3 Fn key. This needs to be run as root and it's probably
-a good idea to disable the regular function of the Caps_Lock key as well.
-License: WTFPL
-*/
-
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -37,7 +31,6 @@ func main() {
 	if err != nil {
 		return
 	}
-	// always do this after the initialization in order to guarantee that the device will be properly closed
 	defer mouse.Close()
 
 	keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("testkeyboard"))
@@ -46,15 +39,169 @@ func main() {
 	}
 	defer keyboard.Close()
 
-	// log.Println("Starting...")
-	// time.Sleep(2 * time.Second)
-
-	defer dev.Release()
-	err = dev.Grab()
-
 	log.Println("Ready")
+	keys := evdev.ByEventType[evdev.EV_KEY]
+	log.Print("Keys ", len(keys))
+
+	layout := NewLayout()
+
+	err = layout.Load("layout.json")
+	if err != nil {
+		err = layout.Record(dev, "layout.json")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// readKey := func() (*evdev.InputEvent, error) {
+	// 	for {
+	// 		event, err := dev.ReadOne()
+	// 		if err != nil {
+	// 			panic(err)
+	// 		}
+	// 		if event.Type != evdev.EV_KEY {
+	// 			continue
+	// 		}
+	// 		if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
+	// 			return event, errors.New("done")
+	// 		}
+
+	// 		if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_SPACE {
+	// 			return event, errors.New("done")
+	// 		}
+	// 		if evdev.KeyEventState(event.Value) == evdev.KeyUp && event.Code == evdev.KEY_SPACE {
+	// 			log.Print("next row")
+	// 			layout.AddRow()
+	// 			continue
+	// 		}
+	// 		if evdev.KEY_SPACE == event.Code {
+	// 			continue
+	// 		}
+
+	// 		if evdev.KeyEventState(event.Value) == evdev.KeyDown {
+	// 			return event, nil
+	// 		}
+	// 	}
+	// }
+
+	// l := NewLayer()
+
+	// defer dev.Release()
+	// err = dev.Grab()
+
+	// for {
+	// 	event, err := readKey()
+	// 	if err != nil {
+	// 		log.Println("done")
+	// 		break
+	// 	}
+	// 	log.Printf("event: %s", event.String())
+	// 	log.Println(evdev.ByEventType[int(event.Type)][int(event.Code)])
+
+	// 	layout.AddKey(event.Code)
+
+	// to, err := readKey()
+	// if err != nil {
+	// 	log.Println("done")
+	// 	break
+	// }
+
+	// log.Printf("event: %s", event.String())
+	// log.Println(evdev.ByEventType[int(event.Type)][int(event.Code)])
+
+	// err = l.Add(event.Code, to.Code)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// log.Printf("link %s to %s",
+	// 	evdev.ByEventType[int(event.Type)][int(event.Code)],
+	// 	evdev.ByEventType[int(to.Type)][int(to.Code)],
+	// )
+	// }
+
+	err = layout.Test(dev)
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(0)
+
+	l := NewLayer()
+	log.Println(l.Keys)
+
+	captureKey := func() (*evdev.InputEvent, error) {
+		for {
+			event, err := dev.ReadOne()
+			if err != nil {
+				panic(err)
+			}
+			if event.Type != evdev.EV_KEY {
+				continue
+			}
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
+				return event, errors.New("done")
+			}
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F1 {
+				log.Println("Save 1 layout")
+				err := l.Save("f1.layout")
+				if err != nil {
+					log.Print(err)
+				}
+			}
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F2 {
+				log.Println("Load 1 layout")
+				err := l.Load("f1.layout")
+				if err != nil {
+					log.Print(err)
+				}
+			}
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F3 {
+				log.Println("Save 2 layout")
+				err := l.Save("f2.layout")
+				if err != nil {
+					log.Print(err)
+				}
+			}
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F4 {
+				log.Println("Load 2 layout")
+				err := l.Load("f2.layout")
+				if err != nil {
+					log.Print(err)
+				}
+			}
+			return event, nil
+		}
+	}
+
 	for {
-		process(dev, mouse, keyboard)
+		evnt, err := captureKey()
+		if err != nil {
+			break
+		}
+		mapEvnt, err := l.Apply(*evnt)
+		if err != nil {
+			panic(err)
+		}
+		if kname(evnt) != kname(mapEvnt) {
+			log.Printf("map from %s to %s", kname(evnt), kname(mapEvnt))
+		}
+		sendEvnt(keyboard, mapEvnt)
+	}
+
+	// for {
+	// 	process(dev, mouse, keyboard)
+	// }
+}
+
+func sendEvnt(keyboard Keyboard, event *evdev.InputEvent) {
+	switch evdev.KeyEventState(event.Value) {
+	case evdev.KeyDown:
+		keyboard.KeyDown(int(event.Code))
+	case evdev.KeyHold:
+		keyboard.KeyPress(int(event.Code))
+	case evdev.KeyUp:
+		keyboard.KeyUp(int(event.Code))
 	}
 }
 
@@ -182,4 +329,8 @@ func handleKey(dev *evdev.InputDevice, mouse uinput.Mouse, keyboard uinput.Keybo
 		// 		keyboard.KeyUp(int(event.Code))
 		// 	}
 	}
+}
+
+func kname(event *evdev.InputEvent) string {
+	return evdev.ByEventType[int(event.Type)][int(event.Code)]
 }
