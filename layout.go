@@ -150,7 +150,6 @@ func (layout *Layout) Test(dev *evdev.InputDevice) error {
 	app := tview.NewApplication()
 
 	table := tview.NewTable().SetBorders(true)
-	table.SetTitle("hi")
 	table.SetBorder(true)
 	table.SetTitle("Layout")
 	table.SetSelectable(true, true)
@@ -159,9 +158,14 @@ func (layout *Layout) Test(dev *evdev.InputDevice) error {
 	log.SetBorder(true)
 	log.SetTitle("log")
 
+	hint := tview.NewTextView()
+	hint.SetText("Hold F12 to exit")
+	hint.SetTextAlign(tview.AlignCenter)
+
 	flex := tview.NewFlex()
 	flex.SetDirection(tview.FlexRow)
-	flex.AddItem(table, 0, 90, true)
+	flex.AddItem(hint, 1, 10, false)
+	flex.AddItem(table, 0, 80, true)
 	flex.AddItem(log, 5, 10, false)
 
 	for irow := range layout.Keys {
