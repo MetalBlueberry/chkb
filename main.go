@@ -13,6 +13,13 @@ import (
 
 func main() {
 
+	logfile, err := os.Create("run.log")
+	if err != nil {
+		panic(err)
+	}
+	defer logfile.Close()
+	log.SetOutput(logfile)
+
 	if len(os.Args) != 2 {
 		panic("you must provide the device as the first param")
 	}
@@ -120,14 +127,23 @@ func main() {
 	// )
 	// }
 
-	err = layout.Test(dev)
-	if err != nil {
-		panic(err)
-	}
+	// err = layout.Test(dev)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	os.Exit(0)
+	// newLayout, err := layout.Remap(NewInput(dev), "remap.json")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// newLayout.Save("remap.json")
 
-	l := NewLayer()
+	// os.Exit(0)
+
+	newLayout := NewLayout()
+	newLayout.Load("inverse_layout.json")
+
+	l := layout.ToLayer(newLayout)
 	log.Println(l.Keys)
 
 	captureKey := func() (*evdev.InputEvent, error) {
@@ -142,36 +158,42 @@ func main() {
 			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
 				return event, errors.New("done")
 			}
-			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F1 {
-				log.Println("Save 1 layout")
-				err := l.Save("f1.layout")
-				if err != nil {
-					log.Print(err)
-				}
-			}
-			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F2 {
-				log.Println("Load 1 layout")
-				err := l.Load("f1.layout")
-				if err != nil {
-					log.Print(err)
-				}
-			}
-			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F3 {
-				log.Println("Save 2 layout")
-				err := l.Save("f2.layout")
-				if err != nil {
-					log.Print(err)
-				}
-			}
-			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F4 {
-				log.Println("Load 2 layout")
-				err := l.Load("f2.layout")
-				if err != nil {
-					log.Print(err)
-				}
-			}
+			// if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F1 {
+			// 	log.Println("Save 1 layout")
+			// 	err := l.Save("f1.layout")
+			// 	if err != nil {
+			// 		log.Print(err)
+			// 	}
+			// }
+			// if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F2 {
+			// 	log.Println("Load 1 layout")
+			// 	err := l.Load("f1.layout")
+			// 	if err != nil {
+			// 		log.Print(err)
+			// 	}
+			// }
+			// if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F3 {
+			// 	log.Println("Save 2 layout")
+			// 	err := l.Save("f2.layout")
+			// 	if err != nil {
+			// 		log.Print(err)
+			// 	}
+			// }
+			// if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F4 {
+			// 	log.Println("Load 2 layout")
+			// 	err := l.Load("f2.layout")
+			// 	if err != nil {
+			// 		log.Print(err)
+			// 	}
+			// }
 			return event, nil
 		}
+	}
+
+	defer dev.Release()
+	err = dev.Grab()
+	if err != nil {
+		panic(err)
 	}
 
 	for {

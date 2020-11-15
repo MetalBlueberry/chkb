@@ -226,3 +226,125 @@ func (layout *Layout) Test(dev *evdev.InputDevice) error {
 	}
 	return nil
 }
+
+func (layout *Layout) table(table *tview.Table) {
+	for irow := range layout.Keys {
+		for icol := range layout.Keys[irow] {
+			code := layout.Keys[irow][icol]
+			table.SetCell(irow, icol, tview.NewTableCell(evdev.KEY[int(code)]))
+		}
+	}
+}
+
+func (layout *Layout) diff(table *tview.Table, newLayout *Layout) {
+	for irow := range layout.Keys {
+		for icol := range layout.Keys[irow] {
+			code := layout.Keys[irow][icol]
+			newCode := newLayout.Keys[irow][icol]
+			table.SetCell(irow, icol,
+				tview.NewTableCell(
+					fmt.Sprintf(
+						"%s -> %s",
+						evdev.KEY[int(code)],
+						evdev.KEY[int(newCode)],
+					),
+				),
+			)
+		}
+	}
+}
+
+func (layout *Layout) ToLayer(newLayout *Layout) *Layer {
+	layer := NewLayer()
+	for irow := range layout.Keys {
+		for icol := range layout.Keys[irow] {
+			code := layout.Keys[irow][icol]
+			newCode := newLayout.Keys[irow][icol]
+			layer.Add(code, newCode)
+		}
+	}
+	return layer
+}
+
+func (layout *Layout) Remap(input *Input, to string) (*Layout, error) {
+	newLayout := NewLayout()
+	err := newLayout.Load(to)
+	if err != nil {
+		return nil, err
+	}
+
+	app := tview.NewApplication()
+
+	table := tview.NewTable().SetBorders(true)
+	table.SetBorder(true)
+	table.SetTitle("Layout")
+	table.SetSelectable(true, true)
+
+	log := tview.NewTextView()
+	log.SetBorder(true)
+	log.SetTitle("log")
+
+	hint := tview.NewTextView()
+	hint.SetText("Hold F12 to exit")
+	hint.SetTextAlign(tview.AlignCenter)
+
+	flex := tview.NewFlex()
+	flex.SetDirection(tview.FlexRow)
+	flex.AddItem(hint, 1, 10, false)
+	flex.AddItem(table, 0, 80, true)
+	flex.AddItem(log, 5, 10, false)
+
+	layout.diff(table, newLayout)
+
+	table.Select(0, 0).SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			app.Stop()
+		}
+		if key == tcell.KeyEnter {
+			table.SetSelectable(true, true)
+		}
+	}).SetSelectedFunc(func(row int, column int) {
+		log.SetText("press key to map")
+		go func() {
+			key, err := input.ReadOneKeyDown()
+			if err != nil {
+				panic(err)
+			}
+			newLayout.Keys[row][column] = key.Code
+			log.SetText("mapped to " + evdev.KEY[int(key.Code)])
+			layout.diff(table, newLayout)
+			app.Draw()
+		}()
+	})
+
+	if err := app.SetRoot(flex, true).EnableMouse(false).Run(); err != nil {
+		return newLayout, fmt.Errorf("app finished unexpectedly, %w", err)
+	}
+	return newLayout, nil
+}
+
+func ReadOneKeyDown(events chan []evdev.InputEvent) (evdev.InputEvent, error) {
+	for {
+		events, ok := <-events
+		if !ok {
+			return evdev.InputEvent{}, errors.New("Cannot read from channel")
+		}
+
+		for _, event := range events {
+			if event.Type != evdev.EV_KEY {
+				continue
+			}
+
+			// Panic sequence
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_F12 {
+				panic("Abort program")
+			}
+
+			if evdev.KeyEventState(event.Value) == evdev.KeyDown {
+				return event, nil
+			}
+
+		}
+
+	}
+}
