@@ -12,75 +12,23 @@ import (
 )
 
 type Keyboard struct {
-	// Layout   Layout
 	Layers   []*Layer
 	LayerIds map[uint16]*Layer
 
-	// KeyMaps map[KeyEv]KeyEv
+	*Captor
 
 	vkb uinput.Keyboard
-
-	Events []*evdev.InputEvent
 }
 
 func NewKeyboard(LayerIds map[uint16]*Layer, initialLayer uint16, vkb uinput.Keyboard) *Keyboard {
 	kb := &Keyboard{
 		LayerIds: LayerIds,
 		Layers:   []*Layer{},
-		Events:   []*evdev.InputEvent{},
 		vkb:      vkb,
+		Captor:   NewCaptor(),
 	}
 	kb.PushLayer(initialLayer)
 	return kb
-}
-
-func (kb *Keyboard) Capture(event *evdev.InputEvent) ([]KeyEv, error) {
-	if event.Type != evdev.EV_KEY {
-		return nil, errors.New("Only EV_KEY type supported")
-	}
-	captured := make([]KeyEv, 0)
-
-	switch evdev.KeyEventState(event.Value) {
-	case evdev.KeyDown:
-		captured = append(captured, NewKeyEv(event, ActionDown))
-	case evdev.KeyUp:
-		captured = append(captured, NewKeyEv(event, ActionUp))
-	case evdev.KeyHold:
-		log.Printf("Hold %s", evdev.KEY[int(event.Code)])
-		captured = append(captured, NewKeyEv(event, ActionHold))
-	}
-
-	for i := len(kb.Events) - 1; i >= 0; i-- {
-		previous := kb.Events[i]
-
-		if event.Code != previous.Code {
-			break
-		}
-
-		if previous.Code == event.Code &&
-			evdev.KeyEventState(event.Value) == evdev.KeyUp &&
-			evdev.KeyEventState(previous.Value) == evdev.KeyDown &&
-			elapsed(previous.Time, event.Time) < time.Millisecond*200 {
-
-			log.Printf("Tap %s", evdev.KEY[int(event.Code)])
-			captured = append(captured, NewKeyEv(event, ActionTap))
-			break
-		}
-
-		if previous.Code == event.Code &&
-			evdev.KeyEventState(event.Value) == evdev.KeyDown &&
-			evdev.KeyEventState(previous.Value) == evdev.KeyDown &&
-			elapsed(previous.Time, event.Time) < time.Millisecond*200 {
-
-			log.Printf("DoubleTap %s", evdev.KEY[int(event.Code)])
-			captured = append(captured, NewKeyEv(event, ActionDoubleTap))
-			break
-		}
-	}
-
-	kb.Events = append(kb.Events, event)
-
-	return captured, nil
 }
 
 //go:generate stringer -type=Actions
@@ -106,7 +54,7 @@ func (ev KeyEv) String() string {
 	return fmt.Sprintf("%s - %v", evdev.KEY[int(ev.Code)], ev.Action)
 }
 
-func NewKeyEv(event *evdev.InputEvent, action Actions) KeyEv {
+func NewKeyEv(event evdev.InputEvent, action Actions) KeyEv {
 	return KeyEv{
 		// Time:   time.Unix(event.Time.Sec, event.Time.Usec),
 		Code:   event.Code,
@@ -262,5 +210,5 @@ type LayerPop struct {
 }
 
 func elapsed(from, to syscall.Timeval) time.Duration {
-	return time.Unix(from.Sec, from.Usec).Sub(time.Unix(to.Sec, to.Usec))
+	return time.Unix(to.Sec, to.Usec*1000).Sub(time.Unix(from.Sec, from.Usec*1000))
 }

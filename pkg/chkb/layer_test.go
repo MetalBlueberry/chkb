@@ -48,14 +48,14 @@ var _ = Describe("Layer", func() {
 			func(press []evdev.InputEvent, expect []chkb.KeyEv) {
 				for i := range press {
 					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
-					events, err := kb.Capture(&press[i])
+					events, err := kb.CaptureOne(press[i])
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					events, err = kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
 					err = kb.Deliver(events)
 					assert.NoError(GinkgoT(), err, "Deliver should not fail")
 				}
-				assert.Equal(GinkgoT(), mockKb.Events, expect)
+				assert.Equal(GinkgoT(), expect, mockKb.Events)
 			},
 			Entry("Empty", []evdev.InputEvent{}, []chkb.KeyEv{}),
 			Entry("Forward AB", []evdev.InputEvent{
@@ -168,10 +168,14 @@ func Clock() func(increment time.Duration) syscall.Timeval {
 func Time(t time.Time) syscall.Timeval {
 	return syscall.Timeval{
 		Sec:  t.Unix(),
-		Usec: int64(t.UnixNano() / 1000 % 1000),
+		Usec: int64(t.UnixNano() / 1000 % 1000000),
 	}
 }
 
-func Elapsed(duration time.Duration) syscall.Timeval {
-	return Time(time.Date(2020, 11, 20, 12, 0, 0, 0, time.UTC).Add(duration))
+func Elapsed(ms int64) syscall.Timeval {
+	return Time(
+		time.
+			Date(2020, 11, 20, 12, 0, 0, 0, time.UTC).
+			Add(time.Duration(ms) * time.Millisecond),
+	)
 }
