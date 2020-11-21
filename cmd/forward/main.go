@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/bendahl/uinput"
@@ -39,10 +40,13 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		log.Printf("%s, %d", evdev.KEY[int(key.Code)], key.Code)
+
 		sendEvnt(keyboard, key)
 	}
-
 }
+
 func captureKey(dev *evdev.InputDevice) (*evdev.InputEvent, error) {
 	for {
 		event, err := dev.ReadOne()
