@@ -15,7 +15,7 @@ import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
 )
 
-var _ = Describe("Layer", func() {
+var _ = Describe("Keyboard", func() {
 
 	var (
 		mockKb *TestKeyboard
@@ -24,18 +24,18 @@ var _ = Describe("Layer", func() {
 
 	Describe("Single layer swap A-B", func() {
 		BeforeEach(func() {
-			mockKb = &TestKeyboard{[]chkb.KeyEv{}}
+			mockKb = &TestKeyboard{[]chkb.KeyEvent{}}
 			kb = chkb.NewKeyboard(
-				map[string]*chkb.Layer{
+				chkb.Book{
 					"base": {
-						KeyMap: map[chkb.KeyEv]chkb.KeyEv{
-							{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}: {Action: chkb.ActionPush, LayerName: "swapAB"}},
+						KeyMap: map[chkb.KeyEventString]chkb.MapEvent{
+							chkb.KeyEvent{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}.Key(): {Action: chkb.ActionPush, LayerName: "swapAB"}},
 					},
 					"swapAB": {
-						KeyMap: map[chkb.KeyEv]chkb.KeyEv{
-							{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}: {Action: chkb.ActionPop},
-							{KeyCode: evdev.KEY_A}:                                 {KeyCode: evdev.KEY_B},
-							{KeyCode: evdev.KEY_B}:                                 {KeyCode: evdev.KEY_A},
+						KeyMap: map[chkb.KeyEventString]chkb.MapEvent{
+							chkb.KeyEvent{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}.Key(): {Action: chkb.ActionPop},
+							chkb.KeyEvent{KeyCode: evdev.KEY_A}.Key():                                 {KeyCode: evdev.KEY_B},
+							chkb.KeyEvent{KeyCode: evdev.KEY_B}.Key():                                 {KeyCode: evdev.KEY_A},
 						},
 					},
 				},
@@ -45,25 +45,25 @@ var _ = Describe("Layer", func() {
 		})
 
 		DescribeTable("Type",
-			func(press []evdev.InputEvent, expect []chkb.KeyEv) {
+			func(press []evdev.InputEvent, expect []chkb.KeyEvent) {
 				for i := range press {
 					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
 					events, err := kb.CaptureOne(press[i])
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
-					events, err = kb.Maps(events)
+					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
-					err = kb.Deliver(events)
+					err = kb.Deliver(mevents)
 					assert.NoError(GinkgoT(), err, "Deliver should not fail")
 				}
 				assert.Equal(GinkgoT(), expect, mockKb.Events)
 			},
-			Entry("Empty", []evdev.InputEvent{}, []chkb.KeyEv{}),
+			Entry("Empty", []evdev.InputEvent{}, []chkb.KeyEvent{}),
 			Entry("Forward AB", []evdev.InputEvent{
 				{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(1), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 				{Time: Elapsed(2), Code: evdev.KEY_B, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(3), Code: evdev.KEY_B, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
-			}, []chkb.KeyEv{
+			}, []chkb.KeyEvent{
 				{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
 				{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
 				{KeyCode: evdev.KEY_B, Action: chkb.ActionDown},
@@ -76,7 +76,7 @@ var _ = Describe("Layer", func() {
 				{Time: Elapsed(3), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 				{Time: Elapsed(4), Code: evdev.KEY_B, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(5), Code: evdev.KEY_B, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
-			}, []chkb.KeyEv{
+			}, []chkb.KeyEvent{
 				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
 				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
 				{KeyCode: evdev.KEY_B, Action: chkb.ActionDown},
@@ -97,7 +97,7 @@ var _ = Describe("Layer", func() {
 				{Time: Elapsed(3), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 				{Time: Elapsed(4), Code: evdev.KEY_B, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(5), Code: evdev.KEY_B, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
-			}, []chkb.KeyEv{
+			}, []chkb.KeyEvent{
 				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
 				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
 				{KeyCode: evdev.KEY_B, Action: chkb.ActionDown},
@@ -116,12 +116,12 @@ var _ = Describe("Layer", func() {
 })
 
 type TestKeyboard struct {
-	Events []chkb.KeyEv
+	Events []chkb.KeyEvent
 }
 
 // KeyPress will cause the key to be pressed and immediately released.
 func (kb *TestKeyboard) KeyPress(key int) error {
-	kb.Events = append(kb.Events, chkb.KeyEv{
+	kb.Events = append(kb.Events, chkb.KeyEvent{
 		KeyCode: uint16(key),
 		Action:  chkb.ActionTap,
 	})
@@ -134,7 +134,7 @@ func (kb *TestKeyboard) KeyPress(key int) error {
 // The key can be any of the predefined keycodes from keycodes.go.
 // Note that the key will be "held down" until "KeyUp" is called.
 func (kb *TestKeyboard) KeyDown(key int) error {
-	kb.Events = append(kb.Events, chkb.KeyEv{
+	kb.Events = append(kb.Events, chkb.KeyEvent{
 		KeyCode: uint16(key),
 		Action:  chkb.ActionDown,
 	})
@@ -145,7 +145,7 @@ func (kb *TestKeyboard) KeyDown(key int) error {
 // KeyUp will send a keyrelease event to an existing keyboard device.
 // The key can be any of the predefined keycodes from keycodes.go.
 func (kb *TestKeyboard) KeyUp(key int) error {
-	kb.Events = append(kb.Events, chkb.KeyEv{
+	kb.Events = append(kb.Events, chkb.KeyEvent{
 		KeyCode: uint16(key),
 		Action:  chkb.ActionUp,
 	})

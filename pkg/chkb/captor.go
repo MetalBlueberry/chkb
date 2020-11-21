@@ -18,8 +18,8 @@ func NewCaptor() *Captor {
 	}
 }
 
-func (c *Captor) Capture(events []*evdev.InputEvent) ([]KeyEv, error) {
-	captured := make([]KeyEv, 0)
+func (c *Captor) Capture(events []*evdev.InputEvent) ([]KeyEvent, error) {
+	captured := make([]KeyEvent, 0)
 	for i := range events {
 		c, err := c.CaptureOne(*events[i])
 		if err != nil {
@@ -31,11 +31,11 @@ func (c *Captor) Capture(events []*evdev.InputEvent) ([]KeyEv, error) {
 	return captured, nil
 }
 
-func (c *Captor) CaptureOne(event evdev.InputEvent) ([]KeyEv, error) {
+func (c *Captor) CaptureOne(event evdev.InputEvent) ([]KeyEvent, error) {
 	if event.Type != evdev.EV_KEY {
 		return nil, errors.New("Only EV_KEY type supported")
 	}
-	captured := make([]KeyEv, 0)
+	captured := make([]KeyEvent, 0)
 
 	switch evdev.KeyEventState(event.Value) {
 	case evdev.KeyDown:

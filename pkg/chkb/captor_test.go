@@ -21,8 +21,8 @@ var _ = Describe("Captor", func() {
 	})
 
 	DescribeTable("Capture",
-		func(events []evdev.InputEvent, expected []chkb.KeyEv) {
-			captured := make([]chkb.KeyEv, 0)
+		func(events []evdev.InputEvent, expected []chkb.KeyEvent) {
+			captured := make([]chkb.KeyEvent, 0)
 			for _, event := range events {
 				c, err := captor.CaptureOne(event)
 				assert.NoError(GinkgoT(), err)
@@ -32,12 +32,12 @@ var _ = Describe("Captor", func() {
 		},
 		Entry("KeyDown", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
-		}, []chkb.KeyEv{
+		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
 		}),
 		Entry("KeyUp", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
-		}, []chkb.KeyEv{
+		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
 		}),
 		Entry("KeyHold", []evdev.InputEvent{
@@ -45,7 +45,7 @@ var _ = Describe("Captor", func() {
 			{Time: Elapsed(100), Code: evdev.KEY_A, Value: int32(evdev.KeyHold), Type: evdev.EV_KEY},
 			{Time: Elapsed(200), Code: evdev.KEY_A, Value: int32(evdev.KeyHold), Type: evdev.EV_KEY},
 			{Time: Elapsed(300), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
-		}, []chkb.KeyEv{
+		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionHold},
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
@@ -53,7 +53,7 @@ var _ = Describe("Captor", func() {
 		Entry("Tap", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 			{Time: Elapsed(50), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
-		}, []chkb.KeyEv{
+		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionTap},
