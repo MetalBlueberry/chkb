@@ -12,15 +12,15 @@ import (
 )
 
 type Keyboard struct {
-	Layers   []*Layer
-	LayerIds map[uint16]*Layer
-
 	*Captor
+
+	Layers   []*Layer
+	LayerIds map[string]*Layer
 
 	vkb uinput.Keyboard
 }
 
-func NewKeyboard(LayerIds map[uint16]*Layer, initialLayer uint16, vkb uinput.Keyboard) *Keyboard {
+func NewKeyboard(LayerIds map[string]*Layer, initialLayer string, vkb uinput.Keyboard) *Keyboard {
 	kb := &Keyboard{
 		LayerIds: LayerIds,
 		Layers:   []*Layer{},
@@ -46,19 +46,20 @@ const (
 )
 
 type KeyEv struct {
-	Code   uint16
-	Action Actions
+	Action    Actions
+	KeyCode   uint16
+	LayerName string
 }
 
 func (ev KeyEv) String() string {
-	return fmt.Sprintf("%s - %v", evdev.KEY[int(ev.Code)], ev.Action)
+	return fmt.Sprintf("%s - %v", evdev.KEY[int(ev.KeyCode)], ev.Action)
 }
 
 func NewKeyEv(event evdev.InputEvent, action Actions) KeyEv {
 	return KeyEv{
 		// Time:   time.Unix(event.Time.Sec, event.Time.Usec),
-		Code:   event.Code,
-		Action: action,
+		KeyCode: event.Code,
+		Action:  action,
 	}
 }
 
@@ -113,12 +114,12 @@ func (kb *Keyboard) Deliver(events []KeyEv) error {
 				return err
 			}
 		case ActionPush:
-			err := kb.PushLayer(event.Code)
+			err := kb.PushLayer(event.LayerName)
 			if err != nil {
 				return err
 			}
 		case ActionPop:
-			err := kb.PopLayer(event.Code)
+			err := kb.PopLayer()
 			if err != nil {
 				return err
 			}
@@ -129,9 +130,9 @@ func (kb *Keyboard) Deliver(events []KeyEv) error {
 	return nil
 }
 
-func (kb *Keyboard) PushLayer(id uint16) error {
-	log.Printf("Push layer %d", id)
-	l, ok := kb.LayerIds[id]
+func (kb *Keyboard) PushLayer(name string) error {
+	log.Printf("Push layer %s", name)
+	l, ok := kb.LayerIds[name]
 	if !ok {
 		return errors.New("Layer do not exist")
 	}
@@ -139,8 +140,8 @@ func (kb *Keyboard) PushLayer(id uint16) error {
 	return nil
 }
 
-func (kb *Keyboard) PopLayer(id uint16) error {
-	log.Printf("Pop layer %d", id)
+func (kb *Keyboard) PopLayer() error {
+	log.Printf("Pop layer")
 	if len(kb.Layers) == 1 {
 		return errors.New("You cannot pop the last layer")
 	}
@@ -151,9 +152,9 @@ func (kb *Keyboard) PopLayer(id uint16) error {
 func (kb *Keyboard) SendKeyEvent(event KeyEv) error {
 	switch event.Action {
 	case ActionDown:
-		return kb.vkb.KeyDown(int(event.Code))
+		return kb.vkb.KeyDown(int(event.KeyCode))
 	case ActionUp:
-		return kb.vkb.KeyUp(int(event.Code))
+		return kb.vkb.KeyUp(int(event.KeyCode))
 	// case ActionForward:
 	// 	switch evdev.KeyEventState(event.value) {
 	// 	case evdev.KeyDown:
@@ -168,45 +169,8 @@ func (kb *Keyboard) SendKeyEvent(event KeyEv) error {
 	}
 }
 
-type Event struct {
-	Type string
-}
-
-type Layout struct {
-	Keys map[uint16]*Key
-}
-
-type Key struct {
-	Code   uint16
-	Status int
-}
-
-type KeyMap struct {
-	Type  string
-	Value int
-}
-
 type Layer struct {
 	KeyMap map[KeyEv]KeyEv
-}
-
-type KeyEvent struct {
-	ID     uint32
-	Status uint32
-}
-
-type Script struct {
-	ID   uint32
-	Code string
-}
-
-type LayerPush struct {
-	ID     uint32
-	Target string
-}
-
-type LayerPop struct {
-	ID uint32
 }
 
 func elapsed(from, to syscall.Timeval) time.Duration {

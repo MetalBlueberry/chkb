@@ -26,20 +26,20 @@ var _ = Describe("Layer", func() {
 		BeforeEach(func() {
 			mockKb = &TestKeyboard{[]chkb.KeyEv{}}
 			kb = chkb.NewKeyboard(
-				map[uint16]*chkb.Layer{
-					0: {
+				map[string]*chkb.Layer{
+					"base": {
 						KeyMap: map[chkb.KeyEv]chkb.KeyEv{
-							{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}: {Code: 1, Action: chkb.ActionPush}},
+							{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}: {Action: chkb.ActionPush, LayerName: "swapAB"}},
 					},
-					1: {
+					"swapAB": {
 						KeyMap: map[chkb.KeyEv]chkb.KeyEv{
-							{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}: {Code: 1, Action: chkb.ActionPop},
-							{Code: evdev.KEY_A}: {Code: evdev.KEY_B},
-							{Code: evdev.KEY_B}: {Code: evdev.KEY_A},
+							{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}: {Action: chkb.ActionPop},
+							{KeyCode: evdev.KEY_A}:                                 {KeyCode: evdev.KEY_B},
+							{KeyCode: evdev.KEY_B}:                                 {KeyCode: evdev.KEY_A},
 						},
 					},
 				},
-				0,
+				"base",
 				mockKb,
 			)
 		})
@@ -64,10 +64,10 @@ var _ = Describe("Layer", func() {
 				{Time: Elapsed(2), Code: evdev.KEY_B, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(3), Code: evdev.KEY_B, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 			}, []chkb.KeyEv{
-				{Code: evdev.KEY_A, Action: chkb.ActionDown},
-				{Code: evdev.KEY_A, Action: chkb.ActionUp},
-				{Code: evdev.KEY_B, Action: chkb.ActionDown},
-				{Code: evdev.KEY_B, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionUp},
 			}),
 			Entry("Push layer swap AB", []evdev.InputEvent{
 				{Time: Elapsed(0), Code: evdev.KEY_LEFTSHIFT, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
@@ -77,12 +77,12 @@ var _ = Describe("Layer", func() {
 				{Time: Elapsed(4), Code: evdev.KEY_B, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(5), Code: evdev.KEY_B, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 			}, []chkb.KeyEv{
-				{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
-				{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
-				{Code: evdev.KEY_B, Action: chkb.ActionDown},
-				{Code: evdev.KEY_B, Action: chkb.ActionUp},
-				{Code: evdev.KEY_A, Action: chkb.ActionDown},
-				{Code: evdev.KEY_A, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
 			}),
 			Entry("Pop layer swap AB", []evdev.InputEvent{
 				{Time: Elapsed(0), Code: evdev.KEY_LEFTSHIFT, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
@@ -98,18 +98,18 @@ var _ = Describe("Layer", func() {
 				{Time: Elapsed(4), Code: evdev.KEY_B, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(5), Code: evdev.KEY_B, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 			}, []chkb.KeyEv{
-				{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
-				{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
-				{Code: evdev.KEY_B, Action: chkb.ActionDown},
-				{Code: evdev.KEY_B, Action: chkb.ActionUp},
-				{Code: evdev.KEY_A, Action: chkb.ActionDown},
-				{Code: evdev.KEY_A, Action: chkb.ActionUp},
-				{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
-				{Code: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
-				{Code: evdev.KEY_A, Action: chkb.ActionDown},
-				{Code: evdev.KEY_A, Action: chkb.ActionUp},
-				{Code: evdev.KEY_B, Action: chkb.ActionDown},
-				{Code: evdev.KEY_B, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_B, Action: chkb.ActionUp},
 			}),
 		)
 	})
@@ -122,8 +122,8 @@ type TestKeyboard struct {
 // KeyPress will cause the key to be pressed and immediately released.
 func (kb *TestKeyboard) KeyPress(key int) error {
 	kb.Events = append(kb.Events, chkb.KeyEv{
-		Code:   uint16(key),
-		Action: chkb.ActionTap,
+		KeyCode: uint16(key),
+		Action:  chkb.ActionTap,
 	})
 
 	fmt.Fprintf(GinkgoWriter, "Output tap %s\n", evdev.KEY[key])
@@ -135,8 +135,8 @@ func (kb *TestKeyboard) KeyPress(key int) error {
 // Note that the key will be "held down" until "KeyUp" is called.
 func (kb *TestKeyboard) KeyDown(key int) error {
 	kb.Events = append(kb.Events, chkb.KeyEv{
-		Code:   uint16(key),
-		Action: chkb.ActionDown,
+		KeyCode: uint16(key),
+		Action:  chkb.ActionDown,
 	})
 	fmt.Fprintf(GinkgoWriter, "Output down %s\n", evdev.KEY[key])
 	return nil
@@ -146,8 +146,8 @@ func (kb *TestKeyboard) KeyDown(key int) error {
 // The key can be any of the predefined keycodes from keycodes.go.
 func (kb *TestKeyboard) KeyUp(key int) error {
 	kb.Events = append(kb.Events, chkb.KeyEv{
-		Code:   uint16(key),
-		Action: chkb.ActionUp,
+		KeyCode: uint16(key),
+		Action:  chkb.ActionUp,
 	})
 	fmt.Fprintf(GinkgoWriter, "Output up %s\n", evdev.KEY[key])
 	return nil
