@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"syscall"
 	"time"
 
 	"github.com/bendahl/uinput"
 	evdev "github.com/gvalkov/golang-evdev"
+	"gopkg.in/yaml.v3"
 )
 
 type Keyboard struct {
@@ -33,11 +33,11 @@ func NewKeyboard(book Book, initialLayer string, vkb uinput.Keyboard) *Keyboard 
 	return kb
 }
 
-//go:generate stringer -type=Actions
+//go:generate stringer -type=Actions -trimprefix Action
 type Actions int
 
 const (
-	ActionForward Actions = iota
+	ActionMap Actions = iota
 	ActionDown
 	ActionUp
 	ActionTap
@@ -47,14 +47,64 @@ const (
 	ActionPop
 )
 
-type KeyEventString string
-type KeyEvent struct {
-	Action  Actions
-	KeyCode uint16
+var ActionsMap map[string]Actions = map[string]Actions{
+	ActionMap.String():       ActionMap,
+	ActionDown.String():      ActionDown,
+	ActionUp.String():        ActionUp,
+	ActionTap.String():       ActionTap,
+	ActionDoubleTap.String(): ActionDoubleTap,
+	ActionHold.String():      ActionHold,
+	ActionPush.String():      ActionPush,
+	ActionPop.String():       ActionPop,
 }
 
-func (ev KeyEvent) Key() KeyEventString {
-	return KeyEventString(ev.String())
+func ParseAction(value string) (Actions, error) {
+	if value == "" {
+		return Actions(0), nil
+	}
+	a, ok := ActionsMap[value]
+	if !ok {
+		return a, fmt.Errorf("Action %s not found", value)
+	}
+	return a, nil
+}
+
+func (action Actions) MarshalYAML() (interface{}, error) {
+	return action.String(), nil
+}
+
+func (action Actions) MarshalJSON() ([]byte, error) {
+	return json.Marshal(action.String())
+}
+
+type KeyCode uint16
+
+func ParseKeyCode(value string) (KeyCode, error) {
+	if value == "" {
+		return KeyCode(0), nil
+	}
+	code, ok := ecodes[value]
+	if !ok {
+		return KeyCode(code), fmt.Errorf("Code %s not found", value)
+	}
+	return KeyCode(code), nil
+}
+
+func (keyCode KeyCode) MarshalYAML() (interface{}, error) {
+	return keyCode.String(), nil
+}
+
+func (keyCode KeyCode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(keyCode.String())
+}
+
+func (keyCode KeyCode) String() string {
+	return evdev.KEY[int(keyCode)]
+}
+
+type KeyEvent struct {
+	Action  Actions
+	KeyCode KeyCode
 }
 
 func (ev KeyEvent) String() string {
@@ -62,10 +112,31 @@ func (ev KeyEvent) String() string {
 }
 
 type MapEvent struct {
-	Action  Actions
-	KeyCode uint16
+	Action  Actions `yaml:"action,omitempty"`
+	KeyCode KeyCode `yaml:"keyCode,omitempty"`
 
-	LayerName string
+	LayerName string `yaml:"layerName,omitempty"`
+}
+
+func (ev *MapEvent) UnmarshalYAML(value *yaml.Node) error {
+	type mapEventString struct {
+		Action    string `yaml:"action,omitempty"`
+		KeyCode   string `yaml:"keyCode,omitempty"`
+		LayerName string `yaml:"layerName,omitempty"`
+	}
+	tmp := &mapEventString{}
+	value.Decode(tmp)
+	var err error
+	ev.Action, err = ParseAction(tmp.Action)
+	if err != nil {
+		return err
+	}
+	ev.KeyCode, err = ParseKeyCode(tmp.KeyCode)
+	if err != nil {
+		return err
+	}
+	ev.LayerName = tmp.LayerName
+	return nil
 }
 
 func (ev MapEvent) String() string {
@@ -75,23 +146,25 @@ func (ev MapEvent) String() string {
 func NewKeyEv(event evdev.InputEvent, action Actions) KeyEvent {
 	return KeyEvent{
 		// Time:   time.Unix(event.Time.Sec, event.Time.Usec),
-		KeyCode: event.Code,
+		KeyCode: KeyCode(event.Code),
 		Action:  action,
 	}
 }
 
 func (kb *Keyboard) findMap(layer *Layer, event KeyEvent) (kmap MapEvent, ok bool) {
-	kmap, ok = layer.KeyMap[event.Key()]
+	keymap, ok := layer.KeyMap[event.KeyCode]
+	if !ok {
+		return MapEvent{}, false
+	}
+	kmap, ok = keymap[event.Action]
 	if ok {
 		return kmap, true
 	}
 
 	if event.Action == ActionUp || event.Action == ActionDown {
-		originalAction := event.Action
-		event.Action = ActionForward
-		kmap, ok = layer.KeyMap[event.Key()]
+		kmap, ok = keymap[ActionMap]
 		if ok {
-			kmap.Action = originalAction
+			kmap.Action = event.Action
 			return kmap, true
 		}
 	}
@@ -144,7 +217,7 @@ func (kb *Keyboard) Deliver(events []MapEvent) error {
 				return err
 			}
 		default:
-			log.Print("Ignored event")
+			log.Printf("Ignored event %s", event.Action)
 		}
 	}
 	return nil
@@ -182,15 +255,4 @@ func (kb *Keyboard) SendKeyEvent(event MapEvent) error {
 
 func elapsed(from, to syscall.Timeval) time.Duration {
 	return time.Unix(to.Sec, to.Usec*1000).Sub(time.Unix(from.Sec, from.Usec*1000))
-}
-
-type Layer struct {
-	KeyMap map[KeyEventString]MapEvent
-}
-
-type Book map[string]*Layer
-
-func (b *Book) Save(w io.Writer) error {
-	encoder := json.NewEncoder(w)
-	return encoder.Encode(b)
 }

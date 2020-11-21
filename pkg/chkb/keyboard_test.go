@@ -28,14 +28,15 @@ var _ = Describe("Keyboard", func() {
 			kb = chkb.NewKeyboard(
 				chkb.Book{
 					"base": {
-						KeyMap: map[chkb.KeyEventString]chkb.MapEvent{
-							chkb.KeyEvent{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}.Key(): {Action: chkb.ActionPush, LayerName: "swapAB"}},
+						KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
+							evdev.KEY_LEFTSHIFT: {chkb.ActionTap: {Action: chkb.ActionPush, LayerName: "swapAB"}},
+						},
 					},
 					"swapAB": {
-						KeyMap: map[chkb.KeyEventString]chkb.MapEvent{
-							chkb.KeyEvent{KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.ActionTap}.Key(): {Action: chkb.ActionPop},
-							chkb.KeyEvent{KeyCode: evdev.KEY_A}.Key():                                 {KeyCode: evdev.KEY_B},
-							chkb.KeyEvent{KeyCode: evdev.KEY_B}.Key():                                 {KeyCode: evdev.KEY_A},
+						KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
+							evdev.KEY_LEFTSHIFT: {chkb.ActionTap: {Action: chkb.ActionPop}},
+							evdev.KEY_A:         {chkb.ActionMap: {KeyCode: evdev.KEY_B}},
+							evdev.KEY_B:         {chkb.ActionMap: {KeyCode: evdev.KEY_A}},
 						},
 					},
 				},
@@ -122,7 +123,7 @@ type TestKeyboard struct {
 // KeyPress will cause the key to be pressed and immediately released.
 func (kb *TestKeyboard) KeyPress(key int) error {
 	kb.Events = append(kb.Events, chkb.KeyEvent{
-		KeyCode: uint16(key),
+		KeyCode: chkb.KeyCode(key),
 		Action:  chkb.ActionTap,
 	})
 
@@ -135,7 +136,7 @@ func (kb *TestKeyboard) KeyPress(key int) error {
 // Note that the key will be "held down" until "KeyUp" is called.
 func (kb *TestKeyboard) KeyDown(key int) error {
 	kb.Events = append(kb.Events, chkb.KeyEvent{
-		KeyCode: uint16(key),
+		KeyCode: chkb.KeyCode(key),
 		Action:  chkb.ActionDown,
 	})
 	fmt.Fprintf(GinkgoWriter, "Output down %s\n", evdev.KEY[key])
@@ -146,7 +147,7 @@ func (kb *TestKeyboard) KeyDown(key int) error {
 // The key can be any of the predefined keycodes from keycodes.go.
 func (kb *TestKeyboard) KeyUp(key int) error {
 	kb.Events = append(kb.Events, chkb.KeyEvent{
-		KeyCode: uint16(key),
+		KeyCode: chkb.KeyCode(key),
 		Action:  chkb.ActionUp,
 	})
 	fmt.Fprintf(GinkgoWriter, "Output up %s\n", evdev.KEY[key])
