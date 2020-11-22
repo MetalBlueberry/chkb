@@ -13,6 +13,7 @@ require (
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.3
 	github.com/rivo/tview v0.0.0-20201018122409-d551c850a743
+	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
