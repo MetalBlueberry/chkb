@@ -114,6 +114,96 @@ var _ = Describe("Keyboard", func() {
 			}),
 		)
 	})
+	Describe("push down pop up", func() {
+		BeforeEach(func() {
+			mockKb = &TestKeyboard{[]chkb.KeyEvent{}}
+			kb = chkb.NewKeyboard(
+				chkb.Book{
+					"base": {
+						KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
+							evdev.KEY_CAPSLOCK: {
+								chkb.ActionDown: {Action: chkb.ActionPushLayer, LayerName: "easyenter"},
+								chkb.ActionUp:   {Action: chkb.ActionPopLayer, LayerName: "easyenter"},
+							},
+						},
+					},
+					"easyenter": {
+						KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
+							evdev.KEY_SEMICOLON: {chkb.ActionMap: {KeyCode: evdev.KEY_ENTER}},
+						},
+					},
+				},
+				"base",
+				mockKb,
+			)
+		})
+		DescribeTable("keyup must always be equal to keydown code",
+			func(press []evdev.InputEvent, expect []chkb.KeyEvent) {
+				for i := range press {
+					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
+					events, err := kb.CaptureOne(press[i])
+					assert.NoError(GinkgoT(), err, "Capture should not fail")
+					mevents, err := kb.Maps(events)
+					assert.NoError(GinkgoT(), err, "Maps should not fail")
+					err = kb.Deliver(mevents)
+					assert.NoError(GinkgoT(), err, "Deliver should not fail")
+				}
+				assert.Equal(GinkgoT(), expect, mockKb.Events)
+			},
+			Entry("up after layer pop", []evdev.InputEvent{
+				{Time: Elapsed(0), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(1), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(2), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(3), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+			}, []chkb.KeyEvent{
+				{KeyCode: evdev.KEY_ENTER, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_ENTER, Action: chkb.ActionUp},
+			}),
+			Entry("up after layer push", []evdev.InputEvent{
+				{Time: Elapsed(0), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(1), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(2), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(3), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+			}, []chkb.KeyEvent{
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionUp},
+			}),
+			Entry("colon/enter/colon", []evdev.InputEvent{
+				{Time: Elapsed(0), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(1), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(2), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(3), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(4), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(5), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(6), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(7), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+			}, []chkb.KeyEvent{
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_ENTER, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_ENTER, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionUp},
+			}),
+			Entry("quick colon/enter/colon", []evdev.InputEvent{
+				{Time: Elapsed(0), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(2), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(1), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(3), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(5), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(4), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(6), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(7), Code: evdev.KEY_SEMICOLON, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+			}, []chkb.KeyEvent{
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_ENTER, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_ENTER, Action: chkb.ActionUp},
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionDown},
+				{KeyCode: evdev.KEY_SEMICOLON, Action: chkb.ActionUp},
+			}),
+		)
+	})
 })
 
 type TestKeyboard struct {

@@ -18,6 +18,7 @@ type Keyboard struct {
 
 	Layers    []*Layer
 	LayerBook Book
+	downkeys  map[KeyCode]MapEvent
 
 	vkb uinput.Keyboard
 }
@@ -28,6 +29,7 @@ func NewKeyboard(book Book, initialLayer string, vkb uinput.Keyboard) *Keyboard 
 		Layers:    []*Layer{},
 		vkb:       vkb,
 		Captor:    NewCaptor(),
+		downkeys:  map[KeyCode]MapEvent{},
 	}
 	kb.PushLayer(initialLayer)
 	return kb
@@ -190,6 +192,17 @@ func (kb *Keyboard) findMap(layer *Layer, event KeyEvent) (kmap MapEvent, ok boo
 func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 	mapped := make([]MapEvent, 0)
 	for i := range events {
+		switch events[i].Action {
+		case ActionUp:
+			event, ok := kb.downkeys[events[i].KeyCode]
+			if ok {
+				event.Action = ActionUp
+				mapped = append(mapped, event)
+				delete(kb.downkeys, events[i].KeyCode)
+				continue
+			}
+		}
+
 		m, err := kb.Map(events[i])
 		if err != nil {
 			log.
@@ -198,6 +211,12 @@ func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 				Debug("Ignored event")
 			continue
 		}
+
+		switch m.Action {
+		case ActionDown:
+			kb.downkeys[events[i].KeyCode] = m
+		}
+
 		mapped = append(mapped, m)
 	}
 	return mapped, nil
