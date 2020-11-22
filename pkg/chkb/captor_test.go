@@ -33,12 +33,12 @@ var _ = Describe("Captor", func() {
 		Entry("KeyDown", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
 		}),
 		Entry("KeyUp", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 		}),
 		Entry("KeyHold", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
@@ -46,24 +46,24 @@ var _ = Describe("Captor", func() {
 			{Time: Elapsed(200), Code: evdev.KEY_A, Value: int32(evdev.KeyHold), Type: evdev.EV_KEY},
 			{Time: Elapsed(300), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionHold},
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 		}),
 		Entry("Tap", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 			{Time: Elapsed(50), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionTap},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionTap},
 		}),
 		Entry("NotTap - slow", []evdev.InputEvent{
 			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 			{Time: Elapsed(250), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
-			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 		}),
 	)
 

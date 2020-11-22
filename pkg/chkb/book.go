@@ -22,13 +22,13 @@ func (b *Book) Load(r io.Reader) error {
 
 type Layer struct {
 	DefaultMap *MapEvent
-	KeyMap     map[KeyCode]map[Actions]MapEvent
+	KeyMap     map[KeyCode]map[KeyActions][]MapEvent
 }
 
-func (layer *Layer) StringMap() map[string]map[string]MapEvent {
-	tmp := make(map[string]map[string]MapEvent)
+func (layer *Layer) StringMap() map[string]map[string][]MapEvent {
+	tmp := make(map[string]map[string][]MapEvent)
 	for keyCode, actionMap := range layer.KeyMap {
-		tmp[keyCode.String()] = make(map[string]MapEvent)
+		tmp[keyCode.String()] = make(map[string][]MapEvent)
 		for action, mapEvent := range actionMap {
 			tmp[keyCode.String()][action.String()] = mapEvent
 		}
@@ -36,19 +36,19 @@ func (layer *Layer) StringMap() map[string]map[string]MapEvent {
 	return tmp
 }
 
-func (layer *Layer) FromStringMap(source map[string]map[string]MapEvent) error {
+func (layer *Layer) FromStringMap(source map[string]map[string][]MapEvent) error {
 	if layer.KeyMap == nil {
-		layer.KeyMap = map[KeyCode]map[Actions]MapEvent{}
+		layer.KeyMap = map[KeyCode]map[KeyActions][]MapEvent{}
 	}
 	for keyCodeString, actionMap := range source {
 		keyCode, err := ParseKeyCode(keyCodeString)
 		if err != nil {
 			return err
 		}
-		layer.KeyMap[keyCode] = make(map[Actions]MapEvent)
+		layer.KeyMap[keyCode] = make(map[KeyActions][]MapEvent)
 
 		for actionString, mapEvent := range actionMap {
-			action, err := ParseAction(actionString)
+			action, err := ParseKeyAction(actionString)
 			if err != nil {
 				return err
 			}
@@ -59,7 +59,7 @@ func (layer *Layer) FromStringMap(source map[string]map[string]MapEvent) error {
 }
 
 func (layer *Layer) UnmarshalYAML(value *yaml.Node) error {
-	tmp := make(map[string]map[string]MapEvent)
+	tmp := make(map[string]map[string][]MapEvent)
 	err := value.Decode(tmp)
 	if err != nil {
 		return err

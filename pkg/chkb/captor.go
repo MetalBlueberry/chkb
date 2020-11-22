@@ -65,16 +65,16 @@ func (c *Captor) CaptureOne(event evdev.InputEvent) ([]KeyEvent, error) {
 
 	switch evdev.KeyEventState(event.Value) {
 	case evdev.KeyDown:
-		captured = append(captured, NewKeyEv(event, ActionDown))
+		captured = append(captured, NewKeyEv(event, KeyActionDown))
 	case evdev.KeyUp:
-		captured = append(captured, NewKeyEv(event, ActionUp))
+		captured = append(captured, NewKeyEv(event, KeyActionUp))
 	case evdev.KeyHold:
 		lastEvent := c.Events[len(c.Events)-1]
 		if lastEvent.Code == event.Code &&
 			evdev.KeyEventState(lastEvent.Value) == evdev.KeyDown {
 
 			log.Printf("Hold %s", evdev.KEY[int(event.Code)])
-			captured = append(captured, NewKeyEv(event, ActionHold))
+			captured = append(captured, NewKeyEv(event, KeyActionHold))
 		}
 	}
 
@@ -91,7 +91,7 @@ func (c *Captor) CaptureOne(event evdev.InputEvent) ([]KeyEvent, error) {
 			el < time.Millisecond*200 {
 
 			log.Printf("Tap %s", evdev.KEY[int(event.Code)])
-			captured = append(captured, NewKeyEv(event, ActionTap))
+			captured = append(captured, NewKeyEv(event, KeyActionTap))
 			break
 		}
 
@@ -101,7 +101,7 @@ func (c *Captor) CaptureOne(event evdev.InputEvent) ([]KeyEvent, error) {
 			el < time.Millisecond*200 {
 
 			log.Printf("DoubleTap %s", evdev.KEY[int(event.Code)])
-			captured = append(captured, NewKeyEv(event, ActionDoubleTap))
+			captured = append(captured, NewKeyEv(event, KeyActionDoubleTap))
 			break
 		}
 	}

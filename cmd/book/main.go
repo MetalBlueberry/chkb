@@ -11,15 +11,15 @@ import (
 func main() {
 	book := chkb.Book{
 		"base": {
-			KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
-				evdev.KEY_LEFTSHIFT: {chkb.ActionTap: {Action: chkb.ActionPushLayer, LayerName: "swapAB"}},
+			KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+				evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPushLayer, LayerName: "swapAB"}}},
 			},
 		},
 		"swapAB": {
-			KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
-				evdev.KEY_LEFTSHIFT: {chkb.ActionTap: {Action: chkb.ActionPopLayer}},
-				evdev.KEY_A:         {chkb.ActionMap: {KeyCode: evdev.KEY_B}},
-				evdev.KEY_B:         {chkb.ActionMap: {KeyCode: evdev.KEY_A}},
+			KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+				evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer}}},
+				evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
+				evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
 			},
 		},
 	}

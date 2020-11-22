@@ -35,51 +35,85 @@ func NewKeyboard(book Book, initialLayer string, vkb uinput.Keyboard) *Keyboard 
 	return kb
 }
 
-//go:generate stringer -type=Actions -trimprefix Action
-type Actions int
+//go:generate stringer -type=KeyActions -trimprefix KeyAction
+type KeyActions int
 
 const (
-	ActionNil Actions = iota - 1
-	ActionMap         //Default Action
-	ActionDown
-	ActionUp
-	ActionTap
-	ActionDoubleTap
-	ActionHold
-	ActionPushLayer
-	ActionPopLayer
+	KeyActionNil KeyActions = iota - 1
+	KeyActionMap            //Default Action
+	KeyActionDown
+	KeyActionUp
+	KeyActionTap
+	KeyActionDoubleTap
+	KeyActionHold
 )
 
-var ActionsMap map[string]Actions = map[string]Actions{
-	ActionNil.String():       ActionNil,
-	ActionMap.String():       ActionMap,
-	ActionDown.String():      ActionDown,
-	ActionUp.String():        ActionUp,
-	ActionTap.String():       ActionTap,
-	ActionDoubleTap.String(): ActionDoubleTap,
-	ActionHold.String():      ActionHold,
-	ActionPushLayer.String(): ActionPushLayer,
-	ActionPopLayer.String():  ActionPopLayer,
+var KeyActionsMap map[string]KeyActions = map[string]KeyActions{
+	KeyActionNil.String():       KeyActionNil,
+	KeyActionMap.String():       KeyActionMap,
+	KeyActionDown.String():      KeyActionDown,
+	KeyActionUp.String():        KeyActionUp,
+	KeyActionTap.String():       KeyActionTap,
+	KeyActionDoubleTap.String(): KeyActionDoubleTap,
+	KeyActionHold.String():      KeyActionHold,
 }
 
-func ParseAction(value string) (Actions, error) {
+//go:generate stringer -type=KbActions -trimprefix KbAction
+type KbActions int
+
+const (
+	KbActionNil KbActions = iota - 1
+	KbActionMap           //Default Action
+	KbActionDown
+	KbActionUp
+	KbActionTap
+	KbActionDoubleTap
+	KbActionHold
+	KbActionPushLayer
+	KbActionPopLayer
+)
+
+var KbActionsMap map[string]KbActions = map[string]KbActions{
+	KeyActionNil.String():       KbActionNil,
+	KeyActionMap.String():       KbActionMap,
+	KeyActionDown.String():      KbActionDown,
+	KeyActionUp.String():        KbActionUp,
+	KeyActionTap.String():       KbActionTap,
+	KeyActionDoubleTap.String(): KbActionDoubleTap,
+	KeyActionHold.String():      KbActionHold,
+	KbActionPushLayer.String():  KbActionPushLayer,
+	KbActionPopLayer.String():   KbActionPopLayer,
+}
+
+func ParseKeyAction(value string) (KeyActions, error) {
 	if value == "" {
-		return Actions(0), nil
+		return KeyActions(0), nil
 	}
-	a, ok := ActionsMap[value]
+	a, ok := KeyActionsMap[value]
 	if !ok {
 		return a, fmt.Errorf("Action %s not found", value)
 	}
 	return a, nil
 }
 
-func (ev *Actions) UnmarshalYAML(value *yaml.Node) error {
+func ParseKbAction(value string) (KbActions, error) {
+	if value == "" {
+		return KbActions(0), nil
+	}
+	a, ok := KbActionsMap[value]
+	if !ok {
+		return a, fmt.Errorf("Action %s not found", value)
+	}
+	return a, nil
+}
+
+func (ev *KbActions) UnmarshalYAML(value *yaml.Node) error {
 	var actionString string
 	err := value.Decode(&actionString)
 	if err != nil {
 		return err
 	}
-	action, err := ParseAction(actionString)
+	action, err := ParseKbAction(actionString)
 	if err != nil {
 		return err
 	}
@@ -87,11 +121,33 @@ func (ev *Actions) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-func (action Actions) MarshalYAML() (interface{}, error) {
+func (ev *KeyActions) UnmarshalYAML(value *yaml.Node) error {
+	var actionString string
+	err := value.Decode(&actionString)
+	if err != nil {
+		return err
+	}
+	action, err := ParseKeyAction(actionString)
+	if err != nil {
+		return err
+	}
+	*ev = action
+	return nil
+}
+
+func (action KeyActions) MarshalYAML() (interface{}, error) {
 	return action.String(), nil
 }
 
-func (action Actions) MarshalJSON() ([]byte, error) {
+func (action KbActions) MarshalYAML() (interface{}, error) {
+	return action.String(), nil
+}
+
+func (action KeyActions) MarshalJSON() ([]byte, error) {
+	return json.Marshal(action.String())
+}
+
+func (action KbActions) MarshalJSON() ([]byte, error) {
 	return json.Marshal(action.String())
 }
 
@@ -135,7 +191,7 @@ func (keyCode KeyCode) String() string {
 }
 
 type KeyEvent struct {
-	Action  Actions
+	Action  KeyActions
 	KeyCode KeyCode
 }
 
@@ -144,24 +200,24 @@ func (ev KeyEvent) String() string {
 }
 
 type MapEvent struct {
-	Action  Actions `yaml:"action,omitempty"`
-	KeyCode KeyCode `yaml:"keyCode,omitempty"`
+	Action  KbActions `yaml:"action,omitempty"`
+	KeyCode KeyCode   `yaml:"keyCode,omitempty"`
 
 	LayerName string `yaml:"layerName,omitempty"`
 }
 
 func (ev MapEvent) String() string {
 	switch ev.Action {
-	case ActionUp, ActionDown:
+	case KbActionUp, KbActionDown:
 		return fmt.Sprintf("%s-%v", evdev.KEY[int(ev.KeyCode)], ev.Action)
-	case ActionPushLayer, ActionPopLayer:
+	case KbActionPushLayer, KbActionPopLayer:
 		return fmt.Sprintf("%v-%s", ev.Action, ev.LayerName)
 	default:
 		return fmt.Sprintf("%s-%v", evdev.KEY[int(ev.KeyCode)], ev.Action)
 	}
 }
 
-func NewKeyEv(event evdev.InputEvent, action Actions) KeyEvent {
+func NewKeyEv(event evdev.InputEvent, action KeyActions) KeyEvent {
 	return KeyEvent{
 		// Time:   time.Unix(event.Time.Sec, event.Time.Usec),
 		KeyCode: KeyCode(event.Code),
@@ -169,41 +225,54 @@ func NewKeyEv(event evdev.InputEvent, action Actions) KeyEvent {
 	}
 }
 
-func (kb *Keyboard) findMap(layer *Layer, event KeyEvent) (kmap MapEvent, ok bool) {
+func (kb *Keyboard) findMap(layer *Layer, event KeyEvent) ([]MapEvent, bool) {
 	keymap, ok := layer.KeyMap[event.KeyCode]
 	if !ok {
-		return MapEvent{}, false
+		return nil, false
 	}
-	kmap, ok = keymap[event.Action]
+	kmaps, ok := keymap[event.Action]
 	if ok {
-		return kmap, true
+		copymaps := make([]MapEvent, len(kmaps))
+		for i := range kmaps {
+			copymaps[i] = kmaps[i]
+		}
+		return copymaps, true
 	}
 
-	if event.Action == ActionUp || event.Action == ActionDown {
-		kmap, ok = keymap[ActionMap]
-		if ok {
-			kmap.Action = event.Action
-			return kmap, true
+	//ActionMap
+	if event.Action == KeyActionUp || event.Action == KeyActionDown {
+		kmaps, ok = keymap[KeyActionMap]
+		if !ok {
+			return nil, false
 		}
+		copymaps := make([]MapEvent, len(kmaps))
+		for i := range kmaps {
+			m := kmaps[i]
+			if m.Action == KbActionMap {
+				m.Action = KbActions(event.Action)
+			}
+			copymaps[i] = m
+		}
+		return copymaps, true
 	}
-	return MapEvent{}, false
+	return nil, false
 }
 
 func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 	mapped := make([]MapEvent, 0)
 	for i := range events {
 		switch events[i].Action {
-		case ActionUp:
+		case KeyActionUp:
 			event, ok := kb.downkeys[events[i].KeyCode]
 			if ok {
-				event.Action = ActionUp
+				event.Action = KbActionUp
 				mapped = append(mapped, event)
 				delete(kb.downkeys, events[i].KeyCode)
 				continue
 			}
 		}
 
-		m, err := kb.Map(events[i])
+		maps, err := kb.Map(events[i])
 		if err != nil {
 			log.
 				WithField("event", events[i]).
@@ -212,53 +281,59 @@ func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 			continue
 		}
 
-		switch m.Action {
-		case ActionDown:
-			kb.downkeys[events[i].KeyCode] = m
+		for _, m := range maps {
+			switch m.Action {
+			case KbActionDown:
+				kb.downkeys[events[i].KeyCode] = m
+			}
+
 		}
 
-		mapped = append(mapped, m)
+		mapped = append(mapped, maps...)
 	}
 	return mapped, nil
 }
 
-func (kb *Keyboard) Map(event KeyEvent) (MapEvent, error) {
+func (kb *Keyboard) Map(event KeyEvent) ([]MapEvent, error) {
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
-		kmap, ok := kb.findMap(kb.Layers[i], event)
+		kmaps, ok := kb.findMap(kb.Layers[i], event)
 		if !ok {
 			continue
 		}
 		log.
 			WithField("from", event).
-			WithField("to", kmap).
+			WithField("to", kmaps).
 			Info("Map Key")
-		return kmap, nil
+		return kmaps, nil
 	}
+	// No map detected, forward
 	switch event.Action {
-	case ActionUp, ActionDown:
-		return MapEvent{
-			Action:  event.Action,
-			KeyCode: event.KeyCode,
+	case KeyActionUp, KeyActionDown:
+		return []MapEvent{
+			{
+				Action:  KbActions(event.Action),
+				KeyCode: event.KeyCode,
+			},
 		}, nil
 	default:
-		return MapEvent{}, errors.New("Ignore event")
+		return nil, errors.New("Ignore event")
 	}
 }
 
 func (kb *Keyboard) Deliver(events []MapEvent) error {
 	for _, event := range events {
 		switch event.Action {
-		case ActionDown, ActionUp, ActionTap:
+		case KbActionDown, KbActionUp, KbActionTap:
 			err := kb.SendKeyEvent(event)
 			if err != nil {
 				return err
 			}
-		case ActionPushLayer:
+		case KbActionPushLayer:
 			err := kb.PushLayer(event.LayerName)
 			if err != nil {
 				return err
 			}
-		case ActionPopLayer:
+		case KbActionPopLayer:
 			err := kb.PopLayer()
 			if err != nil {
 				return err
@@ -293,11 +368,11 @@ func (kb *Keyboard) PopLayer() error {
 
 func (kb *Keyboard) SendKeyEvent(event MapEvent) error {
 	switch event.Action {
-	case ActionDown:
+	case KbActionDown:
 		return kb.vkb.KeyDown(int(event.KeyCode))
-	case ActionUp:
+	case KbActionUp:
 		return kb.vkb.KeyUp(int(event.KeyCode))
-	case ActionTap:
+	case KbActionTap:
 		return kb.vkb.KeyPress(int(event.KeyCode))
 	default:
 		return errors.New("unknown event")

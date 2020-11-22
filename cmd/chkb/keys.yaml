@@ -1,65 +1,66 @@
 base:
-    KEY_LEFTSHIFT:
-        Tap:
-            action: PushLayer
-            layerName: numpad
-        Hold: 
-            action: Tap
-            keyCode: KEY_CAPSLOCK
-    KEY_CAPSLOCK:
-        Down:
-          action: PushLayer
-          layerName: control
-        Up:
-          action: PopLayer
-          layerName: control
-        Map:
-            keyCode: KEY_LEFTMETA
-    KEY_ESC:
-        Map:
-          action: Nil
-        
+  KEY_LEFTSHIFT:
+    Tap:
+      - action: PushLayer
+        layerName: numpad
+    # Hold:
+    #     action: Tap
+    #     keyCode: KEY_CAPSLOCK
+  KEY_CAPSLOCK:
+    Down:
+      - action: PushLayer
+        layerName: control
+    Up:
+      - action: PopLayer
+        layerName: control
+    Map:
+      - keyCode: KEY_LEFTMETA
+  # disable esc for forced learning
+  # KEY_ESC:
+  #     Map:
+  #       action: Nil
+
 control:
-    KEY_SEMICOLON:
-        Map:
-          keyCode: KEY_ENTER
-    KEY_J:
-        Map:
-          keyCode: KEY_BACKSPACE
-    KEY_D:
-        Map:
-          keyCode: KEY_ESC
+  KEY_SEMICOLON:
+    Map:
+      - keyCode: KEY_ENTER
+  KEY_J:
+    Map:
+      - keyCode: KEY_BACKSPACE
+  KEY_D:
+    Map:
+      - keyCode: KEY_ESC
 numpad:
-    KEY_LEFTSHIFT:
-        Tap:
-            action: PopLayer
-    KEY_U:
-        Map:
-            keyCode: KEY_7
-    KEY_I:
-        Map:
-            keyCode: KEY_8
-    KEY_O:
-        Map:
-            keyCode: KEY_9
-    KEY_J:
-        Map:
-            keyCode: KEY_4
-    KEY_K:
-        Map:
-            keyCode: KEY_5
-    KEY_L:
-        Map:
-            keyCode: KEY_6
-    KEY_M:
-        Map:
-            keyCode: KEY_1
-    KEY_COMMA:
-        Map:
-            keyCode: KEY_2
-    KEY_DOT:
-        Map:
-            keyCode: KEY_3
-    KEY_SEMICOLON:
-        Map:
-            keyCode: KEY_ENTER
+  KEY_LEFTSHIFT:
+    Tap:
+      - action: PopLayer
+  KEY_U:
+    Map:
+      - keyCode: KEY_7
+  KEY_I:
+    Map:
+      - keyCode: KEY_8
+  KEY_O:
+    Map:
+      - keyCode: KEY_9
+  KEY_J:
+    Map:
+      - keyCode: KEY_4
+  KEY_K:
+    Map:
+      - keyCode: KEY_5
+  KEY_L:
+    Map:
+      - keyCode: KEY_6
+  KEY_M:
+    Map:
+      - keyCode: KEY_1
+  KEY_COMMA:
+    Map:
+      - keyCode: KEY_2
+  KEY_DOT:
+    Map:
+      - keyCode: KEY_3
+  KEY_SEMICOLON:
+    Map:
+      - keyCode: KEY_ENTER

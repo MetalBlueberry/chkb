@@ -18,18 +18,18 @@ var _ = Describe("Book", func() {
 			fileContent = `base:
     KEY_LEFTSHIFT:
         Tap:
-            action: PushLayer
+          - action: PushLayer
             layerName: swapAB
 swapAB:
     KEY_A:
         Map:
-            keyCode: KEY_B
+          - keyCode: KEY_B
     KEY_B:
         Map:
-            keyCode: KEY_A
+          - keyCode: KEY_A
     KEY_LEFTSHIFT:
         Tap:
-            action: PopLayer
+          - action: PopLayer
 `
 		)
 		It("Load simple", func() {
@@ -41,28 +41,32 @@ swapAB:
 
 			Expect(book["base"].KeyMap).To(HaveKey(chkb.KeyCode(evdev.KEY_LEFTSHIFT)))
 			Expect(book["base"].KeyMap[chkb.KeyCode(evdev.KEY_LEFTSHIFT)]).
-				To(HaveKeyWithValue(chkb.ActionTap, chkb.MapEvent{
-					Action:    chkb.ActionPushLayer,
-					LayerName: "swapAB",
+				To(HaveKeyWithValue(chkb.KeyActionTap, []chkb.MapEvent{
+					{
+						Action:    chkb.KbActionPushLayer,
+						LayerName: "swapAB",
+					},
 				}))
 			Expect(book["swapAB"].KeyMap).To(HaveKey(chkb.KeyCode(evdev.KEY_A)))
 			Expect(book["swapAB"].KeyMap[chkb.KeyCode(evdev.KEY_A)]).
-				To(HaveKeyWithValue(chkb.ActionMap, chkb.MapEvent{
-					KeyCode: evdev.KEY_B,
+				To(HaveKeyWithValue(chkb.KeyActionMap, []chkb.MapEvent{
+					{
+						KeyCode: evdev.KEY_B,
+					},
 				}))
 		})
 		It("Save simple", func() {
 			book := chkb.Book{
 				"base": {
-					KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
-						evdev.KEY_LEFTSHIFT: {chkb.ActionTap: {Action: chkb.ActionPushLayer, LayerName: "swapAB"}},
+					KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPushLayer, LayerName: "swapAB"}}},
 					},
 				},
 				"swapAB": {
-					KeyMap: map[chkb.KeyCode]map[chkb.Actions]chkb.MapEvent{
-						evdev.KEY_LEFTSHIFT: {chkb.ActionTap: {Action: chkb.ActionPopLayer}},
-						evdev.KEY_A:         {chkb.ActionMap: {KeyCode: evdev.KEY_B}},
-						evdev.KEY_B:         {chkb.ActionMap: {KeyCode: evdev.KEY_A}},
+					KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer}}},
+						evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
+						evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
 					},
 				},
 			}
