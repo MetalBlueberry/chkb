@@ -7,11 +7,8 @@ base:
     #     action: Tap
     #     keyCode: KEY_CAPSLOCK
   KEY_CAPSLOCK:
-    Down:
+    Tap:
       - action: PushLayer
-        layerName: control
-    Up:
-      - action: PopLayer
         layerName: control
     Map:
       - keyCode: KEY_LEFTMETA
@@ -21,15 +18,46 @@ base:
   #       action: Nil
 
 control:
+  KEY_CAPSLOCK:
+    Tap:
+      - action: PopLayer
+        layerName: control
+  KEY_A:
+    Tap:
+      - action: PopLayer
+        layerName: control
+      - action: PushLayer
+        layerName: arrows
   KEY_SEMICOLON:
     Map:
       - keyCode: KEY_ENTER
+      - action: PopLayer
+        layerName: control
   KEY_J:
     Map:
       - keyCode: KEY_BACKSPACE
   KEY_D:
     Map:
       - keyCode: KEY_ESC
+      - action: PopLayer
+        layerName: control
+arrows:
+  KEY_CAPSLOCK:
+    Tap:
+      - action: PopLayer
+        layerName: arrows
+  KEY_J:
+    Map: 
+      - keyCode: "KEY_DOWN"
+  KEY_K:
+    Map: 
+      - keyCode: "KEY_UP"
+  KEY_H:
+    Map: 
+      - keyCode: "KEY_LEFT"
+  KEY_L:
+    Map: 
+      - keyCode: "KEY_RIGHT"
 numpad:
   KEY_LEFTSHIFT:
     Tap:
