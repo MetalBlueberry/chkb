@@ -14,13 +14,13 @@ func _() {
 	_ = x[ActionTap-3]
 	_ = x[ActionDoubleTap-4]
 	_ = x[ActionHold-5]
-	_ = x[ActionPush-6]
-	_ = x[ActionPop-7]
+	_ = x[ActionPushLayer-6]
+	_ = x[ActionPopLayer-7]
 }
 
-const _Actions_name = "MapDownUpTapDoubleTapHoldPushPop"
+const _Actions_name = "MapDownUpTapDoubleTapHoldPushLayerPopLayer"
 
-var _Actions_index = [...]uint8{0, 3, 7, 9, 12, 21, 25, 29, 32}
+var _Actions_index = [...]uint8{0, 3, 7, 9, 12, 21, 25, 34, 42}
 
 func (i Actions) String() string {
 	if i < 0 || i >= Actions(len(_Actions_index)-1) {

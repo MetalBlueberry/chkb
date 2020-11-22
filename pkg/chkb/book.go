@@ -20,7 +20,8 @@ func (b *Book) Load(r io.Reader) error {
 }
 
 type Layer struct {
-	KeyMap map[KeyCode]map[Actions]MapEvent
+	DefaultMap *MapEvent
+	KeyMap     map[KeyCode]map[Actions]MapEvent
 }
 
 func (layer *Layer) StringMap() map[string]map[string]MapEvent {

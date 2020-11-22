@@ -43,8 +43,8 @@ const (
 	ActionTap
 	ActionDoubleTap
 	ActionHold
-	ActionPush
-	ActionPop
+	ActionPushLayer
+	ActionPopLayer
 )
 
 var ActionsMap map[string]Actions = map[string]Actions{
@@ -54,8 +54,8 @@ var ActionsMap map[string]Actions = map[string]Actions{
 	ActionTap.String():       ActionTap,
 	ActionDoubleTap.String(): ActionDoubleTap,
 	ActionHold.String():      ActionHold,
-	ActionPush.String():      ActionPush,
-	ActionPop.String():       ActionPop,
+	ActionPushLayer.String(): ActionPushLayer,
+	ActionPopLayer.String():  ActionPopLayer,
 }
 
 func ParseAction(value string) (Actions, error) {
@@ -206,12 +206,12 @@ func (kb *Keyboard) Deliver(events []MapEvent) error {
 			if err != nil {
 				return err
 			}
-		case ActionPush:
+		case ActionPushLayer:
 			err := kb.PushLayer(event.LayerName)
 			if err != nil {
 				return err
 			}
-		case ActionPop:
+		case ActionPopLayer:
 			err := kb.PopLayer()
 			if err != nil {
 				return err

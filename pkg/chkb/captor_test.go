@@ -58,6 +58,13 @@ var _ = Describe("Captor", func() {
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
 			{KeyCode: evdev.KEY_A, Action: chkb.ActionTap},
 		}),
+		Entry("NotTap - slow", []evdev.InputEvent{
+			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+			{Time: Elapsed(250), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+		}, []chkb.KeyEvent{
+			{KeyCode: evdev.KEY_A, Action: chkb.ActionDown},
+			{KeyCode: evdev.KEY_A, Action: chkb.ActionUp},
+		}),
 	)
 
 })
