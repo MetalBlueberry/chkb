@@ -267,7 +267,7 @@ func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 			}
 		}
 
-		maps, err := kb.Map(event)
+		maps, err := kb.mapOne(event)
 		if err != nil {
 			log.
 				WithField("event", event).
@@ -296,7 +296,7 @@ func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 	return mapped, nil
 }
 
-func (kb *Keyboard) Map(event KeyEvent) ([]MapEvent, error) {
+func (kb *Keyboard) mapOne(event KeyEvent) ([]MapEvent, error) {
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
 		kmaps, ok := kb.findMap(kb.Layers[i], event)
 		if !ok {
@@ -326,7 +326,7 @@ func (kb *Keyboard) Deliver(events []MapEvent) error {
 	for _, event := range events {
 		switch event.Action {
 		case KbActionDown, KbActionUp, KbActionTap:
-			err := kb.SendKeyEvent(event)
+			err := kb.sendKeyEvent(event)
 			if err != nil {
 				return err
 			}
@@ -336,7 +336,7 @@ func (kb *Keyboard) Deliver(events []MapEvent) error {
 				return err
 			}
 		case KbActionPopLayer:
-			err := kb.PopLayer()
+			err := kb.PopLayer(event.LayerName)
 			if err != nil {
 				return err
 			}
@@ -359,16 +359,21 @@ func (kb *Keyboard) PushLayer(name string) error {
 	return nil
 }
 
-func (kb *Keyboard) PopLayer() error {
+func (kb *Keyboard) PopLayer(name string) error {
 	log.Printf("Pop layer")
 	if len(kb.Layers) == 1 {
 		return errors.New("You cannot pop the last layer")
 	}
-	kb.Layers = kb.Layers[:len(kb.Layers)-1]
-	return nil
+	for i := range kb.Layers {
+		if kb.Layers[i] == kb.LayerBook[name] {
+			kb.Layers = append(kb.Layers[:i], kb.Layers[i+1:]...)
+			return nil
+		}
+	}
+	return fmt.Errorf("Layer %s not found", name)
 }
 
-func (kb *Keyboard) SendKeyEvent(event MapEvent) error {
+func (kb *Keyboard) sendKeyEvent(event MapEvent) error {
 	switch event.Action {
 	case KbActionDown:
 		return kb.vkb.KeyDown(int(event.KeyCode))

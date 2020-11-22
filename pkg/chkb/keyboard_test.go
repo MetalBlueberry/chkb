@@ -34,7 +34,7 @@ var _ = Describe("Keyboard", func() {
 					},
 					"swapAB": {
 						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
-							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer}}},
+							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer, LayerName: "swapAB"}}},
 							evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
 							evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
 						},
