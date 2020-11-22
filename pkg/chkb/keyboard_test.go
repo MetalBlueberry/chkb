@@ -240,10 +240,10 @@ var _ = Describe("Keyboard", func() {
 				{Time: Elapsed(0), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
 				{Time: Elapsed(2), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
 			}, []chkb.KeyEvent{
-				{KeyCode: evdev.KEY_0, Action: chkb.KeyActionTap},
 				{KeyCode: evdev.KEY_LEFTMETA, Action: chkb.KeyActionDown},
-				{KeyCode: evdev.KEY_1, Action: chkb.KeyActionTap},
+				{KeyCode: evdev.KEY_0, Action: chkb.KeyActionTap},
 				{KeyCode: evdev.KEY_LEFTMETA, Action: chkb.KeyActionUp},
+				{KeyCode: evdev.KEY_1, Action: chkb.KeyActionTap},
 			}),
 		)
 	})

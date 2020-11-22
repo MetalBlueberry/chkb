@@ -230,52 +230,47 @@ func (kb *Keyboard) findMap(layer *Layer, event KeyEvent) ([]MapEvent, bool) {
 	if !ok {
 		return nil, false
 	}
-	kmaps, ok := keymap[event.Action]
-	if ok {
-		copymaps := make([]MapEvent, len(kmaps))
-		for i := range kmaps {
-			copymaps[i] = kmaps[i]
-		}
-		return copymaps, true
-	}
 
+	copymaps := make([]MapEvent, 0)
 	//ActionMap
 	if event.Action == KeyActionUp || event.Action == KeyActionDown {
-		kmaps, ok = keymap[KeyActionMap]
-		if !ok {
-			return nil, false
-		}
-		copymaps := make([]MapEvent, len(kmaps))
-		for i := range kmaps {
-			m := kmaps[i]
-			if m.Action == KbActionMap {
-				m.Action = KbActions(event.Action)
+		kmaps, ok := keymap[KeyActionMap]
+		if ok {
+			for i := range kmaps {
+				m := kmaps[i]
+				if m.Action == KbActionMap {
+					m.Action = KbActions(event.Action)
+				}
+				copymaps = append(copymaps, m)
 			}
-			copymaps[i] = m
 		}
+	}
+
+	kmaps, ok := keymap[event.Action]
+	if ok {
+		copymaps = append(copymaps, kmaps...)
 		return copymaps, true
 	}
-	return nil, false
+	return copymaps, len(copymaps) > 0
 }
 
 func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 	mapped := make([]MapEvent, 0)
-	for i := range events {
-		switch events[i].Action {
+	for _, event := range events {
+		switch event.Action {
 		case KeyActionUp:
-			event, ok := kb.downkeys[events[i].KeyCode]
+			downkey, ok := kb.downkeys[event.KeyCode]
 			if ok {
-				event.Action = KbActionUp
-				mapped = append(mapped, event)
-				delete(kb.downkeys, events[i].KeyCode)
-				continue
+				downkey.Action = KbActionUp
+				mapped = append(mapped, downkey)
+				delete(kb.downkeys, event.KeyCode)
 			}
 		}
 
-		maps, err := kb.Map(events[i])
+		maps, err := kb.Map(event)
 		if err != nil {
 			log.
-				WithField("event", events[i]).
+				WithField("event", event).
 				WithError(err).
 				Debug("Ignored event")
 			continue
@@ -284,12 +279,19 @@ func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
 		for _, m := range maps {
 			switch m.Action {
 			case KbActionDown:
-				kb.downkeys[events[i].KeyCode] = m
+				kb.downkeys[event.KeyCode] = m
+				mapped = append(mapped, m)
+			case KbActionUp:
+				_, ok := kb.downkeys[m.KeyCode]
+				if ok {
+					mapped = append(mapped, m)
+					delete(kb.downkeys, m.KeyCode)
+				}
+			default:
+				mapped = append(mapped, m)
 			}
-
 		}
 
-		mapped = append(mapped, maps...)
 	}
 	return mapped, nil
 }
