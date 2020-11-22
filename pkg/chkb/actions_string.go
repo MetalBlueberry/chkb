@@ -8,6 +8,7 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
+	_ = x[ActionNil - -1]
 	_ = x[ActionMap-0]
 	_ = x[ActionDown-1]
 	_ = x[ActionUp-2]
@@ -18,13 +19,14 @@ func _() {
 	_ = x[ActionPopLayer-7]
 }
 
-const _Actions_name = "MapDownUpTapDoubleTapHoldPushLayerPopLayer"
+const _Actions_name = "NilMapDownUpTapDoubleTapHoldPushLayerPopLayer"
 
-var _Actions_index = [...]uint8{0, 3, 7, 9, 12, 21, 25, 34, 42}
+var _Actions_index = [...]uint8{0, 3, 6, 10, 12, 15, 24, 28, 37, 45}
 
 func (i Actions) String() string {
+	i -= -1
 	if i < 0 || i >= Actions(len(_Actions_index)-1) {
-		return "Actions(" + strconv.FormatInt(int64(i), 10) + ")"
+		return "Actions(" + strconv.FormatInt(int64(i+-1), 10) + ")"
 	}
 	return _Actions_name[_Actions_index[i]:_Actions_index[i+1]]
 }

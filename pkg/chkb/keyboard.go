@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"syscall"
 	"time"
 
 	"github.com/bendahl/uinput"
 	evdev "github.com/gvalkov/golang-evdev"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -37,7 +37,8 @@ func NewKeyboard(book Book, initialLayer string, vkb uinput.Keyboard) *Keyboard 
 type Actions int
 
 const (
-	ActionMap Actions = iota
+	ActionNil Actions = iota - 1
+	ActionMap         //Default Action
 	ActionDown
 	ActionUp
 	ActionTap
@@ -48,6 +49,7 @@ const (
 )
 
 var ActionsMap map[string]Actions = map[string]Actions{
+	ActionNil.String():       ActionNil,
 	ActionMap.String():       ActionMap,
 	ActionDown.String():      ActionDown,
 	ActionUp.String():        ActionUp,
@@ -147,7 +149,14 @@ type MapEvent struct {
 }
 
 func (ev MapEvent) String() string {
-	return fmt.Sprintf("%s-%v", evdev.KEY[int(ev.KeyCode)], ev.Action)
+	switch ev.Action {
+	case ActionUp, ActionDown:
+		return fmt.Sprintf("%s-%v", evdev.KEY[int(ev.KeyCode)], ev.Action)
+	case ActionPushLayer, ActionPopLayer:
+		return fmt.Sprintf("%v-%s", ev.Action, ev.LayerName)
+	default:
+		return fmt.Sprintf("%s-%v", evdev.KEY[int(ev.KeyCode)], ev.Action)
+	}
 }
 
 func NewKeyEv(event evdev.InputEvent, action Actions) KeyEvent {
@@ -179,13 +188,17 @@ func (kb *Keyboard) findMap(layer *Layer, event KeyEvent) (kmap MapEvent, ok boo
 }
 
 func (kb *Keyboard) Maps(events []KeyEvent) ([]MapEvent, error) {
-	mapped := make([]MapEvent, len(events))
+	mapped := make([]MapEvent, 0)
 	for i := range events {
 		m, err := kb.Map(events[i])
 		if err != nil {
-			return nil, err
+			log.
+				WithField("event", events[i]).
+				WithError(err).
+				Debug("Ignored event")
+			continue
 		}
-		mapped[i] = m
+		mapped = append(mapped, m)
 	}
 	return mapped, nil
 }
@@ -196,19 +209,27 @@ func (kb *Keyboard) Map(event KeyEvent) (MapEvent, error) {
 		if !ok {
 			continue
 		}
-		log.Printf("Map key %s - %s", event, kmap)
+		log.
+			WithField("from", event).
+			WithField("to", kmap).
+			Info("Map Key")
 		return kmap, nil
 	}
-	return MapEvent{
-		Action:  event.Action,
-		KeyCode: event.KeyCode,
-	}, nil
+	switch event.Action {
+	case ActionUp, ActionDown:
+		return MapEvent{
+			Action:  event.Action,
+			KeyCode: event.KeyCode,
+		}, nil
+	default:
+		return MapEvent{}, errors.New("Ignore event")
+	}
 }
 
 func (kb *Keyboard) Deliver(events []MapEvent) error {
 	for _, event := range events {
 		switch event.Action {
-		case ActionDown, ActionUp:
+		case ActionDown, ActionUp, ActionTap:
 			err := kb.SendKeyEvent(event)
 			if err != nil {
 				return err
@@ -224,7 +245,9 @@ func (kb *Keyboard) Deliver(events []MapEvent) error {
 				return err
 			}
 		default:
-			log.Printf("Ignored event %s", event.Action)
+			log.
+				WithField("Action", event.Action).
+				Debug("Ignored event")
 		}
 	}
 	return nil
@@ -255,6 +278,8 @@ func (kb *Keyboard) SendKeyEvent(event MapEvent) error {
 		return kb.vkb.KeyDown(int(event.KeyCode))
 	case ActionUp:
 		return kb.vkb.KeyUp(int(event.KeyCode))
+	case ActionTap:
+		return kb.vkb.KeyPress(int(event.KeyCode))
 	default:
 		return errors.New("unknown event")
 	}
