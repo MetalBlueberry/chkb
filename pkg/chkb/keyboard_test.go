@@ -247,6 +247,85 @@ var _ = Describe("Keyboard", func() {
 			}),
 		)
 	})
+	Describe("Multiple actions", func() {
+		BeforeEach(func() {
+			mockKb = &TestKeyboard{[]chkb.KeyEvent{}}
+			kb = chkb.NewKeyboard(
+				chkb.Book{
+					"base": {
+						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+							evdev.KEY_CAPSLOCK: {
+								chkb.KeyActionDown: {
+									{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTMETA},
+									{Action: chkb.KbActionPushLayer, LayerName: "swapAB"},
+								},
+								chkb.KeyActionUp: {
+									{Action: chkb.KbActionUp, KeyCode: chkb.KEY_LEFTMETA},
+									{Action: chkb.KbActionPopLayer, LayerName: "swapAB"},
+								},
+							},
+							evdev.KEY_F1: {
+								chkb.KeyActionTap: {
+									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_H},
+									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_E},
+									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_L},
+									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_L},
+									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_O},
+								},
+								chkb.KeyActionMap: {
+									{Action: chkb.KbActionNil},
+								},
+							},
+						},
+					},
+					"swapAB": {
+						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer}}},
+							evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
+							evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+						},
+					},
+				},
+				"base",
+				mockKb,
+			)
+		})
+		DescribeTable("Should do multiple actions",
+			func(press []evdev.InputEvent, expect []chkb.KeyEvent) {
+				for i := range press {
+					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
+					events, err := kb.CaptureOne(press[i])
+					assert.NoError(GinkgoT(), err, "Capture should not fail")
+					mevents, err := kb.Maps(events)
+					assert.NoError(GinkgoT(), err, "Maps should not fail")
+					err = kb.Deliver(mevents)
+					assert.NoError(GinkgoT(), err, "Deliver should not fail")
+				}
+				assert.Equal(GinkgoT(), expect, mockKb.Events)
+			},
+			Entry("push layer and up/down", []evdev.InputEvent{
+				{Time: Elapsed(0), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(1), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(2), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+				{Time: Elapsed(3), Code: evdev.KEY_CAPSLOCK, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+			}, []chkb.KeyEvent{
+				{KeyCode: evdev.KEY_LEFTMETA, Action: chkb.KeyActionDown},
+				{KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
+				{KeyCode: evdev.KEY_LEFTMETA, Action: chkb.KeyActionUp},
+			}),
+			Entry("type on tap", []evdev.InputEvent{
+				{Time: Elapsed(0), Code: evdev.KEY_F1, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+				{Time: Elapsed(1), Code: evdev.KEY_F1, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+			}, []chkb.KeyEvent{
+				{KeyCode: evdev.KEY_H, Action: chkb.KeyActionTap},
+				{KeyCode: evdev.KEY_E, Action: chkb.KeyActionTap},
+				{KeyCode: evdev.KEY_L, Action: chkb.KeyActionTap},
+				{KeyCode: evdev.KEY_L, Action: chkb.KeyActionTap},
+				{KeyCode: evdev.KEY_O, Action: chkb.KeyActionTap},
+			}),
+		)
+	})
 })
 
 type TestKeyboard struct {
