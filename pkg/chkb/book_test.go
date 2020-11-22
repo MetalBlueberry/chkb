@@ -18,7 +18,7 @@ var _ = Describe("Book", func() {
 			fileContent = `base:
     KEY_LEFTSHIFT:
         Tap:
-            action: Push
+            action: PushLayer
             layerName: swapAB
 swapAB:
     KEY_A:
@@ -29,7 +29,7 @@ swapAB:
             keyCode: KEY_A
     KEY_LEFTSHIFT:
         Tap:
-            action: Pop
+            action: PopLayer
 `
 		)
 		It("Load simple", func() {

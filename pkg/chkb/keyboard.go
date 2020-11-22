@@ -69,6 +69,20 @@ func ParseAction(value string) (Actions, error) {
 	return a, nil
 }
 
+func (ev *Actions) UnmarshalYAML(value *yaml.Node) error {
+	var actionString string
+	err := value.Decode(&actionString)
+	if err != nil {
+		return err
+	}
+	action, err := ParseAction(actionString)
+	if err != nil {
+		return err
+	}
+	*ev = action
+	return nil
+}
+
 func (action Actions) MarshalYAML() (interface{}, error) {
 	return action.String(), nil
 }
@@ -88,6 +102,20 @@ func ParseKeyCode(value string) (KeyCode, error) {
 		return KeyCode(code), fmt.Errorf("Code %s not found", value)
 	}
 	return KeyCode(code), nil
+}
+
+func (ev *KeyCode) UnmarshalYAML(value *yaml.Node) error {
+	var codeString string
+	err := value.Decode(&codeString)
+	if err != nil {
+		return err
+	}
+	code, err := ParseKeyCode(codeString)
+	if err != nil {
+		return err
+	}
+	*ev = code
+	return nil
 }
 
 func (keyCode KeyCode) MarshalYAML() (interface{}, error) {
@@ -116,27 +144,6 @@ type MapEvent struct {
 	KeyCode KeyCode `yaml:"keyCode,omitempty"`
 
 	LayerName string `yaml:"layerName,omitempty"`
-}
-
-func (ev *MapEvent) UnmarshalYAML(value *yaml.Node) error {
-	type mapEventString struct {
-		Action    string `yaml:"action,omitempty"`
-		KeyCode   string `yaml:"keyCode,omitempty"`
-		LayerName string `yaml:"layerName,omitempty"`
-	}
-	tmp := &mapEventString{}
-	value.Decode(tmp)
-	var err error
-	ev.Action, err = ParseAction(tmp.Action)
-	if err != nil {
-		return err
-	}
-	ev.KeyCode, err = ParseKeyCode(tmp.KeyCode)
-	if err != nil {
-		return err
-	}
-	ev.LayerName = tmp.LayerName
-	return nil
 }
 
 func (ev MapEvent) String() string {
