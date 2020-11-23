@@ -12,16 +12,18 @@ base:
         layerName: control
     Map:
       - keyCode: KEY_LEFTMETA
-  # disable esc for forced learning
-  # KEY_ESC:
+  # disable enter for forced learning
+  # KEY_ENTER:
   #     Map:
-  #       action: Nil
+  #     -  action: Nil
 
 control:
   KEY_CAPSLOCK:
     Tap:
       - action: PopLayer
         layerName: control
+    Map:
+      - keyCode: KEY_LEFTMETA
   KEY_A:
     Tap:
       - action: PopLayer
@@ -62,6 +64,7 @@ numpad:
   KEY_LEFTSHIFT:
     Tap:
       - action: PopLayer
+        layerName: numpad
   KEY_U:
     Map:
       - keyCode: KEY_7
