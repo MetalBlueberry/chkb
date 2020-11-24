@@ -3,7 +3,11 @@ package main
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/bendahl/uinput"
 	"github.com/eiannone/keyboard"
@@ -11,6 +15,7 @@ import (
 )
 
 func main() {
+
 	dev, err := evdev.Open(os.Args[1])
 	if err != nil {
 		fmt.Printf("unable to open input device: %s\n, %s", os.Args[1], err)
@@ -45,6 +50,8 @@ func main() {
 		vkb,
 	)
 
+	go FileUpdate(kb)
+
 	defer dev.Release()
 	err = dev.Grab()
 	if err != nil {
@@ -75,4 +82,49 @@ func main() {
 			panic(err)
 		}
 	}
+}
+
+func LocalServer(kb *chkb.Keyboard) {
+	http.Handle("/status", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(rw, layerString(kb))
+	}))
+	log.Print("status server started")
+	http.ListenAndServe(":9989", nil)
+}
+
+func FileUpdate(kb *chkb.Keyboard) {
+	os.MkdirAll("/tmp/chkb", 0777)
+	file, err := os.Create("/tmp/chkb/layout.tmp")
+	if err != nil {
+		log.Printf("error file update, %s", err)
+		return
+	}
+	defer file.Close()
+	defer os.Remove("/tmp/chkb/layout.tmp")
+	ticker := time.NewTicker(time.Millisecond * 100)
+
+	previousString := ""
+	for {
+		<-ticker.C
+		str := layerString(kb)
+		if previousString == str {
+			continue
+		}
+		previousString = str
+		fmt.Fprint(file, str)
+	}
+}
+
+func layerString(kb *chkb.Keyboard) string {
+	builder := strings.Builder{}
+	for i := range kb.Layers {
+		for name := range kb.LayerBook {
+			if kb.Layers[i] == kb.LayerBook[name] {
+				builder.WriteString(name)
+				builder.WriteString(" > ")
+			}
+		}
+	}
+	builder.WriteString("\n")
+	return builder.String()
 }
