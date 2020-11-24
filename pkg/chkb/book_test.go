@@ -16,20 +16,22 @@ var _ = Describe("Book", func() {
 	Describe("Load", func() {
 		var (
 			fileContent = `base:
-    KEY_LEFTSHIFT:
-        Tap:
-          - action: PushLayer
-            layerName: swapAB
+    keyMap:
+        KEY_LEFTSHIFT:
+            Tap:
+              - action: PushLayer
+                layerName: swapAB
 swapAB:
-    KEY_A:
-        Map:
-          - keyCode: KEY_B
-    KEY_B:
-        Map:
-          - keyCode: KEY_A
-    KEY_LEFTSHIFT:
-        Tap:
-          - action: PopLayer
+    keyMap:
+        KEY_A:
+            Map:
+              - keyCode: KEY_B
+        KEY_B:
+            Map:
+              - keyCode: KEY_A
+        KEY_LEFTSHIFT:
+            Tap:
+              - action: PopLayer
 `
 		)
 		It("Load simple", func() {

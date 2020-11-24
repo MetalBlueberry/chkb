@@ -1,7 +1,6 @@
 package chkb
 
 import (
-	"encoding/json"
 	"io"
 
 	"gopkg.in/yaml.v3"
@@ -21,13 +20,15 @@ func (b *Book) Load(r io.Reader) error {
 }
 
 type Layer struct {
-	DefaultMap *MapEvent
-	KeyMap     map[KeyCode]map[KeyActions][]MapEvent
+	DefaultMap *MapEvent `yaml:"defaultMap,omitempty"`
+	KeyMap     KeyMap    `yaml:"keyMap,omitempty"`
 }
 
-func (layer *Layer) StringMap() map[string]map[string][]MapEvent {
+type KeyMap map[KeyCode]map[KeyActions][]MapEvent
+
+func (km *KeyMap) StringMap() map[string]map[string][]MapEvent {
 	tmp := make(map[string]map[string][]MapEvent)
-	for keyCode, actionMap := range layer.KeyMap {
+	for keyCode, actionMap := range *km {
 		tmp[keyCode.String()] = make(map[string][]MapEvent)
 		for action, mapEvent := range actionMap {
 			tmp[keyCode.String()][action.String()] = mapEvent
@@ -36,41 +37,41 @@ func (layer *Layer) StringMap() map[string]map[string][]MapEvent {
 	return tmp
 }
 
-func (layer *Layer) FromStringMap(source map[string]map[string][]MapEvent) error {
-	if layer.KeyMap == nil {
-		layer.KeyMap = map[KeyCode]map[KeyActions][]MapEvent{}
+func (km *KeyMap) FromStringMap(source map[string]map[string][]MapEvent) error {
+	if (*km) == nil {
+		(*km) = map[KeyCode]map[KeyActions][]MapEvent{}
 	}
 	for keyCodeString, actionMap := range source {
 		keyCode, err := ParseKeyCode(keyCodeString)
 		if err != nil {
 			return err
 		}
-		layer.KeyMap[keyCode] = make(map[KeyActions][]MapEvent)
+		(*km)[keyCode] = make(map[KeyActions][]MapEvent)
 
 		for actionString, mapEvent := range actionMap {
 			action, err := ParseKeyAction(actionString)
 			if err != nil {
 				return err
 			}
-			layer.KeyMap[keyCode][action] = mapEvent
+			(*km)[keyCode][action] = mapEvent
 		}
 	}
 	return nil
 }
 
-func (layer *Layer) UnmarshalYAML(value *yaml.Node) error {
+func (km *KeyMap) UnmarshalYAML(value *yaml.Node) error {
 	tmp := make(map[string]map[string][]MapEvent)
-	err := value.Decode(tmp)
+	err := value.Decode(&tmp)
 	if err != nil {
 		return err
 	}
-	return layer.FromStringMap(tmp)
+	return km.FromStringMap(tmp)
 }
 
-func (layer *Layer) MarshalYAML() (interface{}, error) {
-	return layer.StringMap(), nil
-}
+// func (layer *Layer) UnmarshalYAML(value *yaml.Node) error {
+// 	return value.Decode(&layer.KeyMap)
+// }
 
-func (layer *Layer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(layer.StringMap())
+func (km KeyMap) MarshalYAML() (interface{}, error) {
+	return km.StringMap(), nil
 }
