@@ -32,6 +32,8 @@ control:
           layerName: control
         - action: PushLayer
           layerName: arrows
+      Map:
+        - action: Nil 
     KEY_SEMICOLON:
       Map:
         - keyCode: KEY_KPENTER
@@ -48,7 +50,7 @@ control:
 arrows:
   keyMap:
     KEY_CAPSLOCK:
-      Down:
+      Tap:
         - action: PopLayer
           layerName: arrows
       Map:
@@ -68,7 +70,7 @@ arrows:
 numpad:
   keyMap:
     KEY_LEFTSHIFT:
-      Down:
+      Tap:
         - action: PopLayer
           layerName: numpad
     KEY_U:
