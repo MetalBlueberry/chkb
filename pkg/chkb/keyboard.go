@@ -25,15 +25,32 @@ type Keyboard struct {
 
 func NewKeyboard(book Book, initialLayer string, vkb uinput.Keyboard) *Keyboard {
 	kb := &Keyboard{
+		Captor: NewCaptor(),
+
 		LayerBook: book,
 		Layers:    []*Layer{},
 		vkb:       vkb,
-		Captor:    NewCaptor(),
 		downkeys:  map[KeyCode]MapEvent{},
 	}
 	kb.PushLayer(initialLayer)
 	return kb
 }
+
+type InputEvent struct {
+	Time    time.Time
+	KeyCode KeyCode
+	Action  InputActions
+}
+
+//go:generate stringer -type=InputActions -trimprefix InputAction
+type InputActions int
+
+const (
+	InputActionNil InputActions = iota
+	InputActionDown
+	InputActionUp
+	InputActionHold
+)
 
 //go:generate stringer -type=KeyActions -trimprefix KeyAction
 type KeyActions int
@@ -217,12 +234,27 @@ func (ev MapEvent) String() string {
 	}
 }
 
-func NewKeyEv(event evdev.InputEvent, action KeyActions) KeyEvent {
+func NewKeyEv(event InputEvent, action KeyActions) KeyEvent {
 	return KeyEvent{
-		// Time:   time.Unix(event.Time.Sec, event.Time.Usec),
-		KeyCode: KeyCode(event.Code),
+		// Time:    time.Unix(event.Time.Sec, event.Time.Usec*1000),
+		KeyCode: event.KeyCode,
 		Action:  action,
 	}
+}
+func NewKeyInputEvent(event evdev.InputEvent) InputEvent {
+	ie := InputEvent{
+		Time:    time.Unix(event.Time.Sec, event.Time.Usec*1000),
+		KeyCode: KeyCode(event.Code),
+	}
+	switch evdev.KeyEventState(event.Value) {
+	case evdev.KeyDown:
+		ie.Action = InputActionDown
+	case evdev.KeyUp:
+		ie.Action = InputActionUp
+	case evdev.KeyHold:
+		ie.Action = InputActionHold
+	}
+	return ie
 }
 
 func (kb *Keyboard) findMap(layer *Layer, event KeyEvent) ([]MapEvent, bool) {

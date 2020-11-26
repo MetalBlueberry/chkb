@@ -24,7 +24,7 @@ var _ = Describe("Captor", func() {
 		func(events []evdev.InputEvent, expected []chkb.KeyEvent) {
 			captured := make([]chkb.KeyEvent, 0)
 			for _, event := range events {
-				c, err := captor.CaptureOne(event)
+				c, err := captor.CaptureOne(chkb.NewKeyInputEvent(event))
 				assert.NoError(GinkgoT(), err)
 				captured = append(captured, c...)
 			}

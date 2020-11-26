@@ -69,7 +69,15 @@ func main() {
 			}
 		}
 
-		captured, err := kb.Capture(events)
+		inputEvents := make([]chkb.InputEvent, 0)
+		for i := range events {
+			if events[i].Type != evdev.EV_KEY {
+				continue
+			}
+			inputEvents = append(inputEvents, chkb.NewKeyInputEvent(events[i]))
+		}
+
+		captured, err := kb.Capture(inputEvents)
 		if err != nil {
 			panic(err)
 		}

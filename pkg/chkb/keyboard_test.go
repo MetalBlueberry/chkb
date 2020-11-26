@@ -49,7 +49,7 @@ var _ = Describe("Keyboard", func() {
 			func(press []evdev.InputEvent, expect []chkb.KeyEvent) {
 				for i := range press {
 					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
-					events, err := kb.CaptureOne(press[i])
+					events, err := kb.CaptureOne(chkb.NewKeyInputEvent(press[i]))
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
@@ -141,7 +141,7 @@ var _ = Describe("Keyboard", func() {
 			func(press []evdev.InputEvent, expect []chkb.KeyEvent) {
 				for i := range press {
 					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
-					events, err := kb.CaptureOne(press[i])
+					events, err := kb.CaptureOne(chkb.NewKeyInputEvent(press[i]))
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
@@ -227,7 +227,7 @@ var _ = Describe("Keyboard", func() {
 			func(press []evdev.InputEvent, expect []chkb.KeyEvent) {
 				for i := range press {
 					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
-					events, err := kb.CaptureOne(press[i])
+					events, err := kb.CaptureOne(chkb.NewKeyInputEvent(press[i]))
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
@@ -294,7 +294,7 @@ var _ = Describe("Keyboard", func() {
 			func(press []evdev.InputEvent, expect []chkb.KeyEvent) {
 				for i := range press {
 					fmt.Fprintf(GinkgoWriter, "Input %v %s\n", evdev.KeyEventState(press[i].Value), evdev.KEY[int(press[i].Code)])
-					events, err := kb.CaptureOne(press[i])
+					events, err := kb.CaptureOne(chkb.NewKeyInputEvent(press[i]))
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")

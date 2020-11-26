@@ -1,7 +1,6 @@
 package chkb
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -11,22 +10,22 @@ import (
 )
 
 type Captor struct {
-	Events []evdev.InputEvent
+	Events []InputEvent
 }
 
 func NewCaptor() *Captor {
 	return &Captor{
-		Events: []evdev.InputEvent{},
+		Events: []InputEvent{},
 	}
 }
 
-func (c *Captor) Capture(events []evdev.InputEvent) ([]KeyEvent, error) {
+func (c *Captor) Capture(events []InputEvent) ([]KeyEvent, error) {
 	captured := make([]KeyEvent, 0)
 	for i := range events {
 		c, err := c.CaptureOne(events[i])
 		if err != nil {
 			log.
-				WithField("event", evstring(events[i])).
+				WithField("event", events[i]).
 				WithError(err).
 				Debug("Skip event")
 			continue
@@ -57,23 +56,20 @@ func evstring(event evdev.InputEvent) string {
 	return fmt.Sprintf("Type: %s, Key: %s, Value: %d", t, evdev.KEY[int(event.Code)], event.Value)
 }
 
-func (c *Captor) CaptureOne(event evdev.InputEvent) ([]KeyEvent, error) {
-	if event.Type != evdev.EV_KEY {
-		return nil, errors.New("Only EV_KEY type supported")
-	}
+func (c *Captor) CaptureOne(event InputEvent) ([]KeyEvent, error) {
 	captured := make([]KeyEvent, 0)
 
-	switch evdev.KeyEventState(event.Value) {
-	case evdev.KeyDown:
+	switch event.Action {
+	case InputActionDown:
 		captured = append(captured, NewKeyEv(event, KeyActionDown))
-	case evdev.KeyUp:
+	case InputActionUp:
 		captured = append(captured, NewKeyEv(event, KeyActionUp))
-	case evdev.KeyHold:
+	case InputActionHold:
 		lastEvent := c.Events[len(c.Events)-1]
-		if lastEvent.Code == event.Code &&
-			evdev.KeyEventState(lastEvent.Value) == evdev.KeyDown {
+		if lastEvent.KeyCode == event.KeyCode &&
+			lastEvent.Action == InputActionDown {
 
-			log.Printf("Hold %s", evdev.KEY[int(event.Code)])
+			log.Printf("Hold %s", evdev.KEY[int(event.KeyCode)])
 			captured = append(captured, NewKeyEv(event, KeyActionHold))
 		}
 	}
@@ -81,26 +77,26 @@ func (c *Captor) CaptureOne(event evdev.InputEvent) ([]KeyEvent, error) {
 	for i := len(c.Events) - 1; i >= 0; i-- {
 		previous := c.Events[i]
 
-		if event.Code != previous.Code {
+		if event.KeyCode != previous.KeyCode {
 			break
 		}
-		el := elapsed(previous.Time, event.Time)
-		if previous.Code == event.Code &&
-			evdev.KeyEventState(event.Value) == evdev.KeyUp &&
-			evdev.KeyEventState(previous.Value) == evdev.KeyDown &&
+		el := event.Time.Sub(previous.Time)
+		if previous.KeyCode == event.KeyCode &&
+			event.Action == InputActionUp &&
+			previous.Action == InputActionDown &&
 			el < time.Millisecond*200 {
 
-			log.Printf("Tap %s", evdev.KEY[int(event.Code)])
+			log.Printf("Tap %s", evdev.KEY[int(event.KeyCode)])
 			captured = append(captured, NewKeyEv(event, KeyActionTap))
 			break
 		}
 
-		if previous.Code == event.Code &&
-			evdev.KeyEventState(event.Value) == evdev.KeyDown &&
-			evdev.KeyEventState(previous.Value) == evdev.KeyDown &&
+		if previous.KeyCode == event.KeyCode &&
+			event.Action == InputActionDown &&
+			previous.Action == InputActionDown &&
 			el < time.Millisecond*200 {
 
-			log.Printf("DoubleTap %s", evdev.KEY[int(event.Code)])
+			log.Printf("DoubleTap %s", evdev.KEY[int(event.KeyCode)])
 			captured = append(captured, NewKeyEv(event, KeyActionDoubleTap))
 			break
 		}
