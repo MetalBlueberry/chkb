@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -101,14 +103,18 @@ func LocalServer(kb *chkb.Keyboard) {
 }
 
 func FileUpdate(kb *chkb.Keyboard) {
-	os.MkdirAll("/tmp/chkb", 0777)
-	file, err := os.Create("/tmp/chkb/layout.tmp")
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fileName := ".chkb_layout"
+	file, err := os.Create(filepath.Join(usr.HomeDir, fileName))
 	if err != nil {
 		log.Printf("error file update, %s", err)
 		return
 	}
 	defer file.Close()
-	defer os.Remove("/tmp/chkb/layout.tmp")
 	ticker := time.NewTicker(time.Millisecond * 100)
 
 	previousString := ""
