@@ -11,14 +11,14 @@ import (
 type Mapper struct {
 	LayerBook Book
 	Layers    []*Layer
-	downkeys  map[KeyCode]MapEvent
+	downkeys  map[KeyCode]MapDefinition
 }
 
 func NewMapper(book Book, initialLayer string) *Mapper {
 	kb := &Mapper{
 		LayerBook: book,
 		Layers:    []*Layer{},
-		downkeys:  map[KeyCode]MapEvent{},
+		downkeys:  map[KeyCode]MapDefinition{},
 	}
 	kb.PushLayer(initialLayer)
 	return kb
@@ -40,13 +40,18 @@ func (ev KeyEvent) String() string {
 }
 
 type MapEvent struct {
+	Source     KeyEvent
+	Definition MapDefinition
+}
+
+type MapDefinition struct {
 	Action  KbActions `yaml:"action,omitempty"`
 	KeyCode KeyCode   `yaml:"keyCode,omitempty"`
 
 	LayerName string `yaml:"layerName,omitempty"`
 }
 
-func (ev MapEvent) String() string {
+func (ev MapDefinition) String() string {
 	switch ev.Action {
 	case KbActionUp, KbActionDown:
 		return fmt.Sprintf("%s-%v", evdev.KEY[int(ev.KeyCode)], ev.Action)
@@ -57,13 +62,13 @@ func (ev MapEvent) String() string {
 	}
 }
 
-func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
+func (layer *Layer) findMap(event KeyEvent) ([]MapDefinition, bool) {
 	keymap, ok := layer.KeyMap[event.KeyCode]
 	if !ok {
 		return nil, false
 	}
 
-	copymaps := make([]MapEvent, 0)
+	copymaps := make([]MapDefinition, 0)
 	//ActionMap
 	if event.Action == KeyActionUp || event.Action == KeyActionDown {
 		kmaps, ok := keymap[KeyActionMap]
@@ -71,12 +76,7 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 			for i := range kmaps {
 				m := kmaps[i]
 				if m.Action == KbActionMap {
-					switch event.Action {
-					case KeyActionDown:
-						m.Action = KbActionDown
-					case KeyActionUp:
-						m.Action = KbActionUp
-					}
+					m.Action = KbActions(event.Action)
 				}
 				copymaps = append(copymaps, m)
 			}
@@ -88,12 +88,7 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 		for i := range kmaps {
 			m := kmaps[i]
 			if m.Action == KbActionMap {
-				switch event.Action {
-				case KeyActionDown:
-					m.Action = KbActionDown
-				case KeyActionUp:
-					m.Action = KbActionUp
-				}
+				m.Action = KbActions(event.Action)
 			}
 			copymaps = append(copymaps, m)
 		}
@@ -102,8 +97,8 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 	return copymaps, len(copymaps) > 0
 }
 
-func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
-	mapped := make([]MapEvent, 0)
+func (kb *Mapper) Maps(events []KeyEvent) ([]MapDefinition, error) {
+	mapped := make([]MapDefinition, 0)
 	for _, event := range events {
 		switch event.Action {
 		case KeyActionUp:
@@ -144,7 +139,7 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 	return mapped, nil
 }
 
-func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
+func (kb *Mapper) mapOne(event KeyEvent) ([]MapDefinition, error) {
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
 		kmaps, ok := kb.Layers[i].findMap(event)
 		if !ok {
@@ -159,7 +154,7 @@ func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 	// No map detected, forward
 	switch event.Action {
 	case KeyActionUp, KeyActionDown:
-		return []MapEvent{
+		return []MapDefinition{
 			{
 				Action:  KbActions(event.Action),
 				KeyCode: event.KeyCode,
@@ -170,7 +165,7 @@ func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 	}
 }
 
-func (kb *Mapper) Deliver(event MapEvent) (bool, error) {
+func (kb *Mapper) Deliver(event MapDefinition) (bool, error) {
 	switch event.Action {
 	case KbActionPushLayer:
 		err := kb.PushLayer(event.LayerName)

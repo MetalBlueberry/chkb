@@ -3,7 +3,7 @@ package chkb
 import log "github.com/sirupsen/logrus"
 
 type Deliverer interface {
-	Deliver(event MapEvent) (handled bool, err error)
+	Deliver(event MapDefinition) (handled bool, err error)
 }
 type Handler struct {
 	Deliverers []Deliverer
@@ -61,7 +61,7 @@ func (handler *Handler) AddDeliverer(deliverer Deliverer) {
 	handler.Deliverers = append(handler.Deliverers, deliverer)
 }
 
-func (kb *Handler) Delivers(events []MapEvent) error {
+func (kb *Handler) Delivers(events []MapDefinition) error {
 	for _, event := range events {
 		handled := false
 		for i := range kb.Deliverers {

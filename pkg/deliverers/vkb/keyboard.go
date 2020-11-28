@@ -10,7 +10,7 @@ type Keyboard struct {
 	uinput.Keyboard
 }
 
-func (kb *Keyboard) Deliver(event chkb.MapEvent) (bool, error) {
+func (kb *Keyboard) Deliver(event chkb.MapDefinition) (bool, error) {
 	switch event.Action {
 	case chkb.KbActionDown:
 		return true, kb.KeyDown(int(event.KeyCode))
