@@ -15,6 +15,19 @@ func NewHandler() *Handler {
 	}
 }
 
+//go:generate stringer -type=KeyActions -trimprefix KeyAction
+type KeyActions int
+
+const (
+	KeyActionNil KeyActions = iota - 1
+	KeyActionMap            //Default Action
+	KeyActionDown
+	KeyActionUp
+	KeyActionTap
+	KeyActionDoubleTap
+	KeyActionHold
+)
+
 // KbAction are the actions that can assigned to a KeyEvent
 type KbActions int
 

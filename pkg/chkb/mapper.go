@@ -24,19 +24,6 @@ func NewMapper(book Book, initialLayer string) *Mapper {
 	return kb
 }
 
-//go:generate stringer -type=KeyActions -trimprefix KeyAction
-type KeyActions int
-
-const (
-	KeyActionNil KeyActions = iota - 1
-	KeyActionMap            //Default Action
-	KeyActionDown
-	KeyActionUp
-	KeyActionTap
-	KeyActionDoubleTap
-	KeyActionHold
-)
-
 type KeyCode uint16
 
 func (keyCode KeyCode) String() string {
@@ -70,7 +57,7 @@ func (ev MapEvent) String() string {
 	}
 }
 
-func (kb *Mapper) findMap(layer *Layer, event KeyEvent) ([]MapEvent, bool) {
+func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 	keymap, ok := layer.KeyMap[event.KeyCode]
 	if !ok {
 		return nil, false
@@ -98,7 +85,18 @@ func (kb *Mapper) findMap(layer *Layer, event KeyEvent) ([]MapEvent, bool) {
 
 	kmaps, ok := keymap[event.Action]
 	if ok {
-		copymaps = append(copymaps, kmaps...)
+		for i := range kmaps {
+			m := kmaps[i]
+			if m.Action == KbActionMap {
+				switch event.Action {
+				case KeyActionDown:
+					m.Action = KbActionDown
+				case KeyActionUp:
+					m.Action = KbActionUp
+				}
+			}
+			copymaps = append(copymaps, m)
+		}
 		return copymaps, true
 	}
 	return copymaps, len(copymaps) > 0
@@ -148,7 +146,7 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 
 func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
-		kmaps, ok := kb.findMap(kb.Layers[i], event)
+		kmaps, ok := kb.Layers[i].findMap(event)
 		if !ok {
 			continue
 		}
