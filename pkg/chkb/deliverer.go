@@ -15,8 +15,10 @@ func NewHandler() *Handler {
 	}
 }
 
-//go:generate stringer -type=KbActions -trimprefix KbAction
+// KbAction are the actions that can assigned to a KeyEvent
 type KbActions int
+
+//go:generate stringer -type=KbActions -trimprefix KbAction
 
 const (
 	KbActionNil KbActions = iota - 1
