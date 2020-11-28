@@ -1,6 +1,8 @@
 package chkb
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 
 	"gopkg.in/yaml.v3"
@@ -68,10 +70,115 @@ func (km *KeyMap) UnmarshalYAML(value *yaml.Node) error {
 	return km.FromStringMap(tmp)
 }
 
-// func (layer *Layer) UnmarshalYAML(value *yaml.Node) error {
-// 	return value.Decode(&layer.KeyMap)
-// }
-
 func (km KeyMap) MarshalYAML() (interface{}, error) {
 	return km.StringMap(), nil
+}
+
+var KeyActionsMap map[string]KeyActions = map[string]KeyActions{
+	KeyActionNil.String():       KeyActionNil,
+	KeyActionMap.String():       KeyActionMap,
+	KeyActionDown.String():      KeyActionDown,
+	KeyActionUp.String():        KeyActionUp,
+	KeyActionTap.String():       KeyActionTap,
+	KeyActionDoubleTap.String(): KeyActionDoubleTap,
+	KeyActionHold.String():      KeyActionHold,
+}
+
+func ParseKeyAction(value string) (KeyActions, error) {
+	if value == "" {
+		return KeyActions(0), nil
+	}
+	a, ok := KeyActionsMap[value]
+	if !ok {
+		return a, fmt.Errorf("Action %s not found", value)
+	}
+	return a, nil
+}
+
+func ParseKbAction(value string) (KbActions, error) {
+	if value == "" {
+		return KbActions(0), nil
+	}
+	a, ok := KbActionsMap[value]
+	if !ok {
+		return a, fmt.Errorf("Action %s not found", value)
+	}
+	return a, nil
+}
+
+func ParseKeyCode(value string) (KeyCode, error) {
+	if value == "" {
+		return KeyCode(0), nil
+	}
+	code, ok := ecodes[value]
+	if !ok {
+		return KeyCode(code), fmt.Errorf("Code %s not found", value)
+	}
+	return KeyCode(code), nil
+}
+
+func (ev *KbActions) UnmarshalYAML(value *yaml.Node) error {
+	var actionString string
+	err := value.Decode(&actionString)
+	if err != nil {
+		return err
+	}
+	action, err := ParseKbAction(actionString)
+	if err != nil {
+		return err
+	}
+	*ev = action
+	return nil
+}
+
+func (ev *KeyActions) UnmarshalYAML(value *yaml.Node) error {
+	var actionString string
+	err := value.Decode(&actionString)
+	if err != nil {
+		return err
+	}
+	action, err := ParseKeyAction(actionString)
+	if err != nil {
+		return err
+	}
+	*ev = action
+	return nil
+}
+
+func (action KeyActions) MarshalYAML() (interface{}, error) {
+	return action.String(), nil
+}
+
+func (action KbActions) MarshalYAML() (interface{}, error) {
+	return action.String(), nil
+}
+
+func (action KeyActions) MarshalJSON() ([]byte, error) {
+	return json.Marshal(action.String())
+}
+
+func (action KbActions) MarshalJSON() ([]byte, error) {
+	return json.Marshal(action.String())
+}
+
+func (ev *KeyCode) UnmarshalYAML(value *yaml.Node) error {
+	var codeString string
+	err := value.Decode(&codeString)
+	if err != nil {
+		return err
+	}
+	code, err := ParseKeyCode(codeString)
+	if err != nil {
+		return err
+	}
+	*ev = code
+	return nil
+}
+
+func (keyCode KeyCode) MarshalYAML() (interface{}, error) {
+	return keyCode.String(), nil
+}
+
+func (keyCode KeyCode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(keyCode.String())
 }

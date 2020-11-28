@@ -2,6 +2,9 @@ package chkb
 
 import log "github.com/sirupsen/logrus"
 
+type Deliverer interface {
+	Deliver(event MapEvent) (handled bool, err error)
+}
 type Handler struct {
 	Deliverers []Deliverer
 }
@@ -12,8 +15,31 @@ func NewHandler() *Handler {
 	}
 }
 
-type Deliverer interface {
-	Deliver(event MapEvent) (handled bool, err error)
+//go:generate stringer -type=KbActions -trimprefix KbAction
+type KbActions int
+
+const (
+	KbActionNil KbActions = iota - 1
+	KbActionMap           //Default Action
+	KbActionDown
+	KbActionUp
+	KbActionTap
+	KbActionDoubleTap
+	KbActionHold
+	KbActionPushLayer
+	KbActionPopLayer
+)
+
+var KbActionsMap map[string]KbActions = map[string]KbActions{
+	KbActionNil.String():       KbActionNil,
+	KbActionMap.String():       KbActionMap,
+	KbActionDown.String():      KbActionDown,
+	KbActionUp.String():        KbActionUp,
+	KbActionTap.String():       KbActionTap,
+	KbActionDoubleTap.String(): KbActionDoubleTap,
+	KbActionHold.String():      KbActionHold,
+	KbActionPushLayer.String(): KbActionPushLayer,
+	KbActionPopLayer.String():  KbActionPopLayer,
 }
 
 func (handler *Handler) AddDeliverer(deliverer Deliverer) {

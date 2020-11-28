@@ -46,11 +46,10 @@ func main() {
 		panic(err)
 	}
 
-	kb := chkb.NewKeyboard(
+	kb := chkb.NewMapper(
 		book,
 		"base",
 	)
-	kb.AddDeliverer(&vkb.Keyboard{keyboard})
 
 	go FileUpdate(kb)
 
@@ -59,6 +58,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	c := chkb.NewCaptor()
+	h := chkb.NewHandler()
+
+	h.AddDeliverer(&vkb.Keyboard{keyboard})
+	h.AddDeliverer(kb)
 
 	for {
 		events, err := dev.Read()
@@ -76,10 +81,10 @@ func main() {
 			if events[i].Type != evdev.EV_KEY {
 				continue
 			}
-			inputEvents = append(inputEvents, chkb.NewKeyInputEvent(events[i]))
+			inputEvents = append(inputEvents, NewKeyInputEvent(events[i]))
 		}
 
-		captured, err := kb.Capture(inputEvents)
+		captured, err := c.Capture(inputEvents)
 		if err != nil {
 			panic(err)
 		}
@@ -87,14 +92,14 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		err = kb.Delivers(maps)
+		err = h.Delivers(maps)
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func LocalServer(kb *chkb.Keyboard) {
+func LocalServer(kb *chkb.Mapper) {
 	http.Handle("/status", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(rw, layerString(kb))
 	}))
@@ -102,7 +107,7 @@ func LocalServer(kb *chkb.Keyboard) {
 	http.ListenAndServe(":9989", nil)
 }
 
-func FileUpdate(kb *chkb.Keyboard) {
+func FileUpdate(kb *chkb.Mapper) {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
@@ -129,7 +134,7 @@ func FileUpdate(kb *chkb.Keyboard) {
 	}
 }
 
-func layerString(kb *chkb.Keyboard) string {
+func layerString(kb *chkb.Mapper) string {
 	builder := strings.Builder{}
 	for i := range kb.Layers {
 		for name := range kb.LayerBook {
@@ -141,4 +146,20 @@ func layerString(kb *chkb.Keyboard) string {
 	}
 	builder.WriteString("\n")
 	return builder.String()
+}
+
+func NewKeyInputEvent(event evdev.InputEvent) chkb.InputEvent {
+	ie := chkb.InputEvent{
+		Time:    time.Unix(event.Time.Sec, event.Time.Usec*1000),
+		KeyCode: chkb.KeyCode(event.Code),
+	}
+	switch evdev.KeyEventState(event.Value) {
+	case evdev.KeyDown:
+		ie.Action = chkb.InputActionDown
+	case evdev.KeyUp:
+		ie.Action = chkb.InputActionUp
+	case evdev.KeyHold:
+		ie.Action = chkb.InputActionHold
+	}
+	return ie
 }

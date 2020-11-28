@@ -19,6 +19,22 @@ func NewCaptor() *Captor {
 	}
 }
 
+type InputEvent struct {
+	Time    time.Time
+	KeyCode KeyCode
+	Action  InputActions
+}
+
+//go:generate stringer -type=InputActions -trimprefix InputAction
+type InputActions int
+
+const (
+	InputActionNil InputActions = iota
+	InputActionDown
+	InputActionUp
+	InputActionHold
+)
+
 func (c *Captor) Capture(events []InputEvent) ([]KeyEvent, error) {
 	captured := make([]KeyEvent, 0)
 	for i := range events {
@@ -105,4 +121,12 @@ func (c *Captor) CaptureOne(event InputEvent) ([]KeyEvent, error) {
 	c.Events = append(c.Events, event)
 
 	return captured, nil
+}
+
+func NewKeyEv(event InputEvent, action KeyActions) KeyEvent {
+	return KeyEvent{
+		// Time:    time.Unix(event.Time.Sec, event.Time.Usec*1000),
+		KeyCode: event.KeyCode,
+		Action:  action,
+	}
 }
