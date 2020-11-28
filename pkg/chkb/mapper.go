@@ -84,7 +84,12 @@ func (kb *Mapper) findMap(layer *Layer, event KeyEvent) ([]MapEvent, bool) {
 			for i := range kmaps {
 				m := kmaps[i]
 				if m.Action == KbActionMap {
-					m.Action = KbActions(event.Action)
+					switch event.Action {
+					case KeyActionDown:
+						m.Action = KbActionDown
+					case KeyActionUp:
+						m.Action = KbActionUp
+					}
 				}
 				copymaps = append(copymaps, m)
 			}
