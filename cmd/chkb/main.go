@@ -2,6 +2,7 @@ package main
 
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,7 +13,6 @@ import (
 	"time"
 
 	"github.com/bendahl/uinput"
-	"github.com/eiannone/keyboard"
 	evdev "github.com/gvalkov/golang-evdev"
 )
 
@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 
-	vkb, err := uinput.CreateKeyboard("/dev/uinput", []byte("testkeyboard"))
+	keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("testkeyboard"))
 	if err != nil {
 		return
 	}
@@ -49,8 +49,8 @@ func main() {
 	kb := chkb.NewKeyboard(
 		book,
 		"base",
-		vkb,
 	)
+	kb.AddDeliverer(&vkb.Keyboard{keyboard})
 
 	go FileUpdate(kb)
 
