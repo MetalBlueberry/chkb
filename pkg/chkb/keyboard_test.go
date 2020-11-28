@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
 )
 
 var _ = Describe("Keyboard", func() {
@@ -41,8 +42,8 @@ var _ = Describe("Keyboard", func() {
 					},
 				},
 				"base",
-				mockKb,
 			)
+			kb.AddDeliverer(&vkb.Keyboard{mockKb})
 		})
 
 		DescribeTable("Type",
@@ -53,7 +54,7 @@ var _ = Describe("Keyboard", func() {
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
-					err = kb.Deliver(mevents)
+					err = kb.Delivers(mevents)
 					assert.NoError(GinkgoT(), err, "Deliver should not fail")
 				}
 				assert.Equal(GinkgoT(), expect, mockKb.Events)
@@ -134,8 +135,8 @@ var _ = Describe("Keyboard", func() {
 					},
 				},
 				"base",
-				mockKb,
 			)
+			kb.AddDeliverer(&vkb.Keyboard{mockKb})
 		})
 		DescribeTable("keyup must always be equal to keydown code",
 			func(press []chkb.InputEvent, expect []chkb.KeyEvent) {
@@ -145,7 +146,7 @@ var _ = Describe("Keyboard", func() {
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
-					err = kb.Deliver(mevents)
+					err = kb.Delivers(mevents)
 					assert.NoError(GinkgoT(), err, "Deliver should not fail")
 				}
 				assert.Equal(GinkgoT(), expect, mockKb.Events)
@@ -220,8 +221,8 @@ var _ = Describe("Keyboard", func() {
 					},
 				},
 				"base",
-				mockKb,
 			)
+			kb.AddDeliverer(&vkb.Keyboard{mockKb})
 		})
 		DescribeTable("Should do actions up/down and mapkey",
 			func(press []chkb.InputEvent, expect []chkb.KeyEvent) {
@@ -231,7 +232,7 @@ var _ = Describe("Keyboard", func() {
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
-					err = kb.Deliver(mevents)
+					err = kb.Delivers(mevents)
 					assert.NoError(GinkgoT(), err, "Deliver should not fail")
 				}
 				assert.Equal(GinkgoT(), expect, mockKb.Events)
@@ -287,8 +288,8 @@ var _ = Describe("Keyboard", func() {
 					},
 				},
 				"base",
-				mockKb,
 			)
+			kb.AddDeliverer(&vkb.Keyboard{mockKb})
 		})
 		DescribeTable("Should do multiple actions",
 			func(press []chkb.InputEvent, expect []chkb.KeyEvent) {
@@ -298,7 +299,7 @@ var _ = Describe("Keyboard", func() {
 					assert.NoError(GinkgoT(), err, "Capture should not fail")
 					mevents, err := kb.Maps(events)
 					assert.NoError(GinkgoT(), err, "Maps should not fail")
-					err = kb.Deliver(mevents)
+					err = kb.Delivers(mevents)
 					assert.NoError(GinkgoT(), err, "Deliver should not fail")
 				}
 				assert.Equal(GinkgoT(), expect, mockKb.Events)

@@ -87,7 +87,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		err = kb.Deliver(maps)
+		err = kb.Delivers(maps)
 		if err != nil {
 			panic(err)
 		}

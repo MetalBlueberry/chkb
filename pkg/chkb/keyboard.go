@@ -7,7 +7,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bendahl/uinput"
 	evdev "github.com/gvalkov/golang-evdev"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -15,24 +14,24 @@ import (
 
 type Keyboard struct {
 	*Captor
+	*Handler
 
 	Layers    []*Layer
 	LayerBook Book
 	downkeys  map[KeyCode]MapEvent
-
-	vkb uinput.Keyboard
 }
 
-func NewKeyboard(book Book, initialLayer string, vkb uinput.Keyboard) *Keyboard {
+func NewKeyboard(book Book, initialLayer string) *Keyboard {
 	kb := &Keyboard{
-		Captor: NewCaptor(),
+		Captor:  NewCaptor(),
+		Handler: NewHandler(),
 
 		LayerBook: book,
 		Layers:    []*Layer{},
-		vkb:       vkb,
 		downkeys:  map[KeyCode]MapEvent{},
 	}
 	kb.PushLayer(initialLayer)
+	kb.AddDeliverer(kb)
 	return kb
 }
 
@@ -91,15 +90,15 @@ const (
 )
 
 var KbActionsMap map[string]KbActions = map[string]KbActions{
-	KeyActionNil.String():       KbActionNil,
-	KeyActionMap.String():       KbActionMap,
-	KeyActionDown.String():      KbActionDown,
-	KeyActionUp.String():        KbActionUp,
-	KeyActionTap.String():       KbActionTap,
-	KeyActionDoubleTap.String(): KbActionDoubleTap,
-	KeyActionHold.String():      KbActionHold,
-	KbActionPushLayer.String():  KbActionPushLayer,
-	KbActionPopLayer.String():   KbActionPopLayer,
+	KbActionNil.String():       KbActionNil,
+	KbActionMap.String():       KbActionMap,
+	KbActionDown.String():      KbActionDown,
+	KbActionUp.String():        KbActionUp,
+	KbActionTap.String():       KbActionTap,
+	KbActionDoubleTap.String(): KbActionDoubleTap,
+	KbActionHold.String():      KbActionHold,
+	KbActionPushLayer.String(): KbActionPushLayer,
+	KbActionPopLayer.String():  KbActionPopLayer,
 }
 
 func ParseKeyAction(value string) (KeyActions, error) {
@@ -354,31 +353,17 @@ func (kb *Keyboard) mapOne(event KeyEvent) ([]MapEvent, error) {
 	}
 }
 
-func (kb *Keyboard) Deliver(events []MapEvent) error {
-	for _, event := range events {
-		switch event.Action {
-		case KbActionDown, KbActionUp, KbActionTap:
-			err := kb.sendKeyEvent(event)
-			if err != nil {
-				return err
-			}
-		case KbActionPushLayer:
-			err := kb.PushLayer(event.LayerName)
-			if err != nil {
-				return err
-			}
-		case KbActionPopLayer:
-			err := kb.PopLayer(event.LayerName)
-			if err != nil {
-				return err
-			}
-		default:
-			log.
-				WithField("Action", event.Action).
-				Debug("Ignored event")
-		}
+func (kb *Keyboard) Deliver(event MapEvent) (bool, error) {
+	switch event.Action {
+	case KbActionPushLayer:
+		err := kb.PushLayer(event.LayerName)
+		return true, err
+	case KbActionPopLayer:
+		err := kb.PopLayer(event.LayerName)
+		return true, err
+	default:
+		return false, nil
 	}
-	return nil
 }
 
 func (kb *Keyboard) PushLayer(name string) error {
@@ -403,19 +388,6 @@ func (kb *Keyboard) PopLayer(name string) error {
 		}
 	}
 	return fmt.Errorf("Layer %s not found", name)
-}
-
-func (kb *Keyboard) sendKeyEvent(event MapEvent) error {
-	switch event.Action {
-	case KbActionDown:
-		return kb.vkb.KeyDown(int(event.KeyCode))
-	case KbActionUp:
-		return kb.vkb.KeyUp(int(event.KeyCode))
-	case KbActionTap:
-		return kb.vkb.KeyPress(int(event.KeyCode))
-	default:
-		return errors.New("unknown event")
-	}
 }
 
 func elapsed(from, to syscall.Timeval) time.Duration {
