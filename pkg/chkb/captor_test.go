@@ -21,46 +21,46 @@ var _ = Describe("Captor", func() {
 	})
 
 	DescribeTable("Capture",
-		func(events []evdev.InputEvent, expected []chkb.KeyEvent) {
+		func(events []chkb.InputEvent, expected []chkb.KeyEvent) {
 			captured := make([]chkb.KeyEvent, 0)
 			for _, event := range events {
-				c, err := captor.CaptureOne(chkb.NewKeyInputEvent(event))
+				c, err := captor.CaptureOne(event)
 				assert.NoError(GinkgoT(), err)
 				captured = append(captured, c...)
 			}
 			assert.Equal(GinkgoT(), expected, captured)
 		},
-		Entry("KeyDown", []evdev.InputEvent{
-			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
+		Entry("KeyDown", []chkb.InputEvent{
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
 		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
 		}),
-		Entry("KeyUp", []evdev.InputEvent{
-			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+		Entry("KeyUp", []chkb.InputEvent{
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 		}),
-		Entry("KeyHold", []evdev.InputEvent{
-			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
-			{Time: Elapsed(100), Code: evdev.KEY_A, Value: int32(evdev.KeyHold), Type: evdev.EV_KEY},
-			{Time: Elapsed(200), Code: evdev.KEY_A, Value: int32(evdev.KeyHold), Type: evdev.EV_KEY},
-			{Time: Elapsed(300), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+		Entry("KeyHold", []chkb.InputEvent{
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+			{Time: Elapsed(100), KeyCode: evdev.KEY_A, Action: chkb.InputActionHold},
+			{Time: Elapsed(200), KeyCode: evdev.KEY_A, Action: chkb.InputActionHold},
+			{Time: Elapsed(300), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 		}),
-		Entry("Tap", []evdev.InputEvent{
-			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
-			{Time: Elapsed(50), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+		Entry("Tap", []chkb.InputEvent{
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+			{Time: Elapsed(50), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionTap},
 		}),
-		Entry("NotTap - slow", []evdev.InputEvent{
-			{Time: Elapsed(0), Code: evdev.KEY_A, Value: int32(evdev.KeyDown), Type: evdev.EV_KEY},
-			{Time: Elapsed(250), Code: evdev.KEY_A, Value: int32(evdev.KeyUp), Type: evdev.EV_KEY},
+		Entry("NotTap - slow", []chkb.InputEvent{
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+			{Time: Elapsed(250), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
 			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
