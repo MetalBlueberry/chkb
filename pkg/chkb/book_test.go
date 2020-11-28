@@ -43,7 +43,7 @@ swapAB:
 
 			Expect(book["base"].KeyMap).To(HaveKey(KeyCode(evdev.KEY_LEFTSHIFT)))
 			Expect(book["base"].KeyMap[KeyCode(evdev.KEY_LEFTSHIFT)]).
-				To(HaveKeyWithValue(KeyActionTap, []MapDefinition{
+				To(HaveKeyWithValue(KeyActionTap, []MapEvent{
 					{
 						Action:    KbActionPushLayer,
 						LayerName: "swapAB",
@@ -51,7 +51,7 @@ swapAB:
 				}))
 			Expect(book["swapAB"].KeyMap).To(HaveKey(KeyCode(evdev.KEY_A)))
 			Expect(book["swapAB"].KeyMap[KeyCode(evdev.KEY_A)]).
-				To(HaveKeyWithValue(KeyActionMap, []MapDefinition{
+				To(HaveKeyWithValue(KeyActionMap, []MapEvent{
 					{
 						KeyCode: evdev.KEY_B,
 					},
@@ -60,12 +60,12 @@ swapAB:
 		It("Save simple", func() {
 			book := Book{
 				"base": {
-					KeyMap: map[KeyCode]map[KeyActions][]MapDefinition{
+					KeyMap: map[KeyCode]map[KeyActions][]MapEvent{
 						evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPushLayer, LayerName: "swapAB"}}},
 					},
 				},
 				"swapAB": {
-					KeyMap: map[KeyCode]map[KeyActions][]MapDefinition{
+					KeyMap: map[KeyCode]map[KeyActions][]MapEvent{
 						evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPopLayer}}},
 						evdev.KEY_A:         {KeyActionMap: {{KeyCode: evdev.KEY_B}}},
 						evdev.KEY_B:         {KeyActionMap: {{KeyCode: evdev.KEY_A}}},
@@ -79,7 +79,7 @@ swapAB:
 		})
 	})
 
-	DescribeTable("findMap", func(layer *Layer, event KeyEvent, expected []MapDefinition, foundExpected bool) {
+	DescribeTable("findMap", func(layer *Layer, event KeyEvent, expected []MapEvent, foundExpected bool) {
 		obtained, found := layer.findMap(event)
 		assert.Equal(GinkgoT(), foundExpected, found)
 		assert.Equal(GinkgoT(), expected, obtained)
@@ -97,7 +97,7 @@ swapAB:
 				KeyMap: KeyMap{KeyCode(KEY_A): {KeyActionMap: {{KeyCode: KEY_B}}}},
 			},
 			KeyEvent{KeyCode: KEY_A, Action: KeyActionDown},
-			[]MapDefinition{{KeyCode: KEY_B, Action: KbActionDown}},
+			[]MapEvent{{KeyCode: KEY_B, Action: KbActionDown}},
 			true,
 		),
 		Entry("MapA keyUp",
@@ -105,7 +105,7 @@ swapAB:
 				KeyMap: KeyMap{KeyCode(KEY_A): {KeyActionMap: {{KeyCode: KEY_B}}}},
 			},
 			KeyEvent{KeyCode: KEY_A, Action: KeyActionUp},
-			[]MapDefinition{{KeyCode: KEY_B, Action: KbActionUp}},
+			[]MapEvent{{KeyCode: KEY_B, Action: KbActionUp}},
 			true,
 		),
 		Entry("ActionDown",
@@ -113,7 +113,7 @@ swapAB:
 				KeyMap: KeyMap{KeyCode(KEY_A): {KeyActionDown: {{KeyCode: KEY_B}}}},
 			},
 			KeyEvent{KeyCode: KEY_A, Action: KeyActionDown},
-			[]MapDefinition{{KeyCode: KEY_B, Action: KbActionDown}},
+			[]MapEvent{{KeyCode: KEY_B, Action: KbActionDown}},
 			true,
 		),
 	)
