@@ -18,8 +18,8 @@ jobs:
           go-version: '^1.14.1' # The Go version to download (if necessary) and use.
       - run: go test -v -covermode=count -coverprofile=coverage.out ./...   
 
-      - name: Coveralls GitHub Action
-        uses: coverallsapp/github-action@v1.1.2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Send coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=coverage.out -service=github
 
