@@ -110,10 +110,10 @@ numpad:
       Map:
         - keyCode: KEY_5
     KEY_L:
-      Map:
-        - keyCode: KEY_6
       Tap:
         - action: Nil
+      Map:
+        - keyCode: KEY_6
     KEY_M:
       Map:
         - keyCode: KEY_1
