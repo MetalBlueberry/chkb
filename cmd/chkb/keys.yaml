@@ -13,6 +13,19 @@ base:
           layerName: control
       Map:
         - keyCode: KEY_LEFTMETA
+    KEY_LEFT:
+      Down:
+        - action: PushLayer
+          layerName: arrows
+    KEY_L:
+      Down:
+        - action: Nil
+      Tap:
+        - action: Tap
+          keyCode: KEY_L
+      Hold:
+        - action: PushLayer
+          layerName: numpad
     # disable enter for forced learning
     # KEY_ENTER:
     #     Map:
@@ -53,6 +66,10 @@ arrows:
       layerName: arrows
     - action: Map
   keyMap:
+    KEY_LEFT:
+      Down:
+        - action: PopLayer
+          layerName: arrows
     KEY_J:
       Map: 
         - keyCode: "KEY_DOWN"
@@ -71,6 +88,12 @@ numpad:
       layerName: numpad
     - action: Map
   keyMap:
+    KEY_CAPSLOCK:
+      Tap:
+        - action: PopLayer
+          layerName: numpad
+      Map:
+        - keyCode: KEY_LEFTMETA
     KEY_U:
       Map:
         - keyCode: KEY_7
@@ -89,6 +112,8 @@ numpad:
     KEY_L:
       Map:
         - keyCode: KEY_6
+      Tap:
+        - action: Nil
     KEY_M:
       Map:
         - keyCode: KEY_1
