@@ -70,7 +70,7 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 		if ok {
 			for i := range kmaps {
 				m := kmaps[i]
-				if m.Action == KbActionMap {
+				if m.Action.Is(KbActionMap) {
 					m.Action = KbActions(event.Action)
 				}
 				copymaps = append(copymaps, m)
@@ -82,7 +82,7 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 	if ok {
 		for i := range kmaps {
 			m := kmaps[i]
-			if m.Action == KbActionMap {
+			if m.Action.Is(KbActionMap) {
 				m.Action = KbActions(event.Action)
 			}
 			copymaps = append(copymaps, m)

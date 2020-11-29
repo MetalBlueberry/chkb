@@ -86,7 +86,7 @@ var KeyActionsMap map[string]KeyActions = map[string]KeyActions{
 
 func ParseKeyAction(value string) (KeyActions, error) {
 	if value == "" {
-		return KeyActions(0), nil
+		return KeyActionMap, nil
 	}
 	a, ok := KeyActionsMap[value]
 	if !ok {
@@ -97,7 +97,7 @@ func ParseKeyAction(value string) (KeyActions, error) {
 
 func ParseKbAction(value string) (KbActions, error) {
 	if value == "" {
-		return KbActions(0), nil
+		return KbActionMap, nil
 	}
 	a, ok := KbActionsMap[value]
 	if !ok {

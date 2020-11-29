@@ -15,35 +15,46 @@ func NewHandler() *Handler {
 	}
 }
 
-//go:generate stringer -type=KeyActions -trimprefix KeyAction
-type KeyActions int
+type KeyActions string
 
 const (
-	KeyActionNil KeyActions = iota - 1
-	KeyActionMap            //Default Action
-	KeyActionDown
-	KeyActionUp
-	KeyActionTap
-	KeyActionDoubleTap
-	KeyActionHold
+	KeyActionNil       KeyActions = "Nil"
+	KeyActionMap       KeyActions = "Map"
+	KeyActionDown      KeyActions = "Down"
+	KeyActionUp        KeyActions = "Up"
+	KeyActionTap       KeyActions = "Tap"
+	KeyActionDoubleTap KeyActions = "DoubleTap"
+	KeyActionHold      KeyActions = "Hold"
 )
 
-// KbAction are the actions that can assigned to a KeyEvent
-type KbActions int
+func (action KeyActions) String() string {
+	return string(action)
+}
 
-//go:generate stringer -type=KbActions -trimprefix KbAction
+type KbActions string
 
 const (
-	KbActionNil KbActions = iota - 1
-	KbActionMap           //Default Action
-	KbActionDown
-	KbActionUp
-	KbActionTap
-	KbActionDoubleTap
-	KbActionHold
-	KbActionPushLayer
-	KbActionPopLayer
+	KbActionNil       KbActions = "Nil"
+	KbActionMap       KbActions = "Map"
+	KbActionDown      KbActions = "Down"
+	KbActionUp        KbActions = "Up"
+	KbActionTap       KbActions = "Tap"
+	KbActionDoubleTap KbActions = "DoubleTap"
+	KbActionHold      KbActions = "Hold"
+	KbActionPushLayer KbActions = "PushLayer"
+	KbActionPopLayer  KbActions = "PopLayer"
 )
+
+func (action KbActions) String() string {
+	return string(action)
+}
+
+func (action KbActions) Is(compare KbActions) bool {
+	if action == "" {
+		action = KbActionMap
+	}
+	return action == compare
+}
 
 var KbActionsMap map[string]KbActions = map[string]KbActions{
 	KbActionNil.String():       KbActionNil,
