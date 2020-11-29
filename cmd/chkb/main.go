@@ -6,11 +6,9 @@ import (
 	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/bendahl/uinput"
@@ -27,12 +25,12 @@ func main() {
 	}
 	defer dev.File.Close()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("testkeyboard"))
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 	defer keyboard.Close()
 
@@ -40,12 +38,12 @@ func main() {
 
 	keys, err := os.Open("keys.yaml")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	err = book.Load(keys)
 	keys.Close()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	kb := chkb.NewMapper(
@@ -60,13 +58,13 @@ func main() {
 
 	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, filepath.Join(usr.HomeDir, ".chkb_layout"))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	defer dev.Release()
 	err = dev.Grab()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	c := chkb.NewCaptor()
@@ -108,28 +106,6 @@ func main() {
 			panic(err)
 		}
 	}
-}
-
-func LocalServer(kb *chkb.Mapper) {
-	http.Handle("/status", http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(rw, layerString(kb))
-	}))
-	log.Print("status server started")
-	http.ListenAndServe(":9989", nil)
-}
-
-func layerString(kb *chkb.Mapper) string {
-	builder := strings.Builder{}
-	for i := range kb.Layers {
-		for name := range kb.LayerBook {
-			if kb.Layers[i] == kb.LayerBook[name] {
-				builder.WriteString(name)
-				builder.WriteString(" > ")
-			}
-		}
-	}
-	builder.WriteString("\n")
-	return builder.String()
 }
 
 func NewKeyInputEvent(event evdev.InputEvent) chkb.InputEvent {
