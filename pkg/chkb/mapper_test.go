@@ -78,7 +78,7 @@ var _ = Describe("Mapper", func() {
 			nil,
 			true,
 		),
-		FEntry("Fallback default on down",
+		Entry("Fallback default on down",
 			&Mapper{
 				Layers: []*Layer{
 					{

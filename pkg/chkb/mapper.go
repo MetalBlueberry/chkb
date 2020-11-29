@@ -158,6 +158,7 @@ func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 				}
 			}
 			if !transparent {
+				handled = true
 				break
 			}
 		}
