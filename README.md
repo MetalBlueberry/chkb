@@ -102,9 +102,8 @@ base:
   keyMap:
     KEY_LEFTSHIFT:
       Hold:
-        # PushLayer requires the layer name to push that must match with yaml key
         - action: Tap
-          layerName: KEY_CAPSLOCK
+          keyCode: KEY_CAPSLOCK
 ```
 
 ## Multiple maps
