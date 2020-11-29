@@ -66,6 +66,12 @@ arrows:
       layerName: arrows
     - action: Map
   keyMap:
+    KEY_CAPSLOCK:
+      Tap:
+        - action: PopLayer
+          layerName: arrows
+      Map:
+        - keyCode: KEY_LEFTMETA
     KEY_LEFT:
       Down:
         - action: PopLayer
@@ -80,6 +86,8 @@ arrows:
       Map: 
         - keyCode: "KEY_LEFT"
     KEY_L:
+      Tap:
+        - action: Nil
       Map: 
         - keyCode: "KEY_RIGHT"
 numpad:
