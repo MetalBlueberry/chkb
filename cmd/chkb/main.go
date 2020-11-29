@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -51,7 +53,12 @@ func main() {
 		"base",
 	)
 
-	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, ".chkb_layout")
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, filepath.Join(usr.HomeDir, ".chkb_layout"))
 	if err != nil {
 		panic(err)
 	}

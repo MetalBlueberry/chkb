@@ -3,9 +3,6 @@ package layerFile
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
 	"fmt"
-	"log"
-	"os/user"
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -22,12 +19,7 @@ func NewLayerFile(fs afero.Fs, kb *chkb.Mapper, fileName string) (*LayerFile, er
 		mapper: kb,
 	}
 
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	file, err := fs.Create(filepath.Join(usr.HomeDir, fileName))
+	file, err := fs.Create(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +33,8 @@ func (lf *LayerFile) Deliver(event chkb.MapEvent) (handled bool, err error) {
 	switch event.Action {
 	case chkb.KbActionPushLayer, chkb.KbActionPopLayer:
 		str := layerString(lf.mapper)
-		fmt.Fprint(lf, str)
+		_, err := fmt.Fprint(lf, str)
+		return true, err
 	}
 	return false, nil
 }
