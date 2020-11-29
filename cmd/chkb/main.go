@@ -2,18 +2,18 @@ package main
 
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"MetalBlueberry/cheap-keyboard/pkg/deliverers/layerFile"
 	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"os/user"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/bendahl/uinput"
 	evdev "github.com/gvalkov/golang-evdev"
+	"github.com/spf13/afero"
 )
 
 func main() {
@@ -51,7 +51,10 @@ func main() {
 		"base",
 	)
 
-	go FileUpdate(kb)
+	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, ".chkb_layout")
+	if err != nil {
+		panic(err)
+	}
 
 	defer dev.Release()
 	err = dev.Grab()
@@ -64,6 +67,7 @@ func main() {
 
 	h.AddDeliverer(&vkb.Keyboard{keyboard})
 	h.AddDeliverer(kb)
+	h.AddDeliverer(lf)
 
 	for {
 		events, err := dev.Read()
@@ -105,33 +109,6 @@ func LocalServer(kb *chkb.Mapper) {
 	}))
 	log.Print("status server started")
 	http.ListenAndServe(":9989", nil)
-}
-
-func FileUpdate(kb *chkb.Mapper) {
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fileName := ".chkb_layout"
-	file, err := os.Create(filepath.Join(usr.HomeDir, fileName))
-	if err != nil {
-		log.Printf("error file update, %s", err)
-		return
-	}
-	defer file.Close()
-	ticker := time.NewTicker(time.Millisecond * 100)
-
-	previousString := ""
-	for {
-		<-ticker.C
-		str := layerString(kb)
-		if previousString == str {
-			continue
-		}
-		previousString = str
-		fmt.Fprint(file, str)
-	}
 }
 
 func layerString(kb *chkb.Mapper) string {
