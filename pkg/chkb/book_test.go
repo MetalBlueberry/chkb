@@ -116,5 +116,13 @@ swapAB:
 			[]MapEvent{{KeyCode: KEY_B, Action: KbActionDown}},
 			true,
 		),
+		Entry("ActionUp",
+			&Layer{
+				KeyMap: KeyMap{KeyCode(KEY_A): {KeyActionUp: {{KeyCode: KEY_B}}}},
+			},
+			KeyEvent{KeyCode: KEY_A, Action: KeyActionUp},
+			[]MapEvent{{KeyCode: KEY_B, Action: KbActionUp}},
+			true,
+		),
 	)
 })

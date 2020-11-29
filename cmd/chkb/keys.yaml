@@ -48,13 +48,11 @@ control:
         - action: PopLayer
           layerName: control
 arrows:
+  onMiss:
+    - action: PopLayer
+      layerName: arrows
+    - action: Map
   keyMap:
-    KEY_CAPSLOCK:
-      Tap:
-        - action: PopLayer
-          layerName: arrows
-      Map:
-        - keyCode: KEY_LEFTMETA
     KEY_J:
       Map: 
         - keyCode: "KEY_DOWN"
@@ -68,11 +66,11 @@ arrows:
       Map: 
         - keyCode: "KEY_RIGHT"
 numpad:
+  onMiss:
+    - action: PopLayer
+      layerName: numpad
+    - action: Map
   keyMap:
-    KEY_LEFTSHIFT:
-      Tap:
-        - action: PopLayer
-          layerName: numpad
     KEY_U:
       Map:
         - keyCode: KEY_7

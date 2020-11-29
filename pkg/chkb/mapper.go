@@ -135,29 +135,52 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 }
 
 func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
+	mapped := make([]MapEvent, 0)
+	handled := false
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
 		kmaps, ok := kb.Layers[i].findMap(event)
-		if !ok {
-			continue
+		if ok {
+			log.
+				WithField("from", event).
+				WithField("to", kmaps).
+				Info("Map Key")
+			mapped = append(mapped, kmaps...)
+			handled = true
+			break
 		}
-		log.
-			WithField("from", event).
-			WithField("to", kmaps).
-			Info("Map Key")
-		return kmaps, nil
+		if (event.Action == KeyActionDown) && len(kb.Layers[i].OnMiss) > 0 {
+			transparent := false
+			for j := range kb.Layers[i].OnMiss {
+				if kb.Layers[i].OnMiss[j].Action == KbActionMap {
+					transparent = true
+				} else {
+					mapped = append(mapped, kb.Layers[i].OnMiss[j])
+				}
+			}
+			if !transparent {
+				break
+			}
+		}
 	}
+
 	// No map detected, forward
-	switch event.Action {
-	case KeyActionUp, KeyActionDown:
-		return []MapEvent{
-			{
-				Action:  KbActions(event.Action),
-				KeyCode: event.KeyCode,
-			},
-		}, nil
-	default:
-		return nil, errors.New("Ignore event")
+	if !handled {
+		switch event.Action {
+		case KeyActionUp, KeyActionDown:
+			mapped = append(mapped,
+				MapEvent{
+					Action:  KbActions(event.Action),
+					KeyCode: event.KeyCode,
+				},
+			)
+		}
 	}
+
+	if len(mapped) > 0 {
+		return mapped, nil
+	}
+
+	return nil, errors.New("Ignore event")
 }
 
 func (kb *Mapper) Deliver(event MapEvent) (bool, error) {

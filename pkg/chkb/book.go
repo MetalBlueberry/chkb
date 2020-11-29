@@ -22,8 +22,8 @@ func (b *Book) Load(r io.Reader) error {
 }
 
 type Layer struct {
-	DefaultMap *MapEvent `yaml:"defaultMap,omitempty"`
-	KeyMap     KeyMap    `yaml:"keyMap,omitempty"`
+	OnMiss []MapEvent `yaml:"onMiss,omitempty"`
+	KeyMap KeyMap     `yaml:"keyMap,omitempty"`
 }
 
 type KeyMap map[KeyCode]map[KeyActions][]MapEvent
