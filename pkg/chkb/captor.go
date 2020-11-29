@@ -1,6 +1,7 @@
 package chkb
 
 import (
+	"container/list"
 	"fmt"
 	"strconv"
 	"time"
@@ -10,12 +11,12 @@ import (
 )
 
 type Captor struct {
-	Events []InputEvent
+	Events list.List
 }
 
 func NewCaptor() *Captor {
 	return &Captor{
-		Events: []InputEvent{},
+		Events: list.List{},
 	}
 }
 
@@ -34,6 +35,13 @@ const (
 	InputActionUp
 	InputActionHold
 )
+
+func (c *Captor) PushHistory(event InputEvent) {
+	c.Events.PushFront(event)
+	if c.Events.Len() > 20 {
+		c.Events.Remove(c.Events.Back())
+	}
+}
 
 func (c *Captor) Capture(events []InputEvent) ([]KeyEvent, error) {
 	captured := make([]KeyEvent, 0)
@@ -81,7 +89,7 @@ func (c *Captor) CaptureOne(event InputEvent) ([]KeyEvent, error) {
 	case InputActionUp:
 		captured = append(captured, NewKeyEv(event, KeyActionUp))
 	case InputActionHold:
-		lastEvent := c.Events[len(c.Events)-1]
+		lastEvent := c.Events.Front().Value.(InputEvent)
 		if lastEvent.KeyCode == event.KeyCode &&
 			lastEvent.Action == InputActionDown {
 
@@ -90,12 +98,10 @@ func (c *Captor) CaptureOne(event InputEvent) ([]KeyEvent, error) {
 		}
 	}
 
-	for i := len(c.Events) - 1; i >= 0; i-- {
-		previous := c.Events[i]
+	for i := c.Events.Front(); i != nil; i = i.Next() {
 
-		if event.KeyCode != previous.KeyCode {
-			break
-		}
+		previous := i.Value.(InputEvent)
+
 		el := event.Time.Sub(previous.Time)
 		if previous.KeyCode == event.KeyCode &&
 			event.Action == InputActionUp &&
@@ -118,7 +124,7 @@ func (c *Captor) CaptureOne(event InputEvent) ([]KeyEvent, error) {
 		}
 	}
 
-	c.Events = append(c.Events, event)
+	c.PushHistory(event)
 
 	return captured, nil
 }
