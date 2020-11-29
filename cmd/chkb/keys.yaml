@@ -4,9 +4,6 @@ base:
       Tap:
         - action: PushLayer
           layerName: numpad
-      # Hold:
-      #     action: Tap
-      #     keyCode: KEY_CAPSLOCK
     KEY_CAPSLOCK:
       Tap:
         - action: PushLayer
@@ -17,15 +14,6 @@ base:
       Down:
         - action: PushLayer
           layerName: arrows
-    KEY_L:
-      Down:
-        - action: Nil
-      Tap:
-        - action: Tap
-          keyCode: KEY_L
-      Hold:
-        - action: PushLayer
-          layerName: numpad
     # disable enter for forced learning
     # KEY_ENTER:
     #     Map:
