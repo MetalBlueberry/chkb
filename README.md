@@ -4,6 +4,8 @@ chkb turns a regular keyboard intro a fully programmable keyboard.
 
 So you basically get a **ch**eap programmable **k**e**y**board.
 
+It has been inspired by [QMK](https://docs.qmk.fm/#/) firmware and [kmonad](https://github.com/david-janssen/kmonad).
+
 ## Usage
 
 This applies to the current preview version, this will change in the future.
