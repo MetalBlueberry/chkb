@@ -23,11 +23,8 @@ var _ = Describe("Captor", func() {
 	DescribeTable("Capture",
 		func(events []chkb.InputEvent, expected []chkb.KeyEvent) {
 			captured := make([]chkb.KeyEvent, 0)
-			for _, event := range events {
-				c, err := captor.CaptureOne(event)
-				assert.NoError(GinkgoT(), err)
-				captured = append(captured, c...)
-			}
+			captured, err := captor.Capture(events)
+			assert.NoError(GinkgoT(), err)
 			assert.Equal(GinkgoT(), expected, captured)
 		},
 		Entry("KeyDown", []chkb.InputEvent{
