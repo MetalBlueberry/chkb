@@ -2,8 +2,6 @@ package chkb
 
 import (
 	"container/list"
-	"fmt"
-	"strconv"
 	"time"
 
 	evdev "github.com/gvalkov/golang-evdev"
@@ -57,27 +55,6 @@ func (c *Captor) Capture(events []InputEvent) ([]KeyEvent, error) {
 		captured = append(captured, c...)
 	}
 	return captured, nil
-}
-
-func evstring(event evdev.InputEvent) string {
-	evmap := map[uint16]string{
-		0x01: "EV_KEY",
-		0x02: "EV_REL",
-		0x03: "EV_ABS",
-		0x04: "EV_MSC",
-		0x05: "EV_SW",
-		0x11: "EV_LED",
-		0x12: "EV_SND",
-		0x14: "EV_REP",
-		0x15: "EV_FF",
-		0x16: "EV_PWR",
-		0x17: "EV_FF_STATUS",
-	}
-	t, ok := evmap[event.Type]
-	if !ok {
-		t = strconv.Itoa(int(event.Type))
-	}
-	return fmt.Sprintf("Type: %s, Key: %s, Value: %d", t, evdev.KEY[int(event.Code)], event.Value)
 }
 
 func (c *Captor) CaptureOne(event InputEvent) ([]KeyEvent, error) {
