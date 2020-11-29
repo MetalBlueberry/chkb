@@ -18,6 +18,10 @@ jobs:
           go-version: '^1.14.1' # The Go version to download (if necessary) and use.
       - run: go test -v -covermode=count -coverprofile=coverage.out ./...   
 
+      - name: Install goveralls
+        env:
+          GO111MODULE: off
+        run: go get github.com/mattn/goveralls
       - name: Send coverage
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
