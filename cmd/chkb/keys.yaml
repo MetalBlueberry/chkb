@@ -20,6 +20,10 @@ base:
     #     -  action: Nil
 
 control:
+  onMiss:
+    - action: PopLayer
+      layerName: control
+    - action: Map
   keyMap:
     KEY_CAPSLOCK:
       Tap:
@@ -58,6 +62,8 @@ arrows:
       Tap:
         - action: PopLayer
           layerName: arrows
+        - action: PushLayer
+          layerName: control
       Map:
         - keyCode: KEY_LEFTMETA
     KEY_LEFT:
@@ -88,8 +94,16 @@ numpad:
       Tap:
         - action: PopLayer
           layerName: numpad
+        - action: PushLayer
+          layerName: control
       Map:
         - keyCode: KEY_LEFTMETA
+    KEY_LEFTSHIFT:
+      Tap:
+        - action: PopLayer
+          layerName: numpad
+      Map:
+        - keyCode: KEY_LEFTSHIFT
     KEY_U:
       Map:
         - keyCode: KEY_7
