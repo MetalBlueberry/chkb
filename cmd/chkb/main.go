@@ -98,8 +98,6 @@ func NewKeyInputEvent(event evdev.InputEvent) chkb.InputEvent {
 		ie.Action = chkb.InputActionDown
 	case evdev.KeyUp:
 		ie.Action = chkb.InputActionUp
-	case evdev.KeyHold:
-		ie.Action = chkb.InputActionHold
 	}
 	return ie
 }
