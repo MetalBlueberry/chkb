@@ -1,8 +1,6 @@
 package chkb
 
 import (
-	"container/list"
-	"sync"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -10,13 +8,7 @@ import (
 )
 
 type Captor struct {
-	Events list.List
-
-	TapTimeout chan InputEvent
-
-	Clock clock.Clock
-	// Keeps track of the downkeys pending jobs
-	wg       sync.WaitGroup
+	Clock    clock.Clock
 	DownKeys map[KeyCode]TapTimer
 }
 
@@ -26,10 +18,8 @@ func NewCaptor() *Captor {
 
 func NewCaptorWithClock(clock clock.Clock) *Captor {
 	return &Captor{
-		Events:   list.List{},
 		Clock:    clock,
 		DownKeys: make(map[KeyCode]TapTimer),
-		wg:       sync.WaitGroup{},
 	}
 }
 
@@ -53,19 +43,11 @@ const (
 	InputActionUp
 )
 
-func (c *Captor) PushHistory(event InputEvent) {
-	c.Events.PushFront(event)
-	if c.Events.Len() > 20 {
-		c.Events.Remove(c.Events.Back())
-	}
-}
-
 func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent) error) error {
 	for {
 		events, err := capture()
 		if err != nil {
 			log.WithError(err).Error("cannot capture more events")
-			c.wg.Wait()
 			return err
 		}
 
@@ -80,7 +62,6 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 				timer := TapTimer{
 					InputEvent: event,
 					Timeout: c.Clock.AfterFunc(TapDelay, func() {
-						defer c.wg.Done()
 						delete(c.DownKeys, event.KeyCode)
 						now := event.Time.Add(TapDelay)
 						send([]KeyEvent{
@@ -88,14 +69,12 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 						})
 					}),
 				}
-				c.wg.Add(1)
 				c.DownKeys[event.KeyCode] = timer
 			}
 			if event.Action == InputActionUp {
 				if downKey, ok := c.DownKeys[event.KeyCode]; ok {
 					delete(c.DownKeys, downKey.KeyCode)
 					if downKey.Timeout.Stop() {
-						c.wg.Done()
 						now := c.Clock.Now()
 						captured = append(captured, NewKeyEv(now, event, KeyActionTap))
 					}
