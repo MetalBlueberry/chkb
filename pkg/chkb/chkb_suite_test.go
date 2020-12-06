@@ -1,6 +1,7 @@
 package chkb_test
 
 import (
+	"MetalBlueberry/cheap-keyboard/pkg/chkb"
 	"syscall"
 	"testing"
 	"time"
@@ -8,6 +9,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	TapDelayMs = chkb.TapDelay.Milliseconds()
+
+	BeforeTap = TapDelayMs - 50
+	AfterTap  = TapDelayMs + 50
 )
 
 func TestChkb(t *testing.T) {
@@ -23,8 +31,9 @@ func Time(t time.Time) syscall.Timeval {
 	}
 }
 
+var InitialTime = time.Date(2020, 11, 20, 12, 0, 0, 0, time.UTC)
+
 func Elapsed(ms int64) time.Time {
-	return time.
-		Date(2020, 11, 20, 12, 0, 0, 0, time.UTC).
+	return InitialTime.
 		Add(time.Duration(ms) * time.Millisecond)
 }

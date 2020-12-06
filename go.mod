@@ -3,6 +3,7 @@ module MetalBlueberry/cheap-keyboard
 go 1.14
 
 require (
+	github.com/benbjohnson/clock v1.1.0
 	github.com/bendahl/uinput v1.4.0
 	github.com/gvalkov/golang-evdev v0.0.0-20191114124502-287e62b94bcb
 	github.com/onsi/ginkgo v1.14.2

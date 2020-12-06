@@ -11,12 +11,11 @@ func _() {
 	_ = x[InputActionNil-0]
 	_ = x[InputActionDown-1]
 	_ = x[InputActionUp-2]
-	_ = x[InputActionHold-3]
 }
 
-const _InputActions_name = "NilDownUpHold"
+const _InputActions_name = "NilDownUp"
 
-var _InputActions_index = [...]uint8{0, 3, 7, 9, 13}
+var _InputActions_index = [...]uint8{0, 3, 7, 9}
 
 func (i InputActions) String() string {
 	if i < 0 || i >= InputActions(len(_InputActions_index)-1) {

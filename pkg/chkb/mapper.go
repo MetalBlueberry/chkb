@@ -3,6 +3,7 @@ package chkb
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	evdev "github.com/gvalkov/golang-evdev"
 	log "github.com/sirupsen/logrus"
@@ -31,6 +32,7 @@ func (keyCode KeyCode) String() string {
 }
 
 type KeyEvent struct {
+	Time    time.Time
 	Action  KeyActions
 	KeyCode KeyCode
 }
@@ -40,6 +42,7 @@ func (ev KeyEvent) String() string {
 }
 
 type MapEvent struct {
+	Time    time.Time `yaml:"-"`
 	Action  KbActions `yaml:"action,omitempty"`
 	KeyCode KeyCode   `yaml:"keyCode,omitempty"`
 
@@ -73,6 +76,7 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 				if m.Action.Is(KbActionMap) {
 					m.Action = KbActions(event.Action)
 				}
+				m.Time = event.Time
 				copymaps = append(copymaps, m)
 			}
 		}
@@ -85,6 +89,7 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 			if m.Action.Is(KbActionMap) {
 				m.Action = KbActions(event.Action)
 			}
+			m.Time = event.Time
 			copymaps = append(copymaps, m)
 		}
 		return copymaps, true
@@ -100,6 +105,7 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 			downkey, ok := kb.downkeys[event.KeyCode]
 			if ok {
 				downkey.Action = KbActionUp
+				downkey.Time = event.Time
 				mapped = append(mapped, downkey)
 				delete(kb.downkeys, event.KeyCode)
 			}
@@ -170,6 +176,7 @@ func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 		case KeyActionUp, KeyActionDown:
 			mapped = append(mapped,
 				MapEvent{
+					Time:    event.Time,
 					Action:  KbActions(event.Action),
 					KeyCode: event.KeyCode,
 				},

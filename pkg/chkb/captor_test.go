@@ -1,6 +1,9 @@
 package chkb_test
 
 import (
+	"errors"
+
+	"github.com/benbjohnson/clock"
 	evdev "github.com/gvalkov/golang-evdev"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -14,67 +17,76 @@ import (
 var _ = Describe("Captor", func() {
 
 	var (
-		captor *chkb.Captor
+		clockMock *clock.Mock
+		captor    *chkb.Captor
 	)
 	BeforeEach(func() {
-		captor = chkb.NewCaptor()
+		clockMock = clock.NewMock()
+		captor = chkb.NewCaptorWithClock(clockMock)
 	})
 
 	DescribeTable("Capture",
 		func(events []chkb.InputEvent, expected []chkb.KeyEvent) {
-			captured := make([]chkb.KeyEvent, 0)
-			captured, err := captor.Capture(events)
-			assert.NoError(GinkgoT(), err)
-			assert.Equal(GinkgoT(), expected, captured)
+			clockMock.Set(InitialTime)
+
+			allcaptured := make([]chkb.KeyEvent, 0)
+			i := 0
+			captor.Run(func() ([]chkb.InputEvent, error) {
+				if len(events) == i {
+					clockMock.Add(chkb.TapDelay)
+					return nil, errors.New("Finished")
+				}
+				event := events[i]
+				clockMock.Set(event.Time)
+				i++
+				return []chkb.InputEvent{event}, nil
+			}, func(ke []chkb.KeyEvent) error {
+				allcaptured = append(allcaptured, ke...)
+				return nil
+			})
+			assert.Equal(GinkgoT(), expected, allcaptured)
 		},
-		Entry("KeyDown", []chkb.InputEvent{
-			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
-		}),
-		Entry("KeyUp", []chkb.InputEvent{
-			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
-		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
-		}),
 		Entry("KeyHold", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-			{Time: Elapsed(100), KeyCode: evdev.KEY_A, Action: chkb.InputActionHold},
-			{Time: Elapsed(200), KeyCode: evdev.KEY_A, Action: chkb.InputActionHold},
-			{Time: Elapsed(300), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+			{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(TapDelayMs), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
+			{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 		}),
 		Entry("Tap", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-			{Time: Elapsed(50), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionTap},
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
+			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionTap},
 		}),
 		Entry("Tap - quick", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
 			{Time: Elapsed(50), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
-			{Time: Elapsed(100), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
-			{Time: Elapsed(150), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
-			{KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionTap},
-			{KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
-			{KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(50), KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
+			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
+			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionTap},
+			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
+			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
 		}),
-		Entry("NotTap - slow", []chkb.InputEvent{
+		Entry("Hold - Tap", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-			{Time: Elapsed(250), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+			{Time: Elapsed(25), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
+			{Time: Elapsed(25 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+			{Time: Elapsed(50 + AfterTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
-			{KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
+			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(25), KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
+			{Time: Elapsed(25 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
+			{Time: Elapsed(25 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
+			{Time: Elapsed(TapDelayMs), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
+			{Time: Elapsed(50 + AfterTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 		}),
 	)
-
 })

@@ -45,21 +45,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	kb := chkb.NewMapper(
-		book,
-		"base",
-	)
+	kb := chkb.NewKeyboard(book, "base")
 
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, filepath.Join(usr.HomeDir, ".chkb_layout"))
+	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb.Mapper, filepath.Join(usr.HomeDir, ".chkb_layout"))
 	if err != nil {
 		log.Fatal(err)
 	}
+	kb.AddDeliverer(lf)
 
 	defer dev.Release()
 	err = dev.Grab()
@@ -67,21 +64,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := chkb.NewCaptor()
-	h := chkb.NewHandler()
+	kb.AddDeliverer(&vkb.Keyboard{keyboard})
 
-	h.AddDeliverer(&vkb.Keyboard{keyboard})
-	h.AddDeliverer(kb)
-	h.AddDeliverer(lf)
-
-	for {
+	kb.Run(func() ([]chkb.InputEvent, error) {
 		events, err := dev.Read()
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		for _, event := range events {
 			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
-				panic("exit")
+				panic(err)
 			}
 		}
 
@@ -92,20 +84,8 @@ func main() {
 			}
 			inputEvents = append(inputEvents, NewKeyInputEvent(events[i]))
 		}
-
-		captured, err := c.Capture(inputEvents)
-		if err != nil {
-			panic(err)
-		}
-		maps, err := kb.Maps(captured)
-		if err != nil {
-			panic(err)
-		}
-		err = h.Delivers(maps)
-		if err != nil {
-			panic(err)
-		}
-	}
+		return inputEvents, nil
+	})
 }
 
 func NewKeyInputEvent(event evdev.InputEvent) chkb.InputEvent {
