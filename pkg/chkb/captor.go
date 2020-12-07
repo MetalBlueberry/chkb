@@ -63,9 +63,8 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 					InputEvent: event,
 					Timeout: c.Clock.AfterFunc(TapDelay, func() {
 						delete(c.DownKeys, event.KeyCode)
-						now := event.Time.Add(TapDelay)
 						send([]KeyEvent{
-							NewKeyEv(now, event, KeyActionHold),
+							NewKeyEv(event.Time.Add(TapDelay), event.KeyCode, KeyActionHold),
 						})
 					}),
 				}
@@ -75,8 +74,7 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 				if downKey, ok := c.DownKeys[event.KeyCode]; ok {
 					delete(c.DownKeys, downKey.KeyCode)
 					if downKey.Timeout.Stop() {
-						now := c.Clock.Now()
-						captured = append(captured, NewKeyEv(now, event, KeyActionTap))
+						captured = append(captured, NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionTap))
 					}
 				}
 			}
@@ -89,37 +87,25 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 func (c *Captor) Capture(events []InputEvent) ([]KeyEvent, error) {
 	captured := make([]KeyEvent, 0)
 	for i := range events {
-		c, err := c.CaptureOne(events[i])
-		if err != nil {
+		switch events[i].Action {
+		case InputActionDown:
+			captured = append(captured, NewKeyEv(c.Clock.Now(), events[i].KeyCode, KeyActionDown))
+		case InputActionUp:
+			captured = append(captured, NewKeyEv(c.Clock.Now(), events[i].KeyCode, KeyActionUp))
+		default:
 			log.
 				WithField("event", events[i]).
-				WithError(err).
 				Debug("Skip event")
 			continue
 		}
-		captured = append(captured, c...)
 	}
 	return captured, nil
 }
 
-func (c *Captor) CaptureOne(event InputEvent) ([]KeyEvent, error) {
-	captured := make([]KeyEvent, 0)
-
-	now := c.Clock.Now()
-	switch event.Action {
-	case InputActionDown:
-		captured = append(captured, NewKeyEv(now, event, KeyActionDown))
-	case InputActionUp:
-		captured = append(captured, NewKeyEv(now, event, KeyActionUp))
-	}
-
-	return captured, nil
-}
-
-func NewKeyEv(time time.Time, event InputEvent, action KeyActions) KeyEvent {
+func NewKeyEv(time time.Time, keyCode KeyCode, action KeyActions) KeyEvent {
 	return KeyEvent{
 		Time:    time,
-		KeyCode: event.KeyCode,
+		KeyCode: keyCode,
 		Action:  action,
 	}
 }
