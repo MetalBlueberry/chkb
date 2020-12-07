@@ -2,6 +2,7 @@ package chkb_test
 
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
@@ -159,6 +160,13 @@ var _ = Describe("Mapper", func() {
 
 	FDescribeTable("Map", func(m *chkb.Mapper, events []chkb.KeyEvent, expected []chkb.MapEvent, errExpected bool) {
 		obtained, err := m.Maps(events)
+		for i := range obtained {
+			if len(expected) > i {
+				log.Printf("%s - %s", obtained[i], expected[i])
+			} else {
+				log.Printf("%s", obtained[i])
+			}
+		}
 		assert.Equal(GinkgoT(), expected, obtained)
 		if errExpected {
 			assert.Error(GinkgoT(), err)
@@ -230,7 +238,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("SmartTap Tap",
+		Entry("SmartTap/Tap",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -259,6 +267,144 @@ var _ = Describe("Mapper", func() {
 				{KeyCode: chkb.KEY_B, Action: chkb.KbActionTap},
 				{KeyCode: chkb.KEY_C, Action: chkb.KbActionDown},
 				{KeyCode: chkb.KEY_C, Action: chkb.KbActionUp},
+			},
+			false,
+		),
+		Entry("SmartTap/Hold",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_B: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionMap: {
+								{Action: chkb.KbActionMap, KeyCode: chkb.KEY_A},
+							},
+							chkb.KeyActionHold: {
+								{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTSHIFT},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionHold},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionTap},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+			},
+			false,
+		),
+		Entry("Smart/Hold-Hold-Tap",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_A: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionHold: {
+								{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTSHIFT},
+							},
+						},
+						chkb.KEY_B: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionHold: {
+								{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTCTRL},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionHold},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionHold},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionTap},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_LEFTCTRL, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_LEFTCTRL, Action: chkb.KbActionUp},
+			},
+			false,
+		),
+		FEntry("Smart/Hold-Hold-Tap Block map",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_A: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionMap: {
+								{Action: chkb.KbActionNil},
+							},
+							chkb.KeyActionTap: {
+								{Action: chkb.KbActionTap, KeyCode: chkb.KEY_A},
+							},
+							chkb.KeyActionHold: {
+								{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTSHIFT},
+							},
+						},
+						chkb.KEY_B: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionMap: {
+								{Action: chkb.KbActionNil},
+							},
+							chkb.KeyActionTap: {
+								{Action: chkb.KbActionTap, KeyCode: chkb.KEY_B},
+							},
+							chkb.KeyActionHold: {
+								{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTCTRL},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				//HOLD
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionHold},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionHold},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionTap},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
+
+				//TAP
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionHold},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_LEFTCTRL, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_LEFTCTRL, Action: chkb.KbActionUp},
+
+				{KeyCode: chkb.KEY_LEFTCTRL, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionTap},
+				{KeyCode: chkb.KEY_LEFTCTRL, Action: chkb.KbActionUp},
 			},
 			false,
 		),

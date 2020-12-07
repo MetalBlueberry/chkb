@@ -110,7 +110,9 @@ func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 					NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionDoubleTap),
 				})
 			default:
-				log.WithField("cound", event.Count).Warn("Too many taps, not implemented")
+				send([]KeyEvent{
+					NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionNil),
+				})
 			}
 		}
 	}

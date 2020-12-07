@@ -1,6 +1,7 @@
 package chkb
 
 import (
+	"container/list"
 	"errors"
 	"fmt"
 	"time"
@@ -12,13 +13,16 @@ import (
 type Mapper struct {
 	// LayerBook Book
 	Layers   Layers
-	downkeys map[KeyCode]MapEvent
+	downkeys map[KeyCode][]MapEvent
+	holded   *list.List
+	holding  KeyCode
 }
 
 func NewMapper() *Mapper {
 	kb := &Mapper{
 		Layers:   Layers{},
-		downkeys: map[KeyCode]MapEvent{},
+		downkeys: map[KeyCode][]MapEvent{},
+		holded:   list.New(),
 	}
 	return kb
 }
@@ -100,13 +104,36 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 	mapped := make([]MapEvent, 0)
 	for _, event := range events {
+		kb.holded.PushBack(event)
+	}
+
+	for e := kb.holded.Front(); e != nil; {
+		event := e.Value.(KeyEvent)
+
+		if kb.holding != KEY_RESERVED && kb.holding != event.KeyCode {
+			e = e.Next()
+			continue
+		}
+		kb.holded.Remove(e)
+		e = kb.holded.Front()
+
+		switch event.Action {
+		case KeyActionDown:
+			kb.holding = event.KeyCode
+		default:
+			kb.holding = KEY_RESERVED
+		case KeyActionUp:
+		}
+
 		switch event.Action {
 		case KeyActionUp:
-			downkey, ok := kb.downkeys[event.KeyCode]
+			downkeys, ok := kb.downkeys[event.KeyCode]
 			if ok {
-				downkey.Action = KbActionUp
-				downkey.Time = event.Time
-				mapped = append(mapped, downkey)
+				for _, downkey := range downkeys {
+					downkey.Action = KbActionUp
+					downkey.Time = event.Time
+					mapped = append(mapped, downkey)
+				}
 				delete(kb.downkeys, event.KeyCode)
 			}
 		}
@@ -123,7 +150,7 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 		for _, m := range maps {
 			switch m.Action {
 			case KbActionDown:
-				kb.downkeys[event.KeyCode] = m
+				kb.downkeys[event.KeyCode] = append(kb.downkeys[event.KeyCode], m)
 				mapped = append(mapped, m)
 			case KbActionUp:
 				_, ok := kb.downkeys[m.KeyCode]
@@ -133,21 +160,12 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 				}
 			default:
 				mapped = append(mapped, m)
+			case KbActionNil:
 			}
 		}
 
 	}
 	return mapped, nil
-}
-
-func (layers Layers) findKeyMap(keyCode KeyCode) (map[KeyActions][]MapEvent, bool) {
-	for i := len(layers) - 1; i >= 0; i-- {
-		keymap, ok := layers[i].KeyMap[keyCode]
-		if ok {
-			return keymap, true
-		}
-	}
-	return nil, false
 }
 
 func (kb *Mapper) MapOne(event KeyEvent) ([]MapEvent, error) {
