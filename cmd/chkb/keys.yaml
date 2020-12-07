@@ -1,138 +1,139 @@
-base:
-  keyMap:
-    KEY_LEFTSHIFT:
-      Tap:
-        - action: PushLayer
-          layerName: numpad
-    KEY_CAPSLOCK:
-      Tap:
-        - action: PushLayer
-          layerName: control
-      Map:
-        - keyCode: KEY_LEFTMETA
-    KEY_LEFT:
-      Down:
-        - action: PushLayer
-          layerName: arrows
-    # disable enter for forced learning
-    # KEY_ENTER:
-    #     Map:
-    #     -  action: Nil
+layers:
+  base:
+    keyMap:
+      KEY_LEFTSHIFT:
+        Tap:
+          - action: PushLayer
+            layerName: numpad
+      KEY_CAPSLOCK:
+        Tap:
+          - action: PushLayer
+            layerName: control
+        Map:
+          - keyCode: KEY_LEFTMETA
+      KEY_LEFT:
+        Down:
+          - action: PushLayer
+            layerName: arrows
+      # disable enter for forced learning
+      # KEY_ENTER:
+      #     Map:
+      #     -  action: Nil
 
-control:
-  onMiss:
-    - action: PopLayer
-      layerName: control
-    - action: Map
-  keyMap:
-    KEY_CAPSLOCK:
-      Tap:
-        - action: PopLayer
-          layerName: control
-      Map:
-        - keyCode: KEY_LEFTMETA
-    KEY_A:
-      Tap:
-        - action: PopLayer
-          layerName: control
-        - action: PushLayer
-          layerName: arrows
-      Map:
-        - action: Nil 
-    KEY_SEMICOLON:
-      Map:
-        - keyCode: KEY_KPENTER
-        - action: PopLayer
-          layerName: control
-    KEY_J:
-      Map:
-        - keyCode: KEY_BACKSPACE
-    KEY_D:
-      Map:
-        - keyCode: KEY_ESC
-        - action: PopLayer
-          layerName: control
-arrows:
-  onMiss:
-    - action: PopLayer
-      layerName: arrows
-    - action: Map
-  keyMap:
-    KEY_CAPSLOCK:
-      Tap:
-        - action: PopLayer
-          layerName: arrows
-        - action: PushLayer
-          layerName: control
-      Map:
-        - keyCode: KEY_LEFTMETA
-    KEY_LEFT:
-      Down:
-        - action: PopLayer
-          layerName: arrows
-    KEY_J:
-      Map: 
-        - keyCode: "KEY_DOWN"
-    KEY_K:
-      Map: 
-        - keyCode: "KEY_UP"
-    KEY_H:
-      Map: 
-        - keyCode: "KEY_LEFT"
-    KEY_L:
-      Tap:
-        - action: Nil
-      Map: 
-        - keyCode: "KEY_RIGHT"
-numpad:
-  onMiss:
-    - action: PopLayer
-      layerName: numpad
-    - action: Map
-  keyMap:
-    KEY_CAPSLOCK:
-      Tap:
-        - action: PopLayer
-          layerName: numpad
-        - action: PushLayer
-          layerName: control
-      Map:
-        - keyCode: KEY_LEFTMETA
-    KEY_LEFTSHIFT:
-      Tap:
-        - action: PopLayer
-          layerName: numpad
-      Map:
-        - keyCode: KEY_LEFTSHIFT
-    KEY_U:
-      Map:
-        - keyCode: KEY_7
-    KEY_I:
-      Map:
-        - keyCode: KEY_8
-    KEY_O:
-      Map:
-        - keyCode: KEY_9
-    KEY_J:
-      Map:
-        - keyCode: KEY_4
-    KEY_K:
-      Map:
-        - keyCode: KEY_5
-    KEY_L:
-      Tap:
-        - action: Nil
-      Map:
-        - keyCode: KEY_6
-    KEY_M:
-      Map:
-        - keyCode: KEY_1
-    KEY_COMMA:
-      Map:
-        - keyCode: KEY_2
-    KEY_DOT:
-      Map:
-        - keyCode: KEY_3
-    KEY_SEMICOLON:
-      Map:
-        - keyCode: KEY_ENTER
+  control:
+    onMiss:
+      - action: PopLayer
+        layerName: control
+      - action: Map
+    keyMap:
+      KEY_CAPSLOCK:
+        Tap:
+          - action: PopLayer
+            layerName: control
+        Map:
+          - keyCode: KEY_LEFTMETA
+      KEY_A:
+        Tap:
+          - action: PopLayer
+            layerName: control
+          - action: PushLayer
+            layerName: arrows
+        Map:
+          - action: Nil 
+      KEY_SEMICOLON:
+        Map:
+          - keyCode: KEY_KPENTER
+          - action: PopLayer
+            layerName: control
+      KEY_J:
+        Map:
+          - keyCode: KEY_BACKSPACE
+      KEY_D:
+        Map:
+          - keyCode: KEY_ESC
+          - action: PopLayer
+            layerName: control
+  arrows:
+    onMiss:
+      - action: PopLayer
+        layerName: arrows
+      - action: Map
+    keyMap:
+      KEY_CAPSLOCK:
+        Tap:
+          - action: PopLayer
+            layerName: arrows
+          - action: PushLayer
+            layerName: control
+        Map:
+          - keyCode: KEY_LEFTMETA
+      KEY_LEFT:
+        Down:
+          - action: PopLayer
+            layerName: arrows
+      KEY_J:
+        Map: 
+          - keyCode: "KEY_DOWN"
+      KEY_K:
+        Map: 
+          - keyCode: "KEY_UP"
+      KEY_H:
+        Map: 
+          - keyCode: "KEY_LEFT"
+      KEY_L:
+        Tap:
+          - action: Nil
+        Map: 
+          - keyCode: "KEY_RIGHT"
+  numpad:
+    onMiss:
+      - action: PopLayer
+        layerName: numpad
+      - action: Map
+    keyMap:
+      KEY_CAPSLOCK:
+        Tap:
+          - action: PopLayer
+            layerName: numpad
+          - action: PushLayer
+            layerName: control
+        Map:
+          - keyCode: KEY_LEFTMETA
+      KEY_LEFTSHIFT:
+        Tap:
+          - action: PopLayer
+            layerName: numpad
+        Map:
+          - keyCode: KEY_LEFTSHIFT
+      KEY_U:
+        Map:
+          - keyCode: KEY_7
+      KEY_I:
+        Map:
+          - keyCode: KEY_8
+      KEY_O:
+        Map:
+          - keyCode: KEY_9
+      KEY_J:
+        Map:
+          - keyCode: KEY_4
+      KEY_K:
+        Map:
+          - keyCode: KEY_5
+      KEY_L:
+        Tap:
+          - action: Nil
+        Map:
+          - keyCode: KEY_6
+      KEY_M:
+        Map:
+          - keyCode: KEY_1
+      KEY_COMMA:
+        Map:
+          - keyCode: KEY_2
+      KEY_DOT:
+        Map:
+          - keyCode: KEY_3
+      KEY_SEMICOLON:
+        Map:
+          - keyCode: KEY_ENTER

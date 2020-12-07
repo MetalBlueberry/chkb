@@ -15,31 +15,32 @@ var _ = Describe("Book", func() {
 
 	Describe("Load", func() {
 		var (
-			fileContent = `base:
-    keyMap:
-        KEY_LEFTSHIFT:
-            Tap:
-              - action: PushLayer
-                layerName: swapAB
-swapAB:
-    keyMap:
-        KEY_A:
-            Map:
-              - keyCode: KEY_B
-        KEY_B:
-            Map:
-              - keyCode: KEY_A
-        KEY_LEFTSHIFT:
-            Tap:
-              - action: PopLayer
+			fileContent = `layers:
+    base:
+        keyMap:
+            KEY_LEFTSHIFT:
+                Tap:
+                  - action: PushLayer
+                    layerName: swapAB
+    swapAB:
+        keyMap:
+            KEY_A:
+                Map:
+                  - keyCode: KEY_B
+            KEY_B:
+                Map:
+                  - keyCode: KEY_A
+            KEY_LEFTSHIFT:
+                Tap:
+                  - action: PopLayer
 `
 		)
 		It("Load simple", func() {
 			book := Config{}
 			err := book.Load(strings.NewReader(fileContent))
 			Expect(err).To(BeNil())
-			Expect(book).To(HaveKey("base"))
-			Expect(book).To(HaveKey("swapAB"))
+			Expect(book.Layers).To(HaveKey("base"))
+			Expect(book.Layers).To(HaveKey("swapAB"))
 
 			Expect(book.Layers["base"].KeyMap).To(HaveKey(KeyCode(evdev.KEY_LEFTSHIFT)))
 			Expect(book.Layers["base"].KeyMap[KeyCode(evdev.KEY_LEFTSHIFT)]).

@@ -3,6 +3,8 @@ package chkb
 import (
 	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -52,6 +54,9 @@ func (kb *Keyboard) Deliver(event MapEvent) (bool, error) {
 }
 
 func (kb *Keyboard) PushLayer(name string) (err error) {
+	log.
+		WithField("name", name).
+		Info("Push layer")
 	layer, ok := kb.Config.Layers[name]
 	if !ok {
 		return fmt.Errorf("Layer %s not found", name)
@@ -61,6 +66,9 @@ func (kb *Keyboard) PushLayer(name string) (err error) {
 }
 
 func (kb *Keyboard) PopLayer(name string) (err error) {
+	log.
+		WithField("name", name).
+		Info("Pop layer")
 	layer, ok := kb.Config.Layers[name]
 	if !ok {
 		return fmt.Errorf("Layer %s not found", name)

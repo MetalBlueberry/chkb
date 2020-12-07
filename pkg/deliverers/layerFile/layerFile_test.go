@@ -10,9 +10,11 @@ import (
 
 func TestLayerFile_Deliver(t *testing.T) {
 	book := chkb.Config{
-		"l0": &chkb.Layer{},
-		"l1": &chkb.Layer{},
-		"l2": &chkb.Layer{},
+		Layers: chkb.LayerBook{
+			"l0": &chkb.Layer{},
+			"l1": &chkb.Layer{},
+			"l2": &chkb.Layer{},
+		},
 	}
 	mfs := afero.NewMemMapFs()
 

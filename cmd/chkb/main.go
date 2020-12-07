@@ -2,23 +2,30 @@ package main
 
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
-	"MetalBlueberry/cheap-keyboard/pkg/deliverers/layerFile"
 	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
+	"flag"
 	"fmt"
-	"log"
 	"os"
-	"os/user"
-	"path/filepath"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/bendahl/uinput"
 	evdev "github.com/gvalkov/golang-evdev"
-	"github.com/spf13/afero"
 )
 
 func main() {
+	var (
+		verbose bool
+	)
+	flag.BoolVar(&verbose, "v", false, "print debug information")
+	flag.Parse()
+	if verbose {
+		log.SetLevel(log.DebugLevel)
+		log.Debug("Set debug level")
+	}
 
-	dev, err := evdev.Open(os.Args[1])
+	dev, err := evdev.Open(flag.Arg(0))
 	if err != nil {
 		fmt.Printf("unable to open input device: %s\n, %s", os.Args[1], err)
 		os.Exit(1)
@@ -47,16 +54,16 @@ func main() {
 	}
 	kb := chkb.NewKeyboard(book, "base")
 
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// usr, err := user.Current()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb.Mapper, filepath.Join(usr.HomeDir, ".chkb_layout"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	kb.AddDeliverer(lf)
+	// lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb.Mapper, filepath.Join(usr.HomeDir, ".chkb_layout"))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// kb.AddDeliverer(lf)
 
 	defer dev.Release()
 	err = dev.Grab()

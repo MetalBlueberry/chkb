@@ -10,7 +10,7 @@ import (
 )
 
 type Config struct {
-	Layers LayerBook
+	Layers LayerBook `yaml:"layers"`
 }
 
 func (b *Config) Save(w io.Writer) error {

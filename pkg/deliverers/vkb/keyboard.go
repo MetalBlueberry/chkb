@@ -3,6 +3,8 @@ package vkb
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/bendahl/uinput"
 )
 
@@ -11,6 +13,10 @@ type Keyboard struct {
 }
 
 func (kb *Keyboard) Deliver(event chkb.MapEvent) (bool, error) {
+	log.
+		WithField("Action", event.Action).
+		WithField("Key", event.KeyCode).
+		Debug("Key Event")
 	switch event.Action {
 	case chkb.KbActionDown:
 		return true, kb.KeyDown(int(event.KeyCode))
