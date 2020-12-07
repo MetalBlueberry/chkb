@@ -14,8 +14,9 @@ type Keyboard struct {
 
 func NewKeyboard(book Book, initialLayer string) *Keyboard {
 	kb := &Keyboard{
-		Captor:  NewCaptor(),
-		Mapper:  NewMapper(book, initialLayer),
+		Captor: NewCaptor(),
+		// Mapper:  NewMapper(book, initialLayer),
+		Mapper:  NewMapper(),
 		Handler: NewHandler(),
 	}
 	kb.AddDeliverer(kb.Mapper)

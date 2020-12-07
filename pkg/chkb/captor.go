@@ -8,8 +8,8 @@ import (
 )
 
 type Captor struct {
-	Clock    clock.Clock
-	DownKeys map[KeyCode]*IdleTimer
+	Clock      clock.Clock
+	IdleTimers map[KeyCode]*IdleTimer
 }
 
 func NewCaptor() *Captor {
@@ -18,8 +18,8 @@ func NewCaptor() *Captor {
 
 func NewCaptorWithClock(clock clock.Clock) *Captor {
 	return &Captor{
-		Clock:    clock,
-		DownKeys: make(map[KeyCode]*IdleTimer),
+		Clock:      clock,
+		IdleTimers: make(map[KeyCode]*IdleTimer),
 	}
 }
 
@@ -58,16 +58,16 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 			return err
 		}
 
-		for _, event := range events {
+		for _, event := range captured {
 			switch event.Action {
-			case InputActionDown:
-				downKey, ok := c.DownKeys[event.KeyCode]
+			case KeyActionDown:
+				downKey, ok := c.IdleTimers[event.KeyCode]
 				if !ok {
 					downKey = &IdleTimer{
 						Timeout: c.Clock.AfterFunc(TapDelay, c.idle(event.KeyCode, send)),
 					}
 					downKey.Timeout.Stop()
-					c.DownKeys[event.KeyCode] = downKey
+					c.IdleTimers[event.KeyCode] = downKey
 				}
 				if downKey.Timeout.Stop() {
 					downKey.Count++
@@ -76,8 +76,8 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 				}
 				downKey.Timeout.Reset(TapDelay)
 				downKey.Time = event.Time
-			case InputActionUp:
-				if downKey, ok := c.DownKeys[event.KeyCode]; ok {
+			case KeyActionUp:
+				if downKey, ok := c.IdleTimers[event.KeyCode]; ok {
 					if downKey.Timeout.Stop() {
 						downKey.Count++
 						downKey.Timeout.Reset(TapDelay)
@@ -93,8 +93,8 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 
 func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 	return func() {
-		event := c.DownKeys[keyCode]
-		delete(c.DownKeys, keyCode)
+		event := c.IdleTimers[keyCode]
+		delete(c.IdleTimers, keyCode)
 		if event.Count%2 == 0 {
 			send([]KeyEvent{
 				NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionHold),

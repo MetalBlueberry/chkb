@@ -10,20 +10,20 @@ import (
 )
 
 type Mapper struct {
-	LayerBook Book
-	Layers    []*Layer
-	downkeys  map[KeyCode]MapEvent
+	// LayerBook Book
+	Layers   Layers
+	downkeys map[KeyCode]MapEvent
 }
 
-func NewMapper(book Book, initialLayer string) *Mapper {
+func NewMapper() *Mapper {
 	kb := &Mapper{
-		LayerBook: book,
-		Layers:    []*Layer{},
-		downkeys:  map[KeyCode]MapEvent{},
+		Layers:   Layers{},
+		downkeys: map[KeyCode]MapEvent{},
 	}
-	kb.PushLayer(initialLayer)
 	return kb
 }
+
+type Layers []*Layer
 
 type KeyCode uint16
 
@@ -111,7 +111,7 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 			}
 		}
 
-		maps, err := kb.mapOne(event)
+		maps, err := kb.MapOne(event)
 		if err != nil {
 			log.
 				WithField("event", event).
@@ -140,7 +140,17 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 	return mapped, nil
 }
 
-func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
+func (layers Layers) findKeyMap(keyCode KeyCode) (map[KeyActions][]MapEvent, bool) {
+	for i := len(layers) - 1; i >= 0; i-- {
+		keymap, ok := layers[i].KeyMap[keyCode]
+		if ok {
+			return keymap, true
+		}
+	}
+	return nil, false
+}
+
+func (kb *Mapper) MapOne(event KeyEvent) ([]MapEvent, error) {
 	mapped := make([]MapEvent, 0)
 	handled := false
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
@@ -205,25 +215,32 @@ func (kb *Mapper) Deliver(event MapEvent) (bool, error) {
 }
 
 func (kb *Mapper) PushLayer(name string) error {
-	log.Printf("Push layer %s", name)
-	l, ok := kb.LayerBook[name]
-	if !ok {
-		return errors.New("Layer do not exist")
-	}
-	kb.Layers = append(kb.Layers, l)
-	return nil
+	panic("Not Implemented Yet")
+	// log.Printf("Push layer %s", name)
+	// l, ok := kb.LayerBook[name]
+	// if !ok {
+	// 	return errors.New("Layer do not exist")
+	// }
+	// kb.Layers = append(kb.Layers, l)
+	// return nil
 }
 
 func (kb *Mapper) PopLayer(name string) error {
-	log.Printf("Pop layer")
-	if len(kb.Layers) == 1 {
-		return errors.New("You cannot pop the last layer")
-	}
-	for i := range kb.Layers {
-		if kb.Layers[i] == kb.LayerBook[name] {
-			kb.Layers = append(kb.Layers[:i], kb.Layers[i+1:]...)
-			return nil
-		}
-	}
-	return fmt.Errorf("Layer %s not found", name)
+	panic("Not Implemented Yet")
+	// log.Printf("Pop layer")
+	// if len(kb.Layers) == 1 {
+	// 	return errors.New("You cannot pop the last layer")
+	// }
+	// for i := range kb.Layers {
+	// 	if kb.Layers[i] == kb.LayerBook[name] {
+	// 		kb.Layers = append(kb.Layers[:i], kb.Layers[i+1:]...)
+	// 		return nil
+	// 	}
+	// }
+	// return fmt.Errorf("Layer %s not found", name)
+}
+
+func (kb *Mapper) WithLayers(layers Layers) *Mapper {
+	kb.Layers = layers
+	return kb
 }
