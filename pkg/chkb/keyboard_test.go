@@ -36,17 +36,19 @@ var _ = Describe("Keyboard", func() {
 	Describe("Single layer swap A-B", func() {
 		BeforeEach(func() {
 			kb = chkb.NewKeyboard(
-				chkb.Book{
-					"base": {
-						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
-							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPushLayer, LayerName: "swapAB"}}},
+				chkb.Config{
+					Layers: chkb.LayerBook{
+						"base": {
+							KeyMap: chkb.KeyMap{
+								evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPushLayer, LayerName: "swapAB"}}},
+							},
 						},
-					},
-					"swapAB": {
-						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
-							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer, LayerName: "swapAB"}}},
-							evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
-							evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+						"swapAB": {
+							KeyMap: chkb.KeyMap{
+								evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer, LayerName: "swapAB"}}},
+								evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
+								evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+							},
 						},
 					},
 				},
@@ -111,12 +113,12 @@ var _ = Describe("Keyboard", func() {
 				{Time: Elapsed(3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 				{Time: Elapsed(4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
 				{Time: Elapsed(5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
-				{Time: Elapsed(6), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
-				{Time: Elapsed(7), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
-				{Time: Elapsed(8), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-				{Time: Elapsed(9), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
-				{Time: Elapsed(10), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
-				{Time: Elapsed(11), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+				{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
+				{Time: Elapsed(AfterTap + 1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
+				{Time: Elapsed(AfterTap + 2), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+				{Time: Elapsed(AfterTap + 3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+				{Time: Elapsed(AfterTap + 4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
+				{Time: Elapsed(AfterTap + 5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
 			}, []chkb.MapEvent{
 				{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
 				{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
@@ -124,30 +126,32 @@ var _ = Describe("Keyboard", func() {
 				{Time: Elapsed(3), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
 				{Time: Elapsed(4), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
 				{Time: Elapsed(5), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
-				{Time: Elapsed(6), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
-				{Time: Elapsed(7), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
-				{Time: Elapsed(8), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
-				{Time: Elapsed(9), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
-				{Time: Elapsed(10), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
-				{Time: Elapsed(11), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
+				{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{Time: Elapsed(AfterTap + 1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{Time: Elapsed(AfterTap + 2), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
+				{Time: Elapsed(AfterTap + 3), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
+				{Time: Elapsed(AfterTap + 4), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
+				{Time: Elapsed(AfterTap + 5), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
 			}),
 		)
 	})
 	Describe("push down pop up", func() {
 		BeforeEach(func() {
 			kb = chkb.NewKeyboard(
-				chkb.Book{
-					"base": {
-						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
-							evdev.KEY_CAPSLOCK: {
-								chkb.KeyActionDown: {{Action: chkb.KbActionPushLayer, LayerName: "easyenter"}},
-								chkb.KeyActionUp:   {{Action: chkb.KbActionPopLayer, LayerName: "easyenter"}},
+				chkb.Config{
+					Layers: chkb.LayerBook{
+						"base": {
+							KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
+								evdev.KEY_CAPSLOCK: {
+									chkb.KeyActionDown: {{Action: chkb.KbActionPushLayer, LayerName: "easyenter"}},
+									chkb.KeyActionUp:   {{Action: chkb.KbActionPopLayer, LayerName: "easyenter"}},
+								},
 							},
 						},
-					},
-					"easyenter": {
-						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
-							evdev.KEY_SEMICOLON: {chkb.KeyActionMap: {{KeyCode: evdev.KEY_ENTER}}},
+						"easyenter": {
+							KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
+								evdev.KEY_SEMICOLON: {chkb.KeyActionMap: {{KeyCode: evdev.KEY_ENTER}}},
+							},
 						},
 					},
 				},
@@ -230,14 +234,15 @@ var _ = Describe("Keyboard", func() {
 	Describe("Map and down/up", func() {
 		BeforeEach(func() {
 			kb = chkb.NewKeyboard(
-				chkb.Book{
-
-					"base": {
-						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
-							evdev.KEY_CAPSLOCK: {
-								chkb.KeyActionDown: {{Action: chkb.KbActionTap, KeyCode: chkb.KEY_0}},
-								chkb.KeyActionUp:   {{Action: chkb.KbActionTap, KeyCode: chkb.KEY_1}},
-								chkb.KeyActionMap:  {{KeyCode: chkb.KEY_LEFTMETA}},
+				chkb.Config{
+					Layers: chkb.LayerBook{
+						"base": {
+							KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
+								evdev.KEY_CAPSLOCK: {
+									chkb.KeyActionDown: {{Action: chkb.KbActionTap, KeyCode: chkb.KEY_0}},
+									chkb.KeyActionUp:   {{Action: chkb.KbActionTap, KeyCode: chkb.KEY_1}},
+									chkb.KeyActionMap:  {{KeyCode: chkb.KEY_LEFTMETA}},
+								},
 							},
 						},
 					},
@@ -279,38 +284,40 @@ var _ = Describe("Keyboard", func() {
 		BeforeEach(func() {
 			mockKb = &TestKeyboard{[]chkb.MapEvent{}}
 			kb = chkb.NewKeyboard(
-				chkb.Book{
-					"base": {
-						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
-							evdev.KEY_CAPSLOCK: {
-								chkb.KeyActionDown: {
-									{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTMETA},
-									{Action: chkb.KbActionPushLayer, LayerName: "swapAB"},
+				chkb.Config{
+					Layers: chkb.LayerBook{
+						"base": {
+							KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
+								evdev.KEY_CAPSLOCK: {
+									chkb.KeyActionDown: {
+										{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTMETA},
+										{Action: chkb.KbActionPushLayer, LayerName: "swapAB"},
+									},
+									chkb.KeyActionUp: {
+										{Action: chkb.KbActionUp, KeyCode: chkb.KEY_LEFTMETA},
+										{Action: chkb.KbActionPopLayer, LayerName: "swapAB"},
+									},
 								},
-								chkb.KeyActionUp: {
-									{Action: chkb.KbActionUp, KeyCode: chkb.KEY_LEFTMETA},
-									{Action: chkb.KbActionPopLayer, LayerName: "swapAB"},
-								},
-							},
-							evdev.KEY_F1: {
-								chkb.KeyActionTap: {
-									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_H},
-									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_E},
-									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_L},
-									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_L},
-									{Action: chkb.KbActionTap, KeyCode: chkb.KEY_O},
-								},
-								chkb.KeyActionMap: {
-									{Action: chkb.KbActionNil},
+								evdev.KEY_F1: {
+									chkb.KeyActionTap: {
+										{Action: chkb.KbActionTap, KeyCode: chkb.KEY_H},
+										{Action: chkb.KbActionTap, KeyCode: chkb.KEY_E},
+										{Action: chkb.KbActionTap, KeyCode: chkb.KEY_L},
+										{Action: chkb.KbActionTap, KeyCode: chkb.KEY_L},
+										{Action: chkb.KbActionTap, KeyCode: chkb.KEY_O},
+									},
+									chkb.KeyActionMap: {
+										{Action: chkb.KbActionNil},
+									},
 								},
 							},
 						},
-					},
-					"swapAB": {
-						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
-							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer}}},
-							evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
-							evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+						"swapAB": {
+							KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
+								evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer}}},
+								evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
+								evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+							},
 						},
 					},
 				},
@@ -351,11 +358,11 @@ var _ = Describe("Keyboard", func() {
 				{Time: Elapsed(0), KeyCode: evdev.KEY_F1, Action: chkb.InputActionDown},
 				{Time: Elapsed(1), KeyCode: evdev.KEY_F1, Action: chkb.InputActionUp},
 			}, []chkb.MapEvent{
-				{Time: Elapsed(1), KeyCode: evdev.KEY_H, Action: chkb.KbActionTap},
-				{Time: Elapsed(1), KeyCode: evdev.KEY_E, Action: chkb.KbActionTap},
-				{Time: Elapsed(1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
-				{Time: Elapsed(1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
-				{Time: Elapsed(1), KeyCode: evdev.KEY_O, Action: chkb.KbActionTap},
+				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_H, Action: chkb.KbActionTap},
+				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_E, Action: chkb.KbActionTap},
+				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
+				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
+				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_O, Action: chkb.KbActionTap},
 			}),
 		)
 	})

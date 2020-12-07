@@ -158,8 +158,12 @@ var _ = Describe("Mapper", func() {
 		),
 	)
 
-	FDescribeTable("Map", func(m *chkb.Mapper, events []chkb.KeyEvent, expected []chkb.MapEvent, errExpected bool) {
-		obtained, err := m.Maps(events)
+	DescribeTable("Map", func(m *chkb.Mapper, events []chkb.KeyEvent, expected []chkb.MapEvent, errExpected bool) {
+		obtained := []chkb.MapEvent{}
+		err := m.Maps(events, func(event chkb.MapEvent) error {
+			obtained = append(obtained, event)
+			return nil
+		})
 		for i := range obtained {
 			if len(expected) > i {
 				log.Printf("%s - %s", obtained[i], expected[i])

@@ -1,6 +1,9 @@
 package chkb
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 const (
 	TapDelay = 200 * time.Millisecond
@@ -10,30 +13,61 @@ type Keyboard struct {
 	*Captor
 	*Mapper
 	*Handler
+	Config
 }
 
-func NewKeyboard(book Book, initialLayer string) *Keyboard {
+func NewKeyboard(book Config, initialLayer string) *Keyboard {
 	kb := &Keyboard{
-		Captor: NewCaptor(),
-		// Mapper:  NewMapper(book, initialLayer),
+		Captor:  NewCaptor(),
 		Mapper:  NewMapper(),
 		Handler: NewHandler(),
+		Config:  book,
 	}
-	kb.AddDeliverer(kb.Mapper)
+	kb.AddDeliverer(kb)
+	kb.PushLayer(initialLayer)
 	return kb
 }
 
 func (kb *Keyboard) Run(event func() ([]InputEvent, error)) error {
 	return kb.Captor.Run(event, func(captured []KeyEvent) error {
-		mapped, err := kb.Maps(captured)
-		if err != nil {
-			return err
-		}
-
-		err = kb.Delivers(mapped)
+		err := kb.Maps(captured, kb.Handler.Handle)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
+}
+
+func (kb *Keyboard) Deliver(event MapEvent) (bool, error) {
+	switch event.Action {
+	case KbActionPushLayer:
+		err := kb.PushLayer(event.LayerName)
+		return true, err
+	case KbActionPopLayer:
+		err := kb.PopLayer(event.LayerName)
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func (kb *Keyboard) PushLayer(name string) (err error) {
+	layer, ok := kb.Config.Layers[name]
+	if !ok {
+		return fmt.Errorf("Layer %s not found", name)
+	}
+	kb.addLayer(layer)
+	return nil
+}
+
+func (kb *Keyboard) PopLayer(name string) (err error) {
+	layer, ok := kb.Config.Layers[name]
+	if !ok {
+		return fmt.Errorf("Layer %s not found", name)
+	}
+	err = kb.removeLayer(layer)
+	if err != nil {
+		return err
+	}
+	return nil
 }

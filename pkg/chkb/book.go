@@ -9,18 +9,21 @@ import (
 	// log "github.com/sirupsen/logrus"
 )
 
-type Book map[string]*Layer
+type Config struct {
+	Layers LayerBook
+}
 
-func (b *Book) Save(w io.Writer) error {
+func (b *Config) Save(w io.Writer) error {
 	encoder := yaml.NewEncoder(w)
 	return encoder.Encode(b)
 }
 
-func (b *Book) Load(r io.Reader) error {
+func (b *Config) Load(r io.Reader) error {
 	encoder := yaml.NewDecoder(r)
 	return encoder.Decode(b)
 }
 
+type LayerBook map[string]*Layer
 type Layers []*Layer
 
 type Layer struct {

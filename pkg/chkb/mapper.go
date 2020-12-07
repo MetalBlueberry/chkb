@@ -11,7 +11,6 @@ import (
 )
 
 type Mapper struct {
-	// LayerBook Book
 	Layers   Layers
 	downkeys map[KeyCode][]MapEvent
 	holded   *list.List
@@ -44,6 +43,7 @@ func (ev KeyEvent) String() string {
 }
 
 type MapEvent struct {
+	// Time represents the time of the event that put is event in the queue and not the actual time.
 	Time    time.Time `yaml:"-"`
 	Action  KbActions `yaml:"action,omitempty"`
 	KeyCode KeyCode   `yaml:"keyCode,omitempty"`
@@ -99,8 +99,7 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 	return copymaps, len(copymaps) > 0
 }
 
-func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
-	mapped := make([]MapEvent, 0)
+func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 	for _, event := range events {
 		kb.holded.PushBack(event)
 	}
@@ -133,7 +132,10 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 				for _, downkey := range downkeys {
 					downkey.Action = KbActionUp
 					downkey.Time = event.Time
-					mapped = append(mapped, downkey)
+					err := handle(downkey)
+					if err != nil {
+						return err
+					}
 				}
 				delete(kb.downkeys, event.KeyCode)
 			}
@@ -152,21 +154,30 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 			switch m.Action {
 			case KbActionDown:
 				kb.downkeys[event.KeyCode] = append(kb.downkeys[event.KeyCode], m)
-				mapped = append(mapped, m)
+				err := handle(m)
+				if err != nil {
+					return err
+				}
 			case KbActionUp:
 				_, ok := kb.downkeys[m.KeyCode]
 				if ok {
-					mapped = append(mapped, m)
+					err := handle(m)
+					if err != nil {
+						return err
+					}
 					delete(kb.downkeys, m.KeyCode)
 				}
 			default:
-				mapped = append(mapped, m)
+				err := handle(m)
+				if err != nil {
+					return err
+				}
 			case KbActionNil:
 			}
 		}
 
 	}
-	return mapped, nil
+	return nil
 }
 
 func (layers Layers) findKeyMap(keyCode KeyCode) (KeyMapActions, bool) {
@@ -230,43 +241,18 @@ func (kb *Mapper) MapOne(event KeyEvent) ([]MapEvent, error) {
 	return nil, errors.New("Ignore event")
 }
 
-func (kb *Mapper) Deliver(event MapEvent) (bool, error) {
-	switch event.Action {
-	case KbActionPushLayer:
-		err := kb.PushLayer(event.LayerName)
-		return true, err
-	case KbActionPopLayer:
-		err := kb.PopLayer(event.LayerName)
-		return true, err
-	default:
-		return false, nil
+func (kb *Mapper) addLayer(layer *Layer) {
+	kb.Layers = append(kb.Layers, layer)
+}
+
+func (kb *Mapper) removeLayer(layer *Layer) error {
+	for i := range kb.Layers {
+		if kb.Layers[i] == layer {
+			kb.Layers = append(kb.Layers[:i], kb.Layers[i+1:]...)
+			return nil
+		}
 	}
-}
-
-func (kb *Mapper) PushLayer(name string) error {
-	panic("Not Implemented Yet")
-	// log.Printf("Push layer %s", name)
-	// l, ok := kb.LayerBook[name]
-	// if !ok {
-	// 	return errors.New("Layer do not exist")
-	// }
-	// kb.Layers = append(kb.Layers, l)
-	// return nil
-}
-
-func (kb *Mapper) PopLayer(name string) error {
-	panic("Not Implemented Yet")
-	// log.Printf("Pop layer")
-	// if len(kb.Layers) == 1 {
-	// 	return errors.New("You cannot pop the last layer")
-	// }
-	// for i := range kb.Layers {
-	// 	if kb.Layers[i] == kb.LayerBook[name] {
-	// 		kb.Layers = append(kb.Layers[:i], kb.Layers[i+1:]...)
-	// 		return nil
-	// 	}
-	// }
-	// return fmt.Errorf("Layer %s not found", name)
+	return fmt.Errorf("Layer not previously applied")
 }
 
 func (kb *Mapper) WithLayers(layers Layers) *Mapper {

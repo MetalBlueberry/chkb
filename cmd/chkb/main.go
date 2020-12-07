@@ -34,7 +34,7 @@ func main() {
 	}
 	defer keyboard.Close()
 
-	book := chkb.Book{}
+	book := chkb.Config{}
 
 	keys, err := os.Open("keys.yaml")
 	if err != nil {

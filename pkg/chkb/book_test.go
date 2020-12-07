@@ -35,22 +35,22 @@ swapAB:
 `
 		)
 		It("Load simple", func() {
-			book := Book{}
+			book := Config{}
 			err := book.Load(strings.NewReader(fileContent))
 			Expect(err).To(BeNil())
 			Expect(book).To(HaveKey("base"))
 			Expect(book).To(HaveKey("swapAB"))
 
-			Expect(book["base"].KeyMap).To(HaveKey(KeyCode(evdev.KEY_LEFTSHIFT)))
-			Expect(book["base"].KeyMap[KeyCode(evdev.KEY_LEFTSHIFT)]).
+			Expect(book.Layers["base"].KeyMap).To(HaveKey(KeyCode(evdev.KEY_LEFTSHIFT)))
+			Expect(book.Layers["base"].KeyMap[KeyCode(evdev.KEY_LEFTSHIFT)]).
 				To(HaveKeyWithValue(KeyActionTap, []MapEvent{
 					{
 						Action:    KbActionPushLayer,
 						LayerName: "swapAB",
 					},
 				}))
-			Expect(book["swapAB"].KeyMap).To(HaveKey(KeyCode(evdev.KEY_A)))
-			Expect(book["swapAB"].KeyMap[KeyCode(evdev.KEY_A)]).
+			Expect(book.Layers["swapAB"].KeyMap).To(HaveKey(KeyCode(evdev.KEY_A)))
+			Expect(book.Layers["swapAB"].KeyMap[KeyCode(evdev.KEY_A)]).
 				To(HaveKeyWithValue(KeyActionMap, []MapEvent{
 					{
 						KeyCode: evdev.KEY_B,
@@ -58,17 +58,19 @@ swapAB:
 				}))
 		})
 		It("Save simple", func() {
-			book := Book{
-				"base": {
-					KeyMap: map[KeyCode]KeyMapActions{
-						evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPushLayer, LayerName: "swapAB"}}},
+			book := Config{
+				Layers: LayerBook{
+					"base": {
+						KeyMap: map[KeyCode]KeyMapActions{
+							evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPushLayer, LayerName: "swapAB"}}},
+						},
 					},
-				},
-				"swapAB": {
-					KeyMap: map[KeyCode]KeyMapActions{
-						evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPopLayer}}},
-						evdev.KEY_A:         {KeyActionMap: {{KeyCode: evdev.KEY_B}}},
-						evdev.KEY_B:         {KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+					"swapAB": {
+						KeyMap: map[KeyCode]KeyMapActions{
+							evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPopLayer}}},
+							evdev.KEY_A:         {KeyActionMap: {{KeyCode: evdev.KEY_B}}},
+							evdev.KEY_B:         {KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+						},
 					},
 				},
 			}
