@@ -9,7 +9,7 @@ import (
 
 type Captor struct {
 	Clock    clock.Clock
-	DownKeys map[KeyCode]TapTimer
+	DownKeys map[KeyCode]*IdleTimer
 }
 
 func NewCaptor() *Captor {
@@ -19,13 +19,14 @@ func NewCaptor() *Captor {
 func NewCaptorWithClock(clock clock.Clock) *Captor {
 	return &Captor{
 		Clock:    clock,
-		DownKeys: make(map[KeyCode]TapTimer),
+		DownKeys: make(map[KeyCode]*IdleTimer),
 	}
 }
 
-type TapTimer struct {
-	InputEvent
+type IdleTimer struct {
 	Timeout *clock.Timer
+	Time    time.Time
+	Count   int
 }
 
 type InputEvent struct {
@@ -60,15 +61,27 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 		for _, event := range events {
 			switch event.Action {
 			case InputActionDown:
-				c.DownKeys[event.KeyCode] = TapTimer{
-					InputEvent: event,
-					Timeout:    c.Clock.AfterFunc(TapDelay, c.idle(event.KeyCode, send)),
+				downKey, ok := c.DownKeys[event.KeyCode]
+				if !ok {
+					downKey = &IdleTimer{
+						Timeout: c.Clock.AfterFunc(TapDelay, c.idle(event.KeyCode, send)),
+					}
+					downKey.Timeout.Stop()
+					c.DownKeys[event.KeyCode] = downKey
 				}
+				if downKey.Timeout.Stop() {
+					downKey.Count++
+				} else {
+					downKey.Count = 0
+				}
+				downKey.Timeout.Reset(TapDelay)
+				downKey.Time = event.Time
 			case InputActionUp:
 				if downKey, ok := c.DownKeys[event.KeyCode]; ok {
 					if downKey.Timeout.Stop() {
-						delete(c.DownKeys, downKey.KeyCode)
-						captured = append(captured, NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionTap))
+						downKey.Count++
+						downKey.Timeout.Reset(TapDelay)
+						downKey.Time = event.Time
 					}
 				}
 			}
@@ -81,10 +94,25 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 	return func() {
 		event := c.DownKeys[keyCode]
-		delete(c.DownKeys, event.KeyCode)
-		send([]KeyEvent{
-			NewKeyEv(event.Time.Add(TapDelay), event.KeyCode, KeyActionHold),
-		})
+		delete(c.DownKeys, keyCode)
+		if event.Count%2 == 0 {
+			send([]KeyEvent{
+				NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionHold),
+			})
+		} else {
+			switch event.Count / 2 {
+			case 0:
+				send([]KeyEvent{
+					NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionTap),
+				})
+			case 1:
+				send([]KeyEvent{
+					NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionDoubleTap),
+				})
+			default:
+				log.WithField("cound", event.Count).Warn("Too many taps, not implemented")
+			}
+		}
 	}
 }
 
