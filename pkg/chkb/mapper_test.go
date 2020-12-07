@@ -174,20 +174,6 @@ var _ = Describe("Mapper", func() {
 			assert.NoError(GinkgoT(), err)
 		}
 	},
-		Entry("Forward key",
-			chkb.NewMapper().WithLayers(chkb.Layers{
-				&chkb.Layer{},
-			}),
-			[]chkb.KeyEvent{
-				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
-				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
-			},
-			[]chkb.MapEvent{
-				{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown},
-				{KeyCode: chkb.KEY_B, Action: chkb.KbActionUp},
-			},
-			false,
-		),
 		Entry("Map key",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
@@ -205,6 +191,77 @@ var _ = Describe("Mapper", func() {
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
 			},
 			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
+			},
+			false,
+		),
+		Entry("Forward Real key if not mapped",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
+			},
+			false,
+		),
+		Entry("forward if mapped",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_B: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionMap: {
+								{Action: chkb.KbActionMap, KeyCode: chkb.KEY_C},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
+			},
+			false,
+		),
+		Entry("hold keys if special",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_B: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionHold: {
+								{Action: chkb.KbActionTap, KeyCode: chkb.KEY_C},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionTap},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionUp},
 				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
 				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
 			},
@@ -345,7 +402,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		FEntry("Smart/Hold-Hold-Tap Block map",
+		Entry("Smart/Hold-Hold-Tap Block map",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{

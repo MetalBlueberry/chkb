@@ -21,12 +21,28 @@ func (b *Book) Load(r io.Reader) error {
 	return encoder.Decode(b)
 }
 
+type Layers []*Layer
+
 type Layer struct {
 	OnMiss []MapEvent `yaml:"onMiss,omitempty"`
 	KeyMap KeyMap     `yaml:"keyMap,omitempty"`
 }
 
-type KeyMap map[KeyCode]map[KeyActions][]MapEvent
+type KeyMapActions map[KeyActions][]MapEvent
+
+func (km KeyMapActions) hasSpecialMaps() bool {
+	for k := range km {
+		switch k {
+		case KeyActionUp, KeyActionDown, KeyActionNil, KeyActionMap:
+			continue
+		default:
+			return true
+		}
+	}
+	return false
+}
+
+type KeyMap map[KeyCode]KeyMapActions
 
 func (km *KeyMap) StringMap() map[string]map[string][]MapEvent {
 	tmp := make(map[string]map[string][]MapEvent)
@@ -41,7 +57,7 @@ func (km *KeyMap) StringMap() map[string]map[string][]MapEvent {
 
 func (km *KeyMap) FromStringMap(source map[string]map[string][]MapEvent) error {
 	if (*km) == nil {
-		(*km) = map[KeyCode]map[KeyActions][]MapEvent{}
+		(*km) = map[KeyCode]KeyMapActions{}
 	}
 	for keyCodeString, actionMap := range source {
 		keyCode, err := ParseKeyCode(keyCodeString)

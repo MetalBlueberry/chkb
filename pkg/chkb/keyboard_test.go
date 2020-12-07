@@ -38,12 +38,12 @@ var _ = Describe("Keyboard", func() {
 			kb = chkb.NewKeyboard(
 				chkb.Book{
 					"base": {
-						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
 							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPushLayer, LayerName: "swapAB"}}},
 						},
 					},
 					"swapAB": {
-						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
 							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer, LayerName: "swapAB"}}},
 							evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
 							evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
@@ -138,7 +138,7 @@ var _ = Describe("Keyboard", func() {
 			kb = chkb.NewKeyboard(
 				chkb.Book{
 					"base": {
-						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
 							evdev.KEY_CAPSLOCK: {
 								chkb.KeyActionDown: {{Action: chkb.KbActionPushLayer, LayerName: "easyenter"}},
 								chkb.KeyActionUp:   {{Action: chkb.KbActionPopLayer, LayerName: "easyenter"}},
@@ -146,7 +146,7 @@ var _ = Describe("Keyboard", func() {
 						},
 					},
 					"easyenter": {
-						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
 							evdev.KEY_SEMICOLON: {chkb.KeyActionMap: {{KeyCode: evdev.KEY_ENTER}}},
 						},
 					},
@@ -231,8 +231,9 @@ var _ = Describe("Keyboard", func() {
 		BeforeEach(func() {
 			kb = chkb.NewKeyboard(
 				chkb.Book{
+
 					"base": {
-						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
 							evdev.KEY_CAPSLOCK: {
 								chkb.KeyActionDown: {{Action: chkb.KbActionTap, KeyCode: chkb.KEY_0}},
 								chkb.KeyActionUp:   {{Action: chkb.KbActionTap, KeyCode: chkb.KEY_1}},
@@ -280,7 +281,7 @@ var _ = Describe("Keyboard", func() {
 			kb = chkb.NewKeyboard(
 				chkb.Book{
 					"base": {
-						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
 							evdev.KEY_CAPSLOCK: {
 								chkb.KeyActionDown: {
 									{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTMETA},
@@ -306,7 +307,7 @@ var _ = Describe("Keyboard", func() {
 						},
 					},
 					"swapAB": {
-						KeyMap: map[chkb.KeyCode]map[chkb.KeyActions][]chkb.MapEvent{
+						KeyMap: map[chkb.KeyCode]chkb.KeyMapActions{
 							evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer}}},
 							evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
 							evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},

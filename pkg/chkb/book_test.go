@@ -60,12 +60,12 @@ swapAB:
 		It("Save simple", func() {
 			book := Book{
 				"base": {
-					KeyMap: map[KeyCode]map[KeyActions][]MapEvent{
+					KeyMap: map[KeyCode]KeyMapActions{
 						evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPushLayer, LayerName: "swapAB"}}},
 					},
 				},
 				"swapAB": {
-					KeyMap: map[KeyCode]map[KeyActions][]MapEvent{
+					KeyMap: map[KeyCode]KeyMapActions{
 						evdev.KEY_LEFTSHIFT: {KeyActionTap: {{Action: KbActionPopLayer}}},
 						evdev.KEY_A:         {KeyActionMap: {{KeyCode: evdev.KEY_B}}},
 						evdev.KEY_B:         {KeyActionMap: {{KeyCode: evdev.KEY_A}}},

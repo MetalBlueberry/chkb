@@ -27,8 +27,6 @@ func NewMapper() *Mapper {
 	return kb
 }
 
-type Layers []*Layer
-
 type KeyCode uint16
 
 func (keyCode KeyCode) String() string {
@@ -119,7 +117,10 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 
 		switch event.Action {
 		case KeyActionDown:
-			kb.holding = event.KeyCode
+			keyMap, ok := kb.Layers.findKeyMap(event.KeyCode)
+			if ok && keyMap.hasSpecialMaps() {
+				kb.holding = event.KeyCode
+			}
 		default:
 			kb.holding = KEY_RESERVED
 		case KeyActionUp:
@@ -166,6 +167,16 @@ func (kb *Mapper) Maps(events []KeyEvent) ([]MapEvent, error) {
 
 	}
 	return mapped, nil
+}
+
+func (layers Layers) findKeyMap(keyCode KeyCode) (KeyMapActions, bool) {
+	for i := len(layers) - 1; i >= 0; i-- {
+		keymap, ok := layers[i].KeyMap[keyCode]
+		if ok {
+			return keymap, true
+		}
+	}
+	return nil, false
 }
 
 func (kb *Mapper) MapOne(event KeyEvent) ([]MapEvent, error) {
