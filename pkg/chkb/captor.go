@@ -60,16 +60,10 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 		for _, event := range events {
 			switch event.Action {
 			case InputActionDown:
-				timer := TapTimer{
+				c.DownKeys[event.KeyCode] = TapTimer{
 					InputEvent: event,
-					Timeout: c.Clock.AfterFunc(TapDelay, func() {
-						delete(c.DownKeys, event.KeyCode)
-						send([]KeyEvent{
-							NewKeyEv(event.Time.Add(TapDelay), event.KeyCode, KeyActionHold),
-						})
-					}),
+					Timeout:    c.Clock.AfterFunc(TapDelay, c.idle(event.KeyCode, send)),
 				}
-				c.DownKeys[event.KeyCode] = timer
 			case InputActionUp:
 				if downKey, ok := c.DownKeys[event.KeyCode]; ok {
 					if downKey.Timeout.Stop() {
@@ -81,6 +75,16 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 		}
 
 		send(captured)
+	}
+}
+
+func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
+	return func() {
+		event := c.DownKeys[keyCode]
+		delete(c.DownKeys, event.KeyCode)
+		send([]KeyEvent{
+			NewKeyEv(event.Time.Add(TapDelay), event.KeyCode, KeyActionHold),
+		})
 	}
 }
 
