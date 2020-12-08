@@ -15,8 +15,9 @@ This applies to the current preview version, this will change in the future.
 create a `keys.yaml` with at least a base layer keyMap.
 
 ```yaml
-base:
-  keyMap:
+layers:
+  base:
+    keyMap:
 
 ```
 
@@ -49,11 +50,12 @@ run `chkb` from the directory containing this file providing as first parameter 
 This example remaps the CAPSLOCK to LEFTMETA. This means that pressing caps will behave as if you've pressed leftmeta.
 
 ```yaml
-base:
-  keyMap:
-    KEY_CAPSLOCK:
-      Map:
-        - keyCode: KEY_LEFTMETA
+layers:
+  base:
+    keyMap:
+      KEY_CAPSLOCK:
+        Map:
+          - keyCode: KEY_LEFTMETA
 ```
 
 ## Push/Pop layers
@@ -65,28 +67,29 @@ A layer modifies how your keys behave. Base layer is pushed at startup and canno
 This example shows how to create a layer that temporally swaps keys AB
 
 ```yaml
-base:
-  keyMap:
-    KEY_CAPSLOCK:
-      # Tap means to press and release in less than 200ms
-      Tap:
-        # PushLayer requires the layer name to push that must match with yaml key
-        - action: PushLayer
-          layerName: swapAB
-# definition of swapAB layer
-swapAB:
-  keyMap:
-    # swap A
-    KEY_A:
-        - keyCode: KEY_B
-    # swap B
-    KEY_B:
-        - keyCode: KEY_A
-    # remove the layer if caps is tapped again
-    KEY_CAPSLOCK:
-      Tap:
-        - action: PopLayer
-          layerName: swapAB
+layers:
+  base:
+    keyMap:
+      KEY_CAPSLOCK:
+        # Tap means to press and release in less than 200ms
+        Tap:
+          # PushLayer requires the layer name to push that must match with yaml key
+          - action: PushLayer
+            layerName: swapAB
+  # definition of swapAB layer
+  swapAB:
+    keyMap:
+      # swap A
+      KEY_A:
+          - keyCode: KEY_B
+      # swap B
+      KEY_B:
+          - keyCode: KEY_A
+      # remove the layer if caps is tapped again
+      KEY_CAPSLOCK:
+        Tap:
+          - action: PopLayer
+            layerName: swapAB
 ```
 
 ## Tap / Hold
@@ -98,12 +101,13 @@ You can capture special events like tap/hold and perform custom actions
 This will tap CAPSLOCK if you hold LEFTSHIFT
 
 ```yaml
-base:
-  keyMap:
-    KEY_LEFTSHIFT:
-      Hold:
-        - action: Tap
-          keyCode: KEY_CAPSLOCK
+layers:
+  base:
+    keyMap:
+      KEY_LEFTSHIFT:
+        Hold:
+          - action: Tap
+            keyCode: KEY_CAPSLOCK
 ```
 
 ## Multiple maps
@@ -115,60 +119,61 @@ There are cases where you want to do multiple actions with a single input event.
 This example shows how to enable a control layer that allows you to jump to another layer
 
 ```yaml
-base:
-  keyMap:
-    KEY_CAPSLOCK:
-      Tap:
-        - action: PushLayer
-          layerName: control
-      Map:
-        - keyCode: KEY_LEFTMETA
+layers:
+  base:
+    keyMap:
+      KEY_CAPSLOCK:
+        Tap:
+          - action: PushLayer
+            layerName: control
+        Map:
+          - keyCode: KEY_LEFTMETA
 
-## Intermediate layer
-control:
-  keyMap:
-    KEY_CAPSLOCK:
-      ## Go back to base
-      Tap:
-        - action: PopLayer
-          layerName: control
-      ## Ensure key still works as a meta key
-      Map:
-        - keyCode: KEY_LEFTMETA
-    KEY_A:
-      # If tap A, pop this layer and push arrows layer
-      Tap:
-        - action: PopLayer
-          layerName: control
-        - action: PushLayer
-          layerName: arrows
-      # Block a key so it doesn't type anything
-      Map:
-        - action: Nil
-arrows:
-  keyMap:
-    KEY_CAPSLOCK:
-      ## Go back to base by poping arrows layer
-      Tap:
-        - action: PopLayer
-          layerName: arrows
-      ## Ensure key still works as a meta key
-      Map:
-        - keyCode: KEY_LEFTMETA
+  ## Intermediate layer
+  control:
+    keyMap:
+      KEY_CAPSLOCK:
+        ## Go back to base
+        Tap:
+          - action: PopLayer
+            layerName: control
+        ## Ensure key still works as a meta key
+        Map:
+          - keyCode: KEY_LEFTMETA
+      KEY_A:
+        # If tap A, pop this layer and push arrows layer
+        Tap:
+          - action: PopLayer
+            layerName: control
+          - action: PushLayer
+            layerName: arrows
+        # Block a key so it doesn't type anything
+        Map:
+          - action: Nil
+  arrows:
+    keyMap:
+      KEY_CAPSLOCK:
+        ## Go back to base by poping arrows layer
+        Tap:
+          - action: PopLayer
+            layerName: arrows
+        ## Ensure key still works as a meta key
+        Map:
+          - keyCode: KEY_LEFTMETA
 
-    ## Put arrows on hjkl vim style
-    KEY_J:
-      Map:
-        - keyCode: "KEY_DOWN"
-    KEY_K:
-      Map:
-        - keyCode: "KEY_UP"
-    KEY_H:
-      Map:
-        - keyCode: "KEY_LEFT"
-    KEY_L:
-      Map:
-        - keyCode: "KEY_RIGHT"
+      ## Put arrows on hjkl vim style
+      KEY_J:
+        Map:
+          - keyCode: "KEY_DOWN"
+      KEY_K:
+        Map:
+          - keyCode: "KEY_UP"
+      KEY_H:
+        Map:
+          - keyCode: "KEY_LEFT"
+      KEY_L:
+        Map:
+          - keyCode: "KEY_RIGHT"
 
 ```
 
@@ -177,12 +182,13 @@ arrows:
 key events are used to capture events from your keyboard and map them into other keyboard events. 
 
 ```yaml
-base:
-  keyMap:
-    KEY_LEFTSHIFT:
-      Hold: <--- This is the key event
-        - action: Tap
-          layerName: KEY_CAPSLOCK
+layers:
+  base:
+    keyMap:
+      KEY_LEFTSHIFT:
+        Hold: <--- This is the key event
+          - action: Tap
+            layerName: KEY_CAPSLOCK
 ```
 
 - Map: Forwards the up/down events to a different key
@@ -197,12 +203,13 @@ base:
 These events are the ones generated by the keyMaps.
 
 ```yaml
-base:
-  keyMap:
-    KEY_LEFTSHIFT:
-      Hold: 
-        - action: Tap  <--- This is a Keyboard Event
-          layerName: KEY_CAPSLOCK 
+layers:
+  base:
+    keyMap:
+      KEY_LEFTSHIFT:
+        Hold: 
+          - action: Tap  <--- This is a Keyboard Event
+            layerName: KEY_CAPSLOCK 
 ```
 
 - Nil: does nothing
