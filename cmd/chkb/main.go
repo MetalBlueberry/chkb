@@ -4,6 +4,7 @@ import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
 	"MetalBlueberry/cheap-keyboard/pkg/deliverers/layerFile"
 	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -93,13 +94,19 @@ func main() {
 			if events[i].Type != evdev.EV_KEY {
 				continue
 			}
-			inputEvents = append(inputEvents, NewKeyInputEvent(events[i]))
+			ev, err := NewKeyInputEvent(events[i])
+			if err != nil {
+				continue
+			}
+			inputEvents = append(inputEvents, ev)
 		}
 		return inputEvents, nil
 	})
 }
 
-func NewKeyInputEvent(event evdev.InputEvent) chkb.InputEvent {
+var ErrInvalidEvent = errors.New("Invalid event")
+
+func NewKeyInputEvent(event evdev.InputEvent) (chkb.InputEvent, error) {
 	ie := chkb.InputEvent{
 		Time:    time.Unix(event.Time.Sec, event.Time.Usec*1000),
 		KeyCode: chkb.KeyCode(event.Code),
@@ -109,6 +116,8 @@ func NewKeyInputEvent(event evdev.InputEvent) chkb.InputEvent {
 		ie.Action = chkb.InputActionDown
 	case evdev.KeyUp:
 		ie.Action = chkb.InputActionUp
+	default:
+		return chkb.InputEvent{}, ErrInvalidEvent
 	}
-	return ie
+	return ie, nil
 }
