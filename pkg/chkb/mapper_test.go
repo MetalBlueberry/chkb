@@ -2,10 +2,10 @@ package chkb_test
 
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
-	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
+	log "github.com/sirupsen/logrus"
 
 	// . "github.com/onsi/gomega"
 	"github.com/stretchr/testify/assert"
