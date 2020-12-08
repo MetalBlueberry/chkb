@@ -42,7 +42,7 @@ func TestLayerFile_Deliver(t *testing.T) {
 			},
 			fields: fields{
 				File: func() *LayerFile {
-					f, err := NewLayerFile(mfs, chkb.NewMapper(book, "l0"), "file")
+					f, err := NewLayerFile(mfs, chkb.NewKeyboard(book, "l0"), "file")
 					if err != nil {
 						panic(err)
 					}
@@ -64,7 +64,7 @@ func TestLayerFile_Deliver(t *testing.T) {
 			},
 			fields: fields{
 				File: func() *LayerFile {
-					f, err := NewLayerFile(mfs, chkb.NewMapper(book, "l0"), "file")
+					f, err := NewLayerFile(mfs, chkb.NewKeyboard(book, "l0"), "file")
 					if err != nil {
 						panic(err)
 					}
@@ -87,7 +87,7 @@ func TestLayerFile_Deliver(t *testing.T) {
 			},
 			fields: fields{
 				File: func() *LayerFile {
-					f, err := NewLayerFile(mfs, chkb.NewMapper(book, "l0"), "file")
+					f, err := NewLayerFile(mfs, chkb.NewKeyboard(book, "l0"), "file")
 					if err != nil {
 						panic(err)
 					}
@@ -110,7 +110,7 @@ func TestLayerFile_Deliver(t *testing.T) {
 			},
 			fields: fields{
 				File: func() *LayerFile {
-					f, err := NewLayerFile(mfs, chkb.NewMapper(book, "l0"), "file")
+					f, err := NewLayerFile(mfs, chkb.NewKeyboard(book, "l0"), "file")
 					if err != nil {
 						panic(err)
 					}

@@ -9,12 +9,12 @@ import (
 )
 
 type LayerFile struct {
-	mapper *chkb.Mapper
+	mapper *chkb.Keyboard
 
 	afero.File
 }
 
-func NewLayerFile(fs afero.Fs, kb *chkb.Mapper, fileName string) (*LayerFile, error) {
+func NewLayerFile(fs afero.Fs, kb *chkb.Keyboard, fileName string) (*LayerFile, error) {
 	lf := &LayerFile{
 		mapper: kb,
 	}
@@ -39,11 +39,11 @@ func (lf *LayerFile) Deliver(event chkb.MapEvent) (handled bool, err error) {
 	return false, nil
 }
 
-func layerString(kb *chkb.Mapper) string {
+func layerString(kb *chkb.Keyboard) string {
 	builder := strings.Builder{}
-	for i := range kb.Layers {
-		for name := range kb.LayerBook {
-			if kb.Layers[i] == kb.LayerBook[name] {
+	for i := range kb.Mapper.Layers {
+		for name := range kb.Config.Layers {
+			if kb.Mapper.Layers[i] == kb.Config.Layers[name] {
 				builder.WriteString(name)
 				builder.WriteString(" > ")
 			}

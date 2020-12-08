@@ -2,13 +2,17 @@ package main
 
 import (
 	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"MetalBlueberry/cheap-keyboard/pkg/deliverers/layerFile"
 	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
 	"flag"
 	"fmt"
 	"os"
+	"os/user"
+	"path/filepath"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 
 	"github.com/bendahl/uinput"
 	evdev "github.com/gvalkov/golang-evdev"
@@ -54,16 +58,16 @@ func main() {
 	}
 	kb := chkb.NewKeyboard(book, "base")
 
-	// usr, err := user.Current()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb.Mapper, filepath.Join(usr.HomeDir, ".chkb_layout"))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// kb.AddDeliverer(lf)
+	lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, filepath.Join(usr.HomeDir, ".chkb_layout"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	kb.AddDeliverer(lf)
 
 	defer dev.Release()
 	err = dev.Grab()
