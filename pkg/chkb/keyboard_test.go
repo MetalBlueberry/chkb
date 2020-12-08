@@ -33,6 +33,24 @@ var _ = Describe("Keyboard", func() {
 		kb.Captor = chkb.NewCaptorWithClock(clockMock)
 	})
 
+	RunTableTest := func(events []chkb.InputEvent, expect []chkb.MapEvent) {
+		i := 0
+		finished := errors.New("Finished")
+		err := kb.Run(func() ([]chkb.InputEvent, error) {
+			if len(events) == i {
+				clockMock.Add(chkb.TapDelay)
+				return nil, finished
+			}
+			event := events[i]
+			log.Println(event)
+			clockMock.Set(event.Time)
+			i++
+			return []chkb.InputEvent{event}, nil
+		})
+		assert.Equal(GinkgoT(), err, finished)
+		assert.Equal(GinkgoT(), expect, mockKb.Events)
+	}
+
 	Describe("Single layer swap A-B", func() {
 		BeforeEach(func() {
 			kb = chkb.NewKeyboard(
@@ -56,25 +74,7 @@ var _ = Describe("Keyboard", func() {
 			)
 			kb.AddDeliverer(mockKb)
 		})
-
-		DescribeTable("Type",
-			func(events []chkb.InputEvent, expect []chkb.MapEvent) {
-				i := 0
-				finished := errors.New("Finished")
-				err := kb.Run(func() ([]chkb.InputEvent, error) {
-					if len(events) == i {
-						clockMock.Add(chkb.TapDelay)
-						return nil, finished
-					}
-					event := events[i]
-					log.Println(event)
-					clockMock.Set(event.Time)
-					i++
-					return []chkb.InputEvent{event}, nil
-				})
-				assert.Equal(GinkgoT(), err, finished)
-				assert.Equal(GinkgoT(), expect, mockKb.Events)
-			},
+		DescribeTable("Type", RunTableTest,
 			Entry("One", []chkb.InputEvent{
 				{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
 			}, []chkb.MapEvent{
@@ -159,24 +159,7 @@ var _ = Describe("Keyboard", func() {
 			)
 			kb.AddDeliverer(mockKb)
 		})
-		DescribeTable("keyup must always be equal to keydown code",
-			func(events []chkb.InputEvent, expect []chkb.MapEvent) {
-				i := 0
-				finished := errors.New("Finished")
-				err := kb.Run(func() ([]chkb.InputEvent, error) {
-					if len(events) == i {
-						clockMock.Add(chkb.TapDelay)
-						return nil, finished
-					}
-					event := events[i]
-					log.Println(event)
-					clockMock.Set(event.Time)
-					i++
-					return []chkb.InputEvent{event}, nil
-				})
-				assert.Equal(GinkgoT(), err, finished)
-				assert.Equal(GinkgoT(), expect, mockKb.Events)
-			},
+		DescribeTable("keyup must always be equal to keydown code", RunTableTest,
 			Entry("up after layer pop", []chkb.InputEvent{
 				{Time: Elapsed(0), KeyCode: evdev.KEY_CAPSLOCK, Action: chkb.InputActionDown},
 				{Time: Elapsed(1), KeyCode: evdev.KEY_SEMICOLON, Action: chkb.InputActionDown},
@@ -251,24 +234,7 @@ var _ = Describe("Keyboard", func() {
 			)
 			kb.AddDeliverer(mockKb)
 		})
-		DescribeTable("Should do actions up/down and mapkey",
-			func(events []chkb.InputEvent, expect []chkb.MapEvent) {
-				i := 0
-				finished := errors.New("Finished")
-				err := kb.Run(func() ([]chkb.InputEvent, error) {
-					if len(events) == i {
-						clockMock.Add(chkb.TapDelay)
-						return nil, finished
-					}
-					event := events[i]
-					log.Println(event)
-					clockMock.Set(event.Time)
-					i++
-					return []chkb.InputEvent{event}, nil
-				})
-				assert.Equal(GinkgoT(), err, finished)
-				assert.Equal(GinkgoT(), expect, mockKb.Events)
-			},
+		DescribeTable("Should do actions up/down and mapkey", RunTableTest,
 			Entry("map and up/down", []chkb.InputEvent{
 				{Time: Elapsed(0), KeyCode: evdev.KEY_CAPSLOCK, Action: chkb.InputActionDown},
 				{Time: Elapsed(2), KeyCode: evdev.KEY_CAPSLOCK, Action: chkb.InputActionUp},
@@ -325,24 +291,7 @@ var _ = Describe("Keyboard", func() {
 			)
 			kb.AddDeliverer(mockKb)
 		})
-		DescribeTable("Should do multiple actions",
-			func(events []chkb.InputEvent, expect []chkb.MapEvent) {
-				i := 0
-				finished := errors.New("Finished")
-				err := kb.Run(func() ([]chkb.InputEvent, error) {
-					if len(events) == i {
-						clockMock.Add(chkb.TapDelay)
-						return nil, finished
-					}
-					event := events[i]
-					log.Println(event)
-					clockMock.Set(event.Time)
-					i++
-					return []chkb.InputEvent{event}, nil
-				})
-				assert.Equal(GinkgoT(), err, finished)
-				assert.Equal(GinkgoT(), expect, mockKb.Events)
-			},
+		DescribeTable("Should do multiple actions", RunTableTest,
 			Entry("push layer and up/down", []chkb.InputEvent{
 				{Time: Elapsed(0), KeyCode: evdev.KEY_CAPSLOCK, Action: chkb.InputActionDown},
 				{Time: Elapsed(1), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
