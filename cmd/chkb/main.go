@@ -19,6 +19,10 @@ import (
 	evdev "github.com/gvalkov/golang-evdev"
 )
 
+var (
+	Version = "development"
+)
+
 func main() {
 	var (
 		verbose bool
@@ -27,7 +31,9 @@ func main() {
 	flag.Parse()
 	if verbose {
 		log.SetLevel(log.DebugLevel)
-		log.Debug("Set debug level")
+		log.
+			WithField("Version", Version).
+			Debug("Set debug level")
 	}
 
 	dev, err := evdev.Open(flag.Arg(0))
