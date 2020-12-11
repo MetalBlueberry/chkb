@@ -46,6 +46,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	dev2, err := evdev.Open(flag.Arg(1))
+	if err != nil {
+		fmt.Printf("unable to open input device: %s\n, %s", os.Args[1], err)
+		os.Exit(1)
+	}
+	defer dev2.File.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("testkeyboard"))
 	if err != nil {
 		log.Fatal(err)
@@ -82,29 +92,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	defer dev2.Release()
+	err = dev2.Grab()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	kb.AddDeliverer(&vkb.Keyboard{keyboard})
 
-	kb.Run(func() ([]chkb.InputEvent, error) {
-		events, err := dev.Read()
-		if err != nil {
-			return nil, err
-		}
-		for _, event := range events {
-			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
-				panic(err)
-			}
-		}
+	events := make(chan []chkb.InputEvent)
+	go capture(dev, events)
+	go capture(dev2, events)
 
-		inputEvents := make([]chkb.InputEvent, 0)
-		for i := range events {
-			if events[i].Type != evdev.EV_KEY {
-				continue
-			}
-			ev, err := NewKeyInputEvent(events[i])
-			if err != nil {
-				continue
-			}
-			inputEvents = append(inputEvents, ev)
+	kb.Run(func() ([]chkb.InputEvent, error) {
+		inputEvents, ok := <-events
+		if !ok {
+			return nil, errors.New("Closed chan")
 		}
 		return inputEvents, nil
 	})
@@ -126,4 +129,33 @@ func NewKeyInputEvent(event evdev.InputEvent) (chkb.InputEvent, error) {
 		return chkb.InputEvent{}, ErrInvalidEvent
 	}
 	return ie, nil
+}
+
+func capture(dev *evdev.InputDevice, evs chan []chkb.InputEvent) {
+	for {
+		events, err := dev.Read()
+		if err != nil {
+			log.WithError(err).Error("Device closed")
+			close(evs)
+			return
+		}
+		for _, event := range events {
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
+				panic(err)
+			}
+		}
+
+		inputEvents := make([]chkb.InputEvent, 0)
+		for i := range events {
+			if events[i].Type != evdev.EV_KEY {
+				continue
+			}
+			ev, err := NewKeyInputEvent(events[i])
+			if err != nil {
+				continue
+			}
+			inputEvents = append(inputEvents, ev)
+		}
+		evs <- inputEvents
+	}
 }
