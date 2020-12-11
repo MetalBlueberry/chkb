@@ -1,6 +1,7 @@
 package chkb
 
 import (
+	"sync"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -11,6 +12,7 @@ type Captor struct {
 	Clock      clock.Clock
 	IdleTimers map[KeyCode]*IdleTimer
 	LastKey    *IdleTimer
+	m          sync.Mutex
 }
 
 func NewCaptor() *Captor {
@@ -21,6 +23,7 @@ func NewCaptorWithClock(clock clock.Clock) *Captor {
 	return &Captor{
 		Clock:      clock,
 		IdleTimers: make(map[KeyCode]*IdleTimer),
+		m:          sync.Mutex{},
 	}
 }
 
@@ -46,94 +49,106 @@ const (
 	InputActionUp
 )
 
+func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent) error) error {
+	events, err := capture()
+	if err != nil {
+		log.WithError(err).Error("cannot capture more events")
+		return err
+	}
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	captured, err := c.Capture(events)
+	if err != nil {
+		log.WithError(err).Error("Cannot capture events")
+		return err
+	}
+
+	for _, event := range captured {
+		idleTimer, ok := c.IdleTimers[event.KeyCode]
+		switch event.Action {
+		case KeyActionDown:
+			if !ok {
+				idleTimer = &IdleTimer{
+					Timeout: c.Clock.AfterFunc(TapDelay, c.idle(event.KeyCode, send)),
+					KeyCode: event.KeyCode,
+				}
+				idleTimer.Timeout.Stop()
+				c.IdleTimers[event.KeyCode] = idleTimer
+			}
+			if idleTimer.Timeout.Stop() {
+				idleTimer.Count++
+			} else {
+				idleTimer.Count = 0
+			}
+			idleTimer.Timeout.Reset(TapDelay)
+			idleTimer.Time = event.Time
+
+			if c.LastKey != nil && c.LastKey != idleTimer {
+				if c.LastKey.Timeout.Stop() {
+					if c.LastKey.Count%2 == 0 {
+						// Continue to detect holding
+						remaining := time.Duration(TapDelay.Milliseconds()-c.Clock.Now().Sub(c.LastKey.Time).Milliseconds()) * time.Millisecond
+						log.WithField("ms", remaining.Milliseconds()).Debug("time until hold")
+						c.LastKey.Timeout.Reset(remaining)
+					} else {
+						// dispatch tap now
+						switch c.LastKey.Count / 2 {
+						case 0:
+							send([]KeyEvent{
+								NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionTap),
+							})
+						case 1:
+							send([]KeyEvent{
+								NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionDoubleTap),
+							})
+						default:
+							send([]KeyEvent{
+								NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionNil),
+							})
+						}
+					}
+				}
+			}
+
+		case KeyActionUp:
+			if ok {
+				if idleTimer.Timeout.Stop() {
+					if c.LastKey != nil && c.LastKey != idleTimer {
+						send([]KeyEvent{
+							NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionNil),
+						})
+					} else {
+						idleTimer.Count++
+						idleTimer.Timeout.Reset(TapDelay)
+						idleTimer.Time = event.Time
+					}
+				}
+			}
+		}
+
+		if idleTimer != nil {
+			c.LastKey = idleTimer
+		}
+	}
+
+	return send(captured)
+}
+
 func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent) error) error {
 	for {
-		events, err := capture()
+		err := c.loop(capture, send)
 		if err != nil {
-			log.WithError(err).Error("cannot capture more events")
 			return err
 		}
-
-		captured, err := c.Capture(events)
-		if err != nil {
-			log.WithError(err).Error("Cannot capture events")
-			return err
-		}
-
-		for _, event := range captured {
-			idleTimer, ok := c.IdleTimers[event.KeyCode]
-			switch event.Action {
-			case KeyActionDown:
-				if !ok {
-					idleTimer = &IdleTimer{
-						Timeout: c.Clock.AfterFunc(TapDelay, c.idle(event.KeyCode, send)),
-						KeyCode: event.KeyCode,
-					}
-					idleTimer.Timeout.Stop()
-					c.IdleTimers[event.KeyCode] = idleTimer
-				}
-				if idleTimer.Timeout.Stop() {
-					idleTimer.Count++
-				} else {
-					idleTimer.Count = 0
-				}
-				idleTimer.Timeout.Reset(TapDelay)
-				idleTimer.Time = event.Time
-
-				if c.LastKey != nil && c.LastKey != idleTimer {
-					if c.LastKey.Timeout.Stop() {
-						if c.LastKey.Count%2 == 0 {
-							// Continue to detect holding
-							remaining := time.Duration(TapDelay.Milliseconds()-c.Clock.Now().Sub(c.LastKey.Time).Milliseconds()) * time.Millisecond
-							log.WithField("ms", remaining.Milliseconds()).Debug("time until hold")
-							c.LastKey.Timeout.Reset(remaining)
-						} else {
-							// dispatch tap now
-							switch c.LastKey.Count / 2 {
-							case 0:
-								send([]KeyEvent{
-									NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionTap),
-								})
-							case 1:
-								send([]KeyEvent{
-									NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionDoubleTap),
-								})
-							default:
-								send([]KeyEvent{
-									NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionNil),
-								})
-							}
-						}
-					}
-				}
-
-			case KeyActionUp:
-				if ok {
-					if idleTimer.Timeout.Stop() {
-						if c.LastKey != nil && c.LastKey != idleTimer {
-							send([]KeyEvent{
-								NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionNil),
-							})
-						} else {
-							idleTimer.Count++
-							idleTimer.Timeout.Reset(TapDelay)
-							idleTimer.Time = event.Time
-						}
-					}
-				}
-			}
-
-			if idleTimer != nil {
-				c.LastKey = idleTimer
-			}
-		}
-
-		send(captured)
 	}
 }
 
 func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 	return func() {
+		c.m.Lock()
+		defer c.m.Unlock()
+
 		event := c.IdleTimers[keyCode]
 		delete(c.IdleTimers, keyCode)
 		if event.Count%2 == 0 {
