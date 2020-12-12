@@ -85,14 +85,15 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 			idleTimer.Time = event.Time
 
 			if c.LastKey != nil && c.LastKey != idleTimer {
+				// Resolve event due to another keypress
 				if c.LastKey.Timeout.Stop() {
 					if c.LastKey.Count%2 == 0 {
-						// Continue to detect holding
-						remaining := time.Duration(TapDelay.Milliseconds()-c.Clock.Now().Sub(c.LastKey.Time).Milliseconds()) * time.Millisecond
-						log.WithField("ms", remaining.Milliseconds()).Debug("time until hold")
-						c.LastKey.Timeout.Reset(remaining)
+						// Hold due to another keypress
+						send([]KeyEvent{
+							NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionHold),
+						})
 					} else {
-						// dispatch tap now
+						// Tap due to another keypress
 						switch c.LastKey.Count / 2 {
 						case 0:
 							send([]KeyEvent{
@@ -110,19 +111,12 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 					}
 				}
 			}
-
 		case KeyActionUp:
 			if ok {
 				if idleTimer.Timeout.Stop() {
-					if c.LastKey != nil && c.LastKey != idleTimer {
-						send([]KeyEvent{
-							NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionNil),
-						})
-					} else {
-						idleTimer.Count++
-						idleTimer.Timeout.Reset(TapDelay)
-						idleTimer.Time = event.Time
-					}
+					idleTimer.Count++
+					idleTimer.Timeout.Reset(TapDelay)
+					idleTimer.Time = event.Time
 				}
 			}
 		}

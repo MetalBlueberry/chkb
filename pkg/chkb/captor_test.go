@@ -7,6 +7,7 @@ import (
 	evdev "github.com/gvalkov/golang-evdev"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	// . "github.com/onsi/gomega"
@@ -47,6 +48,14 @@ var _ = Describe("Captor", func() {
 				allcaptured = append(allcaptured, ke...)
 				return nil
 			})
+
+			for i := range allcaptured {
+				if len(expected) > i {
+					log.Printf("%s - %s", allcaptured[i], expected[i])
+				} else {
+					log.Printf("%s", allcaptured[i])
+				}
+			}
 			assert.Equal(GinkgoT(), expected, allcaptured)
 		},
 		Entry("KeyHold", []chkb.InputEvent{
@@ -85,24 +94,24 @@ var _ = Describe("Captor", func() {
 			{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(10), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
 			{Time: Elapsed(10), KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
 			{Time: Elapsed(10 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
-			{Time: Elapsed(TapDelayMs), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
 			{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 			{Time: Elapsed(10 + BeforeTap + TapDelayMs), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
 		}),
-		Entry("Not Tap/Not Hold, tap must be press/release of the same key without others in between. Hold requires a minimum time", []chkb.InputEvent{
+		Entry("Hold due to another keypress", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
 			{Time: Elapsed(50), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
 			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(50), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
 			{Time: Elapsed(50), KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
-			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionNil},
 			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
-			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionNil},
 			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
+			{Time: Elapsed(50 + BeforeTap + TapDelayMs), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
 		}),
 		Entry("Hold - Tap", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
@@ -111,9 +120,9 @@ var _ = Describe("Captor", func() {
 			{Time: Elapsed(50 + AfterTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(25), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
 			{Time: Elapsed(25), KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
 			{Time: Elapsed(25 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
-			{Time: Elapsed(TapDelayMs), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
 			{Time: Elapsed(50 + AfterTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 			{Time: Elapsed(25 + BeforeTap + TapDelayMs), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
 		}),

@@ -194,9 +194,9 @@ layers:
 - Map: Forwards the up/down events to a different key
 - Down: On key down
 - Up: On key up
-- Tap: press and release in less than 200ms
+- Tap: press and release in less than 200ms, no other keys are pressed in between
 - DoubleTap: tap twice!
-- Hold: press until the keyboard repeats the event
+- Hold: keep the key down for more than 200ms or press another key while it is down.
 
 ## Available keyboard events
 
