@@ -87,28 +87,7 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 			if c.LastKey != nil && c.LastKey != idleTimer {
 				// Resolve event due to another keypress
 				if c.LastKey.Timeout.Stop() {
-					if c.LastKey.Count%2 == 0 {
-						// Hold due to another keypress
-						send([]KeyEvent{
-							NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionHold),
-						})
-					} else {
-						// Tap due to another keypress
-						switch c.LastKey.Count / 2 {
-						case 0:
-							send([]KeyEvent{
-								NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionTap),
-							})
-						case 1:
-							send([]KeyEvent{
-								NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionDoubleTap),
-							})
-						default:
-							send([]KeyEvent{
-								NewKeyEv(c.Clock.Now(), c.LastKey.KeyCode, KeyActionNil),
-							})
-						}
-					}
+					c.deliverEvent(c.LastKey, send)
 				}
 			}
 		case KeyActionUp:
@@ -138,6 +117,41 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 	}
 }
 
+func (c *Captor) deliverEvent(event *IdleTimer, send func([]KeyEvent) error) {
+	if event.Count%2 == 0 {
+		err := send([]KeyEvent{
+			NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionHold),
+		})
+		if err != nil {
+			log.WithError(err).Error("Cannot send key event")
+		}
+	} else {
+		switch event.Count / 2 {
+		case 0:
+			err := send([]KeyEvent{
+				NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionTap),
+			})
+			if err != nil {
+				log.WithError(err).Error("Cannot send key event")
+			}
+		case 1:
+			err := send([]KeyEvent{
+				NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionDoubleTap),
+			})
+			if err != nil {
+				log.WithError(err).Error("Cannot send key event")
+			}
+		default:
+			err := send([]KeyEvent{
+				NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionNil),
+			})
+			if err != nil {
+				log.WithError(err).Error("Cannot send key event")
+			}
+		}
+	}
+}
+
 func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 	return func() {
 		c.m.Lock()
@@ -145,26 +159,7 @@ func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 
 		event := c.IdleTimers[keyCode]
 		delete(c.IdleTimers, keyCode)
-		if event.Count%2 == 0 {
-			send([]KeyEvent{
-				NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionHold),
-			})
-		} else {
-			switch event.Count / 2 {
-			case 0:
-				send([]KeyEvent{
-					NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionTap),
-				})
-			case 1:
-				send([]KeyEvent{
-					NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionDoubleTap),
-				})
-			default:
-				send([]KeyEvent{
-					NewKeyEv(event.Time.Add(TapDelay), keyCode, KeyActionNil),
-				})
-			}
-		}
+		c.deliverEvent(event, send)
 	}
 }
 
