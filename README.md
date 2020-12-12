@@ -8,9 +8,9 @@ It has been inspired by [QMK](https://docs.qmk.fm/#/) firmware and [kmonad](http
 
 ## Usage
 
-This applies to the current preview version, this will change in the future.
+This applies to the current preview version, this will change in the future but I will try to keep this info updated.
 
-> ATTENTION: if you manage to block your keyboard, hold ESC and the application will quit. This is a safe guard and cannot be disabled
+> ATTENTION: if you manage to block your keyboard, hold ESC and the application will quit. This is a safe guard and cannot be disabled and is handled before any key event.
 
 create a `keys.yaml` with at least a base layer keyMap.
 
@@ -23,7 +23,7 @@ layers:
 
 find the input file from your keyboard. This files are located at `/dev/input/by-id/`. The id should be enough to tell which one is your keyboard. if not, you can `sudo cat /dev/input/by-id/file` and see if you can see data when you type on your keyboard.
 
-to not use sudo, you can add your user to the input group.
+To avoid sudo, you can add your user to the input group.
 
 ```sh
 sudo usermod -a -G input $USER
@@ -31,18 +31,18 @@ sudo usermod -a -G input $USER
 
 chkb needs access to `/dev/uinput` in order to generate key events. You can create a rule for this. so you don't need sudo.
 
-> https://github.com/bendahl/uinput
-
+> Extracted from here: https://github.com/bendahl/uinput
 
 ```sh
 echo KERNEL==\"uinput\", GROUP=\"$USER\", MODE:=\"0660\" | sudo tee /etc/udev/rules.d/99-$USER.rules
 sudo udevadm trigger
 ```
 
-run `chkb` from the directory containing this file providing as first parameter the path to your device. If everything works, you should see a message `push layer base` which means that everything is running. You can start typing to see some captured events.
+Run `chkb` from the directory containing this file providing as first parameter the path to your device. If everything works, you should see a message `push layer base` which means that everything is running. You can start typing to see some captured events.
 
 ```sh
 ./chkb /dev/input/by-id/usb-Logitech_USB_Receiver-if01-event-kbd
+# TIP add -v flag for debug info
 ```
 
 ## Remap keys
