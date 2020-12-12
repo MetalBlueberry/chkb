@@ -207,11 +207,11 @@ var _ = Describe("Mapper", func() {
 			}),
 			[]chkb.KeyEvent{
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionHold},
 				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
-				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionNil},
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
 				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
-				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionNil},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
 			},
 			[]chkb.MapEvent{
 				{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown},
@@ -235,11 +235,11 @@ var _ = Describe("Mapper", func() {
 			}),
 			[]chkb.KeyEvent{
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionHold},
 				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
-				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionNil},
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
 				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
-				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionNil},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
 			},
 			[]chkb.MapEvent{
 				{KeyCode: chkb.KEY_C, Action: chkb.KbActionDown},
@@ -302,11 +302,11 @@ var _ = Describe("Mapper", func() {
 			}),
 			[]chkb.KeyEvent{
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
-				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionHold},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
 				{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
-				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionNil},
 				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
 			},
 			[]chkb.MapEvent{
 				{Action: chkb.KbActionPushLayer, LayerName: "test"},
