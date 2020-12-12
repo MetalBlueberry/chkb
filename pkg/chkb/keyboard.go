@@ -48,6 +48,9 @@ func (kb *Keyboard) Deliver(event MapEvent) (bool, error) {
 	case KbActionPopLayer:
 		err := kb.PopLayer(event.LayerName)
 		return true, err
+	case KbActionChangeLayer:
+		err := kb.ChangeLayer(event.LayerName)
+		return true, err
 	default:
 		return false, nil
 	}
@@ -74,6 +77,21 @@ func (kb *Keyboard) PopLayer(name string) (err error) {
 		return fmt.Errorf("Layer %s not found", name)
 	}
 	err = kb.removeLayer(layer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (kb *Keyboard) ChangeLayer(name string) (err error) {
+	log.
+		WithField("name", name).
+		Info("Change layer")
+	layer, ok := kb.Config.Layers[name]
+	if !ok {
+		return fmt.Errorf("Layer %s not found", name)
+	}
+	err = kb.setLayer(layer)
 	if err != nil {
 		return err
 	}

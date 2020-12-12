@@ -34,15 +34,16 @@ func (action KeyActions) String() string {
 type KbActions string
 
 const (
-	KbActionNil       KbActions = "Nil"
-	KbActionMap       KbActions = "Map"
-	KbActionDown      KbActions = "Down"
-	KbActionUp        KbActions = "Up"
-	KbActionTap       KbActions = "Tap"
-	KbActionDoubleTap KbActions = "DoubleTap"
-	KbActionHold      KbActions = "Hold"
-	KbActionPushLayer KbActions = "PushLayer"
-	KbActionPopLayer  KbActions = "PopLayer"
+	KbActionNil         KbActions = "Nil"
+	KbActionMap         KbActions = "Map"
+	KbActionDown        KbActions = "Down"
+	KbActionUp          KbActions = "Up"
+	KbActionTap         KbActions = "Tap"
+	KbActionDoubleTap   KbActions = "DoubleTap"
+	KbActionHold        KbActions = "Hold"
+	KbActionPushLayer   KbActions = "PushLayer"
+	KbActionPopLayer    KbActions = "PopLayer"
+	KbActionChangeLayer KbActions = "ChangeLayer"
 )
 
 func (action KbActions) String() string {

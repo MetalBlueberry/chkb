@@ -255,6 +255,11 @@ func (kb *Mapper) removeLayer(layer *Layer) error {
 	return fmt.Errorf("Layer not previously applied")
 }
 
+func (kb *Mapper) setLayer(layer *Layer) error {
+	kb.Layers[0] = layer
+	return nil
+}
+
 func (kb *Mapper) WithLayers(layers Layers) *Mapper {
 	kb.Layers = layers
 	return kb
