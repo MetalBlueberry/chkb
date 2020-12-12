@@ -221,7 +221,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("forward if mapped",
+		Entry("forward if keymap only contains map mapped",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -249,11 +249,21 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("Not Hold if not has special",
+		Entry("Forward if not has special",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
-						chkb.KEY_LEFTSHIFT: map[chkb.KeyActions][]chkb.MapEvent{},
+						chkb.KEY_LEFTSHIFT: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionDown: {
+								{Action: chkb.KbActionPushLayer, LayerName: "test"},
+							},
+							chkb.KeyActionUp: {
+								{Action: chkb.KbActionPopLayer, LayerName: "test"},
+							},
+							chkb.KeyActionMap: {
+								{Action: chkb.KbActionMap, KeyCode: chkb.KEY_LEFTSHIFT},
+							},
+						},
 					},
 				},
 			}),
@@ -262,18 +272,20 @@ var _ = Describe("Mapper", func() {
 				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
 				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KeyActionHold},
 				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KeyActionUp},
-				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionNil},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
 				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
 			},
 			[]chkb.MapEvent{
 				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{Action: chkb.KbActionPushLayer, LayerName: "test"},
 				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
 				{KeyCode: chkb.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{Action: chkb.KbActionPopLayer, LayerName: "test"},
 				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
 			},
 			false,
 		),
-		Entry("hold keys if maps to nil",
+		Entry("hold keys if has special",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
