@@ -246,6 +246,9 @@ func (kb *Mapper) addLayer(layer *Layer) {
 }
 
 func (kb *Mapper) removeLayer(layer *Layer) error {
+	if len(kb.Layers) == 1 {
+		return fmt.Errorf("Cannot remove last layer")
+	}
 	for i := range kb.Layers {
 		if kb.Layers[i] == layer {
 			kb.Layers = append(kb.Layers[:i], kb.Layers[i+1:]...)

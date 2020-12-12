@@ -249,74 +249,6 @@ var _ = Describe("Keyboard", func() {
 		)
 	})
 	Describe("Multiple actions", func() {
-		Describe("Layers", func() {
-			BeforeEach(func() {
-				kb = chkb.NewKeyboard(
-					chkb.Config{
-						Layers: chkb.LayerBook{
-							"base": {
-								KeyMap: chkb.KeyMap{
-									evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionChangeLayer, LayerName: "swapAB"}}},
-								},
-							},
-							"swapAB": {
-								KeyMap: chkb.KeyMap{
-									evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionChangeLayer, LayerName: "base"}}},
-									evdev.KEY_A:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
-									evdev.KEY_B:         {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
-								},
-							},
-						},
-					},
-					"base",
-				)
-				kb.AddDeliverer(mockKb)
-			})
-			DescribeTable("Actions", RunTableTest,
-				Entry("change layer swap AB", []chkb.InputEvent{
-					{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
-					{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
-					{Time: Elapsed(2), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-					{Time: Elapsed(3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
-					{Time: Elapsed(4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
-					{Time: Elapsed(5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
-				}, []chkb.MapEvent{
-					{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
-					{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
-					{Time: Elapsed(2), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
-					{Time: Elapsed(3), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
-					{Time: Elapsed(4), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
-					{Time: Elapsed(5), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
-				}),
-				Entry("change and come back layer swap AB", []chkb.InputEvent{
-					{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
-					{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
-					{Time: Elapsed(2), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-					{Time: Elapsed(3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
-					{Time: Elapsed(4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
-					{Time: Elapsed(5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
-					{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
-					{Time: Elapsed(AfterTap + 1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
-					{Time: Elapsed(AfterTap + 2), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-					{Time: Elapsed(AfterTap + 3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
-					{Time: Elapsed(AfterTap + 4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
-					{Time: Elapsed(AfterTap + 5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
-				}, []chkb.MapEvent{
-					{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
-					{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
-					{Time: Elapsed(2), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
-					{Time: Elapsed(3), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
-					{Time: Elapsed(4), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
-					{Time: Elapsed(5), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
-					{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
-					{Time: Elapsed(AfterTap + 1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
-					{Time: Elapsed(AfterTap + 2), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
-					{Time: Elapsed(AfterTap + 3), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
-					{Time: Elapsed(AfterTap + 4), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
-					{Time: Elapsed(AfterTap + 5), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
-				}),
-			)
-		})
 		BeforeEach(func() {
 			mockKb = &TestKeyboard{[]chkb.MapEvent{}}
 			kb = chkb.NewKeyboard(
@@ -382,6 +314,94 @@ var _ = Describe("Keyboard", func() {
 				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
 				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
 				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_O, Action: chkb.KbActionTap},
+			}),
+		)
+	})
+	Describe("Layers", func() {
+		BeforeEach(func() {
+			kb = chkb.NewKeyboard(
+				chkb.Config{
+					Layers: chkb.LayerBook{
+						"base": {
+							KeyMap: chkb.KeyMap{
+								evdev.KEY_LEFTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionChangeLayer, LayerName: "swapAB"}}},
+							},
+						},
+						"swapAB": {
+							KeyMap: chkb.KeyMap{
+								evdev.KEY_LEFTSHIFT:  {chkb.KeyActionTap: {{Action: chkb.KbActionChangeLayer, LayerName: "base"}}},
+								evdev.KEY_RIGHTSHIFT: {chkb.KeyActionTap: {{Action: chkb.KbActionPopLayer, LayerName: "swapAB"}}},
+								evdev.KEY_A:          {chkb.KeyActionMap: {{KeyCode: evdev.KEY_B}}},
+								evdev.KEY_B:          {chkb.KeyActionMap: {{KeyCode: evdev.KEY_A}}},
+							},
+						},
+					},
+				},
+				"base",
+			)
+			kb.AddDeliverer(mockKb)
+		})
+		DescribeTable("Actions", RunTableTest,
+			Entry("Cannot pop last layer", []chkb.InputEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_RIGHTSHIFT, Action: chkb.InputActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_RIGHTSHIFT, Action: chkb.InputActionUp},
+				{Time: Elapsed(4), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+				{Time: Elapsed(5), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+				{Time: Elapsed(6), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
+				{Time: Elapsed(7), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+			}, []chkb.MapEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_RIGHTSHIFT, Action: chkb.KbActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_RIGHTSHIFT, Action: chkb.KbActionUp},
+				{Time: Elapsed(4), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
+				{Time: Elapsed(5), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
+				{Time: Elapsed(6), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
+				{Time: Elapsed(7), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
+			}),
+			Entry("change layer swap AB", []chkb.InputEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+				{Time: Elapsed(4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
+				{Time: Elapsed(5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+			}, []chkb.MapEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
+				{Time: Elapsed(4), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
+				{Time: Elapsed(5), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
+			}),
+			Entry("change and come back layer swap AB", []chkb.InputEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+				{Time: Elapsed(4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
+				{Time: Elapsed(5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+				{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionDown},
+				{Time: Elapsed(AfterTap + 1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.InputActionUp},
+				{Time: Elapsed(AfterTap + 2), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+				{Time: Elapsed(AfterTap + 3), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+				{Time: Elapsed(AfterTap + 4), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
+				{Time: Elapsed(AfterTap + 5), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+			}, []chkb.MapEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
+				{Time: Elapsed(4), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
+				{Time: Elapsed(5), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
+				{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{Time: Elapsed(AfterTap + 1), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
+				{Time: Elapsed(AfterTap + 2), KeyCode: evdev.KEY_A, Action: chkb.KbActionDown},
+				{Time: Elapsed(AfterTap + 3), KeyCode: evdev.KEY_A, Action: chkb.KbActionUp},
+				{Time: Elapsed(AfterTap + 4), KeyCode: evdev.KEY_B, Action: chkb.KbActionDown},
+				{Time: Elapsed(AfterTap + 5), KeyCode: evdev.KEY_B, Action: chkb.KbActionUp},
 			}),
 		)
 	})
