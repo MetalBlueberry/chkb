@@ -36,6 +36,11 @@ func main() {
 			Debug("Set debug level")
 	}
 
+	// This is required to ensure that the enter key is not stuck down
+	// when the device is grab.
+	log.Info("You have 200 ms to release all keys")
+	time.Sleep(200 * time.Millisecond)
+
 	devs := make([]*evdev.InputDevice, 0)
 	for _, arg := range flag.Args() {
 		dev, err := evdev.Open(arg)
@@ -144,6 +149,7 @@ func capture(dev *evdev.InputDevice, evs chan []chkb.InputEvent) {
 			if err != nil {
 				continue
 			}
+			log.WithField("event", ev).Debug("Captured")
 			inputEvents = append(inputEvents, ev)
 		}
 		evs <- inputEvents
