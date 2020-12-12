@@ -87,7 +87,7 @@ var _ = Describe("Captor", func() {
 			{Time: Elapsed(10 + 2*BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
 			{Time: Elapsed(10 + 2*BeforeTap + TapDelayMs), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
 		}),
-		Entry("Hold quick. Hold event must be fired after TapDelay, even if other key is pressed", []chkb.InputEvent{
+		Entry("Hold quick/Tap. Hold event is fired due to another keypress, another key is Tap", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
 			{Time: Elapsed(10), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
 			{Time: Elapsed(10 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
@@ -100,18 +100,23 @@ var _ = Describe("Captor", func() {
 			{Time: Elapsed(AfterTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
 			{Time: Elapsed(10 + BeforeTap + TapDelayMs), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
 		}),
-		Entry("Hold due to another keypress", []chkb.InputEvent{
-			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
-			{Time: Elapsed(50), KeyCode: evdev.KEY_B, Action: chkb.InputActionDown},
-			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
-			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.InputActionUp},
+		Entry("CTRL+ALT HOLD tap A", []chkb.InputEvent{
+			{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTCTRL, Action: chkb.InputActionDown},
+			{Time: Elapsed(50), KeyCode: evdev.KEY_LEFTALT, Action: chkb.InputActionDown},
+			{Time: Elapsed(100), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
+			{Time: Elapsed(100 + BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.InputActionUp},
+			{Time: Elapsed(100 + BeforeTap + 50), KeyCode: evdev.KEY_LEFTCTRL, Action: chkb.InputActionUp},
+			{Time: Elapsed(100 + BeforeTap + 50), KeyCode: evdev.KEY_LEFTALT, Action: chkb.InputActionUp},
 		}, []chkb.KeyEvent{
-			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
-			{Time: Elapsed(50), KeyCode: evdev.KEY_A, Action: chkb.KeyActionHold},
-			{Time: Elapsed(50), KeyCode: evdev.KEY_B, Action: chkb.KeyActionDown},
-			{Time: Elapsed(BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
-			{Time: Elapsed(50 + BeforeTap), KeyCode: evdev.KEY_B, Action: chkb.KeyActionUp},
-			{Time: Elapsed(50 + BeforeTap + TapDelayMs), KeyCode: evdev.KEY_B, Action: chkb.KeyActionTap},
+			{Time: Elapsed(0), KeyCode: evdev.KEY_LEFTCTRL, Action: chkb.KeyActionDown},
+			{Time: Elapsed(50), KeyCode: evdev.KEY_LEFTCTRL, Action: chkb.KeyActionHold},
+			{Time: Elapsed(50), KeyCode: evdev.KEY_LEFTALT, Action: chkb.KeyActionDown},
+			{Time: Elapsed(100), KeyCode: evdev.KEY_LEFTALT, Action: chkb.KeyActionHold},
+			{Time: Elapsed(100), KeyCode: evdev.KEY_A, Action: chkb.KeyActionDown},
+			{Time: Elapsed(100 + BeforeTap), KeyCode: evdev.KEY_A, Action: chkb.KeyActionUp},
+			{Time: Elapsed(100 + BeforeTap + 50), KeyCode: evdev.KEY_LEFTCTRL, Action: chkb.KeyActionUp},
+			{Time: Elapsed(100 + BeforeTap + 50), KeyCode: evdev.KEY_LEFTALT, Action: chkb.KeyActionUp},
+			{Time: Elapsed(100 + BeforeTap + TapDelayMs), KeyCode: evdev.KEY_A, Action: chkb.KeyActionTap},
 		}),
 		Entry("Hold - Tap", []chkb.InputEvent{
 			{Time: Elapsed(0), KeyCode: evdev.KEY_A, Action: chkb.InputActionDown},
