@@ -1,7 +1,7 @@
 package main
 
 import (
-	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
 	"log"
 	"os"
 

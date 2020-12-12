@@ -1,7 +1,7 @@
 package vkb
 
 import (
-	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
 
 	log "github.com/sirupsen/logrus"
 

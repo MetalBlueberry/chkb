@@ -12,7 +12,7 @@ import (
 
 	// . "github.com/onsi/gomega"
 
-	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
 )
 
 var _ = Describe("Captor", func() {

@@ -1,7 +1,7 @@
 package chkb_test
 
 import (
-	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"

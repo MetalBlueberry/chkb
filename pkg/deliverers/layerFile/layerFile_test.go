@@ -1,7 +1,7 @@
 package layerFile
 
 import (
-	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
 	"io/ioutil"
 	"testing"
 

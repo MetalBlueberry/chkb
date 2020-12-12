@@ -1,4 +1,4 @@
-module MetalBlueberry/cheap-keyboard
+module github.com/MetalBlueberry/chkb
 
 go 1.14
 
@@ -14,4 +14,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
 
-replace github.com/benbjohnson/clock => /home/victor/Documents/Projects/clock
+// Patch until merge is accepted, fix dead lock
+replace github.com/benbjohnson/clock => github.com/MetalBlueberry/clock v1.1.1-0.20201212194419-31ee72d00441

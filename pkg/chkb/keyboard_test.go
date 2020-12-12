@@ -14,7 +14,7 @@ import (
 	// . "github.com/onsi/gomega"
 	"github.com/stretchr/testify/assert"
 
-	"MetalBlueberry/cheap-keyboard/pkg/chkb"
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
 )
 
 var _ = Describe("Keyboard", func() {

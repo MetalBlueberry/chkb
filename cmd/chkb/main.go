@@ -1,9 +1,9 @@
 package main
 
 import (
-	"MetalBlueberry/cheap-keyboard/pkg/chkb"
-	"MetalBlueberry/cheap-keyboard/pkg/deliverers/layerFile"
-	"MetalBlueberry/cheap-keyboard/pkg/deliverers/vkb"
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
+	"github.com/MetalBlueberry/chkb/pkg/deliverers/layerFile"
+	"github.com/MetalBlueberry/chkb/pkg/deliverers/vkb"
 	"errors"
 	"flag"
 	"fmt"
