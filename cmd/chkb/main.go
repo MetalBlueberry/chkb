@@ -36,14 +36,25 @@ func main() {
 			Debug("Set debug level")
 	}
 
-	dev, err := evdev.Open(flag.Arg(0))
-	if err != nil {
-		fmt.Printf("unable to open input device: %s\n, %s", os.Args[1], err)
-		os.Exit(1)
-	}
-	defer dev.File.Close()
-	if err != nil {
-		log.Fatal(err)
+	devs := make([]*evdev.InputDevice, 0)
+	for _, arg := range flag.Args() {
+		dev, err := evdev.Open(arg)
+		if err != nil {
+			fmt.Printf("unable to open input device: %s\n, %s", os.Args[1], err)
+			os.Exit(1)
+		}
+		defer dev.File.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer dev.Release()
+		err = dev.Grab()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		devs = append(devs, dev)
 	}
 
 	keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("testkeyboard"))
@@ -76,35 +87,17 @@ func main() {
 	}
 	kb.AddDeliverer(lf)
 
-	defer dev.Release()
-	err = dev.Grab()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	kb.AddDeliverer(&vkb.Keyboard{keyboard})
 
-	kb.Run(func() ([]chkb.InputEvent, error) {
-		events, err := dev.Read()
-		if err != nil {
-			return nil, err
-		}
-		for _, event := range events {
-			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
-				panic(err)
-			}
-		}
+	events := make(chan []chkb.InputEvent)
+	for _, dev := range devs {
+		go capture(dev, events)
+	}
 
-		inputEvents := make([]chkb.InputEvent, 0)
-		for i := range events {
-			if events[i].Type != evdev.EV_KEY {
-				continue
-			}
-			ev, err := NewKeyInputEvent(events[i])
-			if err != nil {
-				continue
-			}
-			inputEvents = append(inputEvents, ev)
+	kb.Run(func() ([]chkb.InputEvent, error) {
+		inputEvents, ok := <-events
+		if !ok {
+			return nil, errors.New("Closed chan")
 		}
 		return inputEvents, nil
 	})
@@ -126,4 +119,33 @@ func NewKeyInputEvent(event evdev.InputEvent) (chkb.InputEvent, error) {
 		return chkb.InputEvent{}, ErrInvalidEvent
 	}
 	return ie, nil
+}
+
+func capture(dev *evdev.InputDevice, evs chan []chkb.InputEvent) {
+	for {
+		events, err := dev.Read()
+		if err != nil {
+			log.WithError(err).Error("Device closed")
+			close(evs)
+			return
+		}
+		for _, event := range events {
+			if evdev.KeyEventState(event.Value) == evdev.KeyHold && event.Code == evdev.KEY_ESC {
+				panic(err)
+			}
+		}
+
+		inputEvents := make([]chkb.InputEvent, 0)
+		for i := range events {
+			if events[i].Type != evdev.EV_KEY {
+				continue
+			}
+			ev, err := NewKeyInputEvent(events[i])
+			if err != nil {
+				continue
+			}
+			inputEvents = append(inputEvents, ev)
+		}
+		evs <- inputEvents
+	}
 }
