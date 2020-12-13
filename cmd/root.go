@@ -25,8 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/user"
-	"path/filepath"
 	"time"
 
 	"github.com/MetalBlueberry/chkb/pkg/chkb"
@@ -79,6 +77,11 @@ to both systems to the application. See readme for instructions.
 			return fmt.Errorf("Cannot read config flag, %w", err)
 		}
 
+		layerFilePath, err := cmd.Flags().GetString("layer-file")
+		if err != nil {
+			return fmt.Errorf("Cannot read layer-file flag, %w", err)
+		}
+
 		// This is required to ensure that the enter key is not stuck down
 		// when the device is grab.
 		log.Info("You have 200 ms to release all keys")
@@ -124,16 +127,14 @@ to both systems to the application. See readme for instructions.
 		}
 		kb := chkb.NewKeyboard(book, "base")
 
-		usr, err := user.Current()
-		if err != nil {
-			log.Fatal(err)
+		if layerFilePath != "" {
+			log.WithField("path", layerFilePath).Info("LayerFile is enabled")
+			lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, layerFilePath)
+			if err != nil {
+				log.Fatal(err)
+			}
+			kb.AddDeliverer(lf)
 		}
-
-		lf, err := layerFile.NewLayerFile(afero.NewOsFs(), kb, filepath.Join(usr.HomeDir, ".chkb_layout"))
-		if err != nil {
-			log.Fatal(err)
-		}
-		kb.AddDeliverer(lf)
 
 		kb.AddDeliverer(&vkb.Keyboard{keyboard})
 
@@ -163,6 +164,7 @@ func init() {
 	rootCmd.Flags().BoolP("verbose", "v", false, "print debug information")
 	rootCmd.Flags().StringSliceP("input-device", "i", nil, "input device to capture keys")
 	rootCmd.Flags().StringP("config", "c", "chkb.yaml", "configuration file")
+	rootCmd.Flags().String("layer-file", "", "file that will be written with the last layer configuration, it is intended to use external tools to read this file and display current layer configuration")
 }
 
 var ErrInvalidEvent = errors.New("Invalid event")

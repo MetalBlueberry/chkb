@@ -244,5 +244,5 @@ To find extra keys, you can read ./pkg/chkb/ecodes.go and use anything starting 
 - [x] allow to specify the location of the config file
 - [ ] easy autoshift functionality for layers
 - [ ] examples
-- [ ] Allow to disable layerFile
+- [x] Allow to disable layerFile functionality
 - [ ] Implement RESETKEY to start-stop the app in the background
