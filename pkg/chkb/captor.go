@@ -29,11 +29,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Captor extracts from a stream of keyup/keydown events the advanced
+// actions such as Tap/DoubleTap/Hold
 type Captor struct {
-	Clock      clock.Clock
-	IdleTimers map[KeyCode]*IdleTimer
-	LastKey    *IdleTimer
-	Config     *Config
+	Clock  clock.Clock
+	Config *Config
+
+	idleTimers map[KeyCode]*idleTimer
+	lastKey    *idleTimer
 	m          sync.Mutex
 }
 
@@ -44,13 +47,13 @@ func NewCaptor(config *Config) *Captor {
 func NewCaptorWithClock(clock clock.Clock, config *Config) *Captor {
 	return &Captor{
 		Clock:      clock,
-		IdleTimers: make(map[KeyCode]*IdleTimer),
-		m:          sync.Mutex{},
 		Config:     config,
+		idleTimers: make(map[KeyCode]*idleTimer),
+		m:          sync.Mutex{},
 	}
 }
 
-type IdleTimer struct {
+type idleTimer struct {
 	Timeout *clock.Timer
 	Time    time.Time
 	Count   int
@@ -81,50 +84,50 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	captured, err := c.Capture(events)
+	captured, err := c.capture(events)
 	if err != nil {
 		log.WithError(err).Error("Cannot capture events")
 		return err
 	}
 
 	for _, event := range captured {
-		idleTimer, ok := c.IdleTimers[event.KeyCode]
+		timer, ok := c.idleTimers[event.KeyCode]
 		switch event.Action {
 		case KeyActionDown:
 			if !ok {
-				idleTimer = &IdleTimer{
+				timer = &idleTimer{
 					Timeout: c.Clock.AfterFunc(c.Config.GetTapDelay(), c.idle(event.KeyCode, send)),
 					KeyCode: event.KeyCode,
 				}
-				idleTimer.Timeout.Stop()
-				c.IdleTimers[event.KeyCode] = idleTimer
+				timer.Timeout.Stop()
+				c.idleTimers[event.KeyCode] = timer
 			}
-			if idleTimer.Timeout.Stop() {
-				idleTimer.Count++
+			if timer.Timeout.Stop() {
+				timer.Count++
 			} else {
-				idleTimer.Count = 0
+				timer.Count = 0
 			}
-			idleTimer.Timeout.Reset(c.Config.GetTapDelay())
-			idleTimer.Time = event.Time
+			timer.Timeout.Reset(c.Config.GetTapDelay())
+			timer.Time = event.Time
 
-			if c.LastKey != nil && c.LastKey != idleTimer {
+			if c.lastKey != nil && c.lastKey != timer {
 				// Resolve event due to another keypress
-				if c.LastKey.Timeout.Stop() {
-					c.deliverEvent(c.LastKey, send)
+				if c.lastKey.Timeout.Stop() {
+					c.deliverEvent(c.lastKey, send)
 				}
 			}
 		case KeyActionUp:
 			if ok {
-				if idleTimer.Timeout.Stop() {
-					idleTimer.Count++
-					idleTimer.Timeout.Reset(c.Config.GetTapDelay())
-					idleTimer.Time = event.Time
+				if timer.Timeout.Stop() {
+					timer.Count++
+					timer.Timeout.Reset(c.Config.GetTapDelay())
+					timer.Time = event.Time
 				}
 			}
 		}
 
-		if idleTimer != nil {
-			c.LastKey = idleTimer
+		if timer != nil {
+			c.lastKey = timer
 		}
 	}
 
@@ -140,7 +143,7 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 	}
 }
 
-func (c *Captor) deliverEvent(event *IdleTimer, send func([]KeyEvent) error) {
+func (c *Captor) deliverEvent(event *idleTimer, send func([]KeyEvent) error) {
 	if event.Count%2 == 0 {
 		err := send([]KeyEvent{
 			NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionHold),
@@ -180,13 +183,13 @@ func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 		c.m.Lock()
 		defer c.m.Unlock()
 
-		event := c.IdleTimers[keyCode]
-		delete(c.IdleTimers, keyCode)
+		event := c.idleTimers[keyCode]
+		delete(c.idleTimers, keyCode)
 		c.deliverEvent(event, send)
 	}
 }
 
-func (c *Captor) Capture(events []InputEvent) ([]KeyEvent, error) {
+func (c *Captor) capture(events []InputEvent) ([]KeyEvent, error) {
 	captured := make([]KeyEvent, 0)
 	for i := range events {
 		switch events[i].Action {
