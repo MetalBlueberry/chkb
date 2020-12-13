@@ -44,7 +44,7 @@ var _ = Describe("Captor", func() {
 	)
 	BeforeEach(func() {
 		clockMock = clock.NewMock()
-		captor = chkb.NewCaptorWithClock(clockMock)
+		captor = chkb.NewCaptorWithClock(clockMock, &chkb.Config{})
 	})
 
 	DescribeTable("Capture",
@@ -55,7 +55,7 @@ var _ = Describe("Captor", func() {
 			i := 0
 			captor.Run(func() ([]chkb.InputEvent, error) {
 				if len(events) == i {
-					clockMock.Add(chkb.TapDelay)
+					clockMock.Add(chkb.DefaultTapDelay)
 					return nil, errors.New("Finished")
 				}
 				event := events[i]

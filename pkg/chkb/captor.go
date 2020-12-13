@@ -33,18 +33,20 @@ type Captor struct {
 	Clock      clock.Clock
 	IdleTimers map[KeyCode]*IdleTimer
 	LastKey    *IdleTimer
+	Config     *Config
 	m          sync.Mutex
 }
 
-func NewCaptor() *Captor {
-	return NewCaptorWithClock(clock.New())
+func NewCaptor(config *Config) *Captor {
+	return NewCaptorWithClock(clock.New(), config)
 }
 
-func NewCaptorWithClock(clock clock.Clock) *Captor {
+func NewCaptorWithClock(clock clock.Clock, config *Config) *Captor {
 	return &Captor{
 		Clock:      clock,
 		IdleTimers: make(map[KeyCode]*IdleTimer),
 		m:          sync.Mutex{},
+		Config:     config,
 	}
 }
 
@@ -91,7 +93,7 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 		case KeyActionDown:
 			if !ok {
 				idleTimer = &IdleTimer{
-					Timeout: c.Clock.AfterFunc(TapDelay, c.idle(event.KeyCode, send)),
+					Timeout: c.Clock.AfterFunc(c.Config.GetTapDelay(), c.idle(event.KeyCode, send)),
 					KeyCode: event.KeyCode,
 				}
 				idleTimer.Timeout.Stop()
@@ -102,7 +104,7 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 			} else {
 				idleTimer.Count = 0
 			}
-			idleTimer.Timeout.Reset(TapDelay)
+			idleTimer.Timeout.Reset(c.Config.GetTapDelay())
 			idleTimer.Time = event.Time
 
 			if c.LastKey != nil && c.LastKey != idleTimer {
@@ -115,7 +117,7 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 			if ok {
 				if idleTimer.Timeout.Stop() {
 					idleTimer.Count++
-					idleTimer.Timeout.Reset(TapDelay)
+					idleTimer.Timeout.Reset(c.Config.GetTapDelay())
 					idleTimer.Time = event.Time
 				}
 			}

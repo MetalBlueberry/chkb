@@ -23,13 +23,8 @@ package chkb
 
 import (
 	"fmt"
-	"time"
 
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	TapDelay = 200 * time.Millisecond
 )
 
 type Keyboard struct {
@@ -39,12 +34,12 @@ type Keyboard struct {
 	Config
 }
 
-func NewKeyboard(book Config, initialLayer string) *Keyboard {
+func NewKeyboard(config Config, initialLayer string) *Keyboard {
 	kb := &Keyboard{
-		Captor:  NewCaptor(),
+		Captor:  NewCaptor(&config),
 		Mapper:  NewMapper(),
 		Handler: NewHandler(),
-		Config:  book,
+		Config:  config,
 	}
 	kb.AddDeliverer(kb)
 	kb.PushLayer(initialLayer)

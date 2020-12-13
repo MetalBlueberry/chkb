@@ -51,7 +51,7 @@ var _ = Describe("Keyboard", func() {
 		mockKb = &TestKeyboard{[]chkb.MapEvent{}}
 	})
 	JustBeforeEach(func() {
-		kb.Captor = chkb.NewCaptorWithClock(clockMock)
+		kb.Captor = chkb.NewCaptorWithClock(clockMock, &chkb.Config{})
 	})
 
 	RunTableTest := func(events []chkb.InputEvent, expect []chkb.MapEvent) {
@@ -59,7 +59,7 @@ var _ = Describe("Keyboard", func() {
 		finished := errors.New("Finished")
 		err := kb.Run(func() ([]chkb.InputEvent, error) {
 			if len(events) == i {
-				clockMock.Add(chkb.TapDelay)
+				clockMock.Add(chkb.DefaultTapDelay)
 				return nil, finished
 			}
 			event := events[i]

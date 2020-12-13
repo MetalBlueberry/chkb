@@ -34,7 +34,7 @@ import (
 )
 
 var (
-	TapDelayMs = chkb.TapDelay.Milliseconds()
+	TapDelayMs = chkb.DefaultTapDelay.Milliseconds()
 
 	BeforeTap = TapDelayMs - 50
 	AfterTap  = TapDelayMs + 50
