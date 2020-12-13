@@ -44,8 +44,8 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "chkb",
-	Short: "Turns a regular keyboard into a fully programable keyboard",
-	Long: `Turns a regular keyboard into a fully programable keyboard.
+	Short: "Turns a regular keyboard into a fully programmable keyboard",
+	Long: `Turns a regular keyboard into a fully programmable keyboard.
 
 chkb captures the input from input devices at /dev/input and reproduces
 the key strokes by writing to /dev/uintput. Therefore, you need to give access
