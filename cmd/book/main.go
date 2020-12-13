@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/MetalBlueberry/chkb/pkg/chkb"
 	"log"
 	"os"
+
+	"github.com/MetalBlueberry/chkb/pkg/chkb"
 
 	evdev "github.com/gvalkov/golang-evdev"
 )
 
 func main() {
-	book := chkb.Config{
+	config := chkb.Config{
 		Layers: map[string]*chkb.Layer{
 			"base": {
 				KeyMap: chkb.KeyMap{
@@ -26,7 +27,7 @@ func main() {
 		},
 	}
 
-	err := book.Save(os.Stdout)
+	err := config.Save(os.Stdout)
 	if err != nil {
 		log.Println(err)
 	}
