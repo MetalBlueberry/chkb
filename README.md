@@ -246,3 +246,4 @@ To find extra keys, you can read ./pkg/chkb/ecodes.go and use anything starting 
 - [ ] examples
 - [x] Allow to disable layerFile functionality
 - [ ] Implement RESETKEY to start-stop the app in the background
+- [x] extract tapDelay to configuration
