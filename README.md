@@ -229,6 +229,8 @@ layers:
   - layerName: name of the layer
 - PopLayer: removes a layer from the stack
   - layerName: name of the layer
+- ChangeLayer: The base layer will be replaced
+  - layerName: name of the layer
 
 
 ## Keycodes
@@ -240,10 +242,11 @@ To find extra keys, you can read ./pkg/chkb/ecodes.go and use anything starting 
 ## TODO
 
 - [x] integrate with cobra cli
-- [ ] implement testing run mode. just to see keypresses and final maps
 - [x] allow to specify the location of the config file
+- [x] Allow to disable layerFile functionality
+- [x] extract tapDelay to configuration
+- [ ] implement testing run mode. just to see keypresses and final maps
 - [ ] easy autoshift functionality for layers
 - [ ] examples
-- [x] Allow to disable layerFile functionality
 - [ ] Implement RESETKEY to start-stop the app in the background
-- [x] extract tapDelay to configuration
+- [ ] add initialLayer as a configuration parameter
