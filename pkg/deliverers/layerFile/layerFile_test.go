@@ -73,7 +73,7 @@ func TestLayerFile_Deliver(t *testing.T) {
 			},
 			wantErr:     false,
 			wantHandled: true,
-			wantFileContent: `l0 > 
+			wantFileContent: `l0
 `,
 		},
 		{
@@ -96,7 +96,7 @@ func TestLayerFile_Deliver(t *testing.T) {
 			},
 			wantErr:     false,
 			wantHandled: true,
-			wantFileContent: `l0 > l2 > 
+			wantFileContent: `l0>l2
 `,
 		},
 		{
@@ -119,7 +119,7 @@ func TestLayerFile_Deliver(t *testing.T) {
 			},
 			wantErr:     false,
 			wantHandled: true,
-			wantFileContent: `l0 > l2 > 
+			wantFileContent: `l0>l2
 `,
 		},
 		{

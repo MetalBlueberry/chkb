@@ -55,7 +55,7 @@ func (lf *LayerFile) Deliver(event chkb.MapEvent) (handled bool, err error) {
 	switch event.Action {
 	case chkb.KbActionPushLayer, chkb.KbActionPopLayer:
 		str := layerString(lf.mapper)
-		_, err := fmt.Fprint(lf, str)
+		_, err := fmt.Fprintln(lf, str)
 		return true, err
 	}
 	return false, nil
@@ -70,5 +70,5 @@ func layerString(kb *chkb.Keyboard) string {
 			}
 		}
 	}
-	return strings.Join(fragments, ">") + "\n"
+	return strings.Join(fragments, ">")
 }
