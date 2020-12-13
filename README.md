@@ -236,3 +236,12 @@ layers:
 If you tap a key, you will see the code printed in the chkb log. This way you can find the name of any key from your keyboard.
 
 To find extra keys, you can read ./pkg/chkb/ecodes.go and use anything starting with `KEY_`. This keys are just standard keycodes and you can also find them in linux source code /usr/include/linux/input-event-codes.h
+
+## TODO
+
+- [ ] integrate with cobra cli
+- [ ] implement testing run mode. just to see keypresses and final maps
+- [ ] allow to specify the location of the config file
+- [ ] easy autoshift functionality for layers
+- [ ] examples
+- [ ] Allow to disable layerFile
