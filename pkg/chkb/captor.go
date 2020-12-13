@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 package chkb
 
 import (
@@ -40,10 +41,12 @@ type Captor struct {
 	m          sync.Mutex
 }
 
+// NewCaptor creates a new captor
 func NewCaptor(config *Config) *Captor {
 	return NewCaptorWithClock(clock.New(), config)
 }
 
+// NewCaptorWithClock creates a new captor with an specific clock, mainly for testing purposes
 func NewCaptorWithClock(clock clock.Clock, config *Config) *Captor {
 	return &Captor{
 		Clock:      clock,
@@ -60,6 +63,17 @@ type idleTimer struct {
 	KeyCode KeyCode
 }
 
+func (c *Captor) newIdleTimer(keyCode KeyCode, send SendFunc) *idleTimer {
+	timer := &idleTimer{
+		Timeout: c.Clock.AfterFunc(c.Config.GetTapDelay(), c.idle(keyCode, send)),
+		KeyCode: keyCode,
+	}
+	timer.Timeout.Stop()
+	c.idleTimers[keyCode] = timer
+	return timer
+}
+
+// InputEvent represents an input keyboard event.
 type InputEvent struct {
 	Time    time.Time
 	KeyCode KeyCode
@@ -67,15 +81,22 @@ type InputEvent struct {
 }
 
 //go:generate stringer -type=InputActions -trimprefix InputAction
+// InputActions represents an InputAction iota
 type InputActions int
 
 const (
+	// InputActionNil identifies an invalid or undefined action
 	InputActionNil InputActions = iota
+	// InputActionDown identifies a keypress
 	InputActionDown
+	// InputActionUp identifies a keyrelease
 	InputActionUp
 )
 
-func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent) error) error {
+type SendFunc func([]KeyEvent) error
+type CaptureFunc func() ([]InputEvent, error)
+
+func (c *Captor) loop(capture CaptureFunc, send SendFunc) error {
 	events, err := capture()
 	if err != nil {
 		log.WithError(err).Error("cannot capture more events")
@@ -95,12 +116,7 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 		switch event.Action {
 		case KeyActionDown:
 			if !ok {
-				timer = &idleTimer{
-					Timeout: c.Clock.AfterFunc(c.Config.GetTapDelay(), c.idle(event.KeyCode, send)),
-					KeyCode: event.KeyCode,
-				}
-				timer.Timeout.Stop()
-				c.idleTimers[event.KeyCode] = timer
+				timer = c.newIdleTimer(event.KeyCode, send)
 			}
 			if timer.Timeout.Stop() {
 				timer.Count++
@@ -134,6 +150,10 @@ func (c *Captor) loop(capture func() ([]InputEvent, error), send func([]KeyEvent
 	return send(captured)
 }
 
+// Run creates a capture infinite loop, The loop will call capture function to get the input events
+// and call send function when it captures something.
+// capture should block is new data is not available.
+// send can be called from different gorouties but will not perform calls in parallel.
 func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent) error) error {
 	for {
 		err := c.loop(capture, send)
