@@ -239,9 +239,10 @@ To find extra keys, you can read ./pkg/chkb/ecodes.go and use anything starting 
 
 ## TODO
 
-- [ ] integrate with cobra cli
+- [x] integrate with cobra cli
 - [ ] implement testing run mode. just to see keypresses and final maps
 - [ ] allow to specify the location of the config file
 - [ ] easy autoshift functionality for layers
 - [ ] examples
 - [ ] Allow to disable layerFile
+- [ ] Implement RESETKEY to start-stop the app in the background
