@@ -62,15 +62,13 @@ func (lf *LayerFile) Deliver(event chkb.MapEvent) (handled bool, err error) {
 }
 
 func layerString(kb *chkb.Keyboard) string {
-	builder := strings.Builder{}
+	fragments := make([]string, len(kb.Mapper.Layers))
 	for i := range kb.Mapper.Layers {
 		for name := range kb.Config.Layers {
 			if kb.Mapper.Layers[i] == kb.Config.Layers[name] {
-				builder.WriteString(name)
-				builder.WriteString(" > ")
+				fragments[i] = name
 			}
 		}
 	}
-	builder.WriteString("\n")
-	return builder.String()
+	return strings.Join(fragments, ">") + "\n"
 }
