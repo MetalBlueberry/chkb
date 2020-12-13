@@ -241,7 +241,7 @@ To find extra keys, you can read ./pkg/chkb/ecodes.go and use anything starting 
 
 - [x] integrate with cobra cli
 - [ ] implement testing run mode. just to see keypresses and final maps
-- [ ] allow to specify the location of the config file
+- [x] allow to specify the location of the config file
 - [ ] easy autoshift functionality for layers
 - [ ] examples
 - [ ] Allow to disable layerFile

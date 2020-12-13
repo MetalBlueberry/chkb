@@ -74,6 +74,11 @@ to both systems to the application. See readme for instructions.
 			return fmt.Errorf("You must specify at least one input device")
 		}
 
+		configPath, err := cmd.Flags().GetString("config")
+		if err != nil {
+			return fmt.Errorf("Cannot read config flag, %w", err)
+		}
+
 		// This is required to ensure that the enter key is not stuck down
 		// when the device is grab.
 		log.Info("You have 200 ms to release all keys")
@@ -100,7 +105,7 @@ to both systems to the application. See readme for instructions.
 			devs = append(devs, dev)
 		}
 
-		keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("testkeyboard"))
+		keyboard, err := uinput.CreateKeyboard("/dev/uinput", []byte("chkb-keyboard"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -108,7 +113,7 @@ to both systems to the application. See readme for instructions.
 
 		book := chkb.Config{}
 
-		keys, err := os.Open("keys.yaml")
+		keys, err := os.Open(configPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -157,6 +162,7 @@ func Execute() {
 func init() {
 	rootCmd.Flags().BoolP("verbose", "v", false, "print debug information")
 	rootCmd.Flags().StringSliceP("input-device", "i", nil, "input device to capture keys")
+	rootCmd.Flags().StringP("config", "c", "chkb.yaml", "configuration file")
 }
 
 var ErrInvalidEvent = errors.New("Invalid event")
