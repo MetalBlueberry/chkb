@@ -165,6 +165,7 @@ func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent)
 
 func (c *Captor) deliverEvent(event *idleTimer, send func([]KeyEvent) error) {
 	if event.Count%2 == 0 {
+		// Odd count means that the key is down
 		err := send([]KeyEvent{
 			NewKeyEv(c.Clock.Now(), event.KeyCode, KeyActionHold),
 		})
@@ -172,6 +173,7 @@ func (c *Captor) deliverEvent(event *idleTimer, send func([]KeyEvent) error) {
 			log.WithError(err).Error("Cannot send key event")
 		}
 	} else {
+		// Even count means that the key is up
 		switch event.Count / 2 {
 		case 0:
 			err := send([]KeyEvent{
