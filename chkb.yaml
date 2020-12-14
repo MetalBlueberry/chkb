@@ -11,9 +11,9 @@ layers:
             layerName: control
         Map:
           - keyCode: KEY_LEFTMETA
-      KEY_LEFT:
-        Down:
-          - action: PushLayer
+      KEY_RIGHTSHIFT:
+        Tap:
+          - action: ChangeLayer
             layerName: arrows
       # disable enter for forced learning
       # KEY_ENTER:
@@ -55,18 +55,16 @@ layers:
             layerName: control
   arrows:
     onMiss:
-      - action: PopLayer
-        layerName: arrows
+      - action: ChangeLayer
+        layerName: base
       - action: Map
     keyMap:
-      KEY_CAPSLOCK:
-        Tap:
-          - action: PopLayer
-            layerName: arrows
-          - action: PushLayer
-            layerName: control
+      KEY_RIGHTSHIFT:
         Map:
-          - keyCode: KEY_LEFTMETA
+          - keyCode: KEY_RIGHTSHIFT
+        Tap:
+          - action: ChangeLayer
+            layerName: base
       KEY_LEFT:
         Down:
           - action: PopLayer
@@ -81,8 +79,6 @@ layers:
         Map: 
           - keyCode: "KEY_LEFT"
       KEY_L:
-        Tap:
-          - action: Nil
         Map: 
           - keyCode: "KEY_RIGHT"
   numpad:
