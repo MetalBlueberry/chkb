@@ -79,15 +79,16 @@ func (action KbActions) Is(compare KbActions) bool {
 }
 
 var KbActionsMap map[string]KbActions = map[string]KbActions{
-	KbActionNil.String():       KbActionNil,
-	KbActionMap.String():       KbActionMap,
-	KbActionDown.String():      KbActionDown,
-	KbActionUp.String():        KbActionUp,
-	KbActionTap.String():       KbActionTap,
-	KbActionDoubleTap.String(): KbActionDoubleTap,
-	KbActionHold.String():      KbActionHold,
-	KbActionPushLayer.String(): KbActionPushLayer,
-	KbActionPopLayer.String():  KbActionPopLayer,
+	KbActionNil.String():         KbActionNil,
+	KbActionMap.String():         KbActionMap,
+	KbActionDown.String():        KbActionDown,
+	KbActionUp.String():          KbActionUp,
+	KbActionTap.String():         KbActionTap,
+	KbActionDoubleTap.String():   KbActionDoubleTap,
+	KbActionHold.String():        KbActionHold,
+	KbActionPushLayer.String():   KbActionPushLayer,
+	KbActionPopLayer.String():    KbActionPopLayer,
+	KbActionChangeLayer.String(): KbActionChangeLayer,
 }
 
 func (handler *Handler) AddDeliverer(deliverer Deliverer) {

@@ -53,7 +53,7 @@ func NewLayerFile(fs afero.Fs, kb *chkb.Keyboard, fileName string) (*LayerFile, 
 
 func (lf *LayerFile) Deliver(event chkb.MapEvent) (handled bool, err error) {
 	switch event.Action {
-	case chkb.KbActionPushLayer, chkb.KbActionPopLayer:
+	case chkb.KbActionPushLayer, chkb.KbActionPopLayer, chkb.KbActionChangeLayer:
 		str := layerString(lf.mapper)
 		_, err := fmt.Fprintln(lf, str)
 		return true, err
