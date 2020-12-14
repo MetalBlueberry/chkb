@@ -1,4 +1,4 @@
-# chkb [![Go Report Card](https://goreportcard.com/badge/github.com/MetalBlueberry/chkb)](https://goreportcard.com/report/github.com/MetalBlueberry/chkb) [![Coverage Status](https://coveralls.io/repos/github/MetalBlueberry/chkb/badge.svg?branch=master)](https://coveralls.io/github/MetalBlueberry/chkb?branch=master)
+# chkb [![Go Report Card](https://goreportcard.com/badge/github.com/MetalBlueberry/chkb)](https://goreportcard.com/report/github.com/MetalBlueberry/chkb) ![coveralls.](https://github.com/MetalBlueberry/chkb/workflows/coveralls./badge.svg) [![Coverage Status](https://coveralls.io/repos/github/MetalBlueberry/chkb/badge.svg?branch=master)](https://coveralls.io/github/MetalBlueberry/chkb?branch=master)
 
 chkb turns a regular keyboard intro a fully programmable keyboard.
 
