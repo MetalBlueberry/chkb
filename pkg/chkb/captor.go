@@ -206,7 +206,6 @@ func (c *Captor) idle(keyCode KeyCode, send func([]KeyEvent) error) func() {
 		defer c.m.Unlock()
 
 		event := c.idleTimers[keyCode]
-		delete(c.idleTimers, keyCode)
 		c.deliverEvent(event, send)
 	}
 }
