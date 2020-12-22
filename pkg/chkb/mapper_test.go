@@ -33,172 +33,27 @@ import (
 )
 
 var _ = Describe("Mapper", func() {
-	DescribeTable("mapOne", func(m *chkb.Mapper, event chkb.KeyEvent, expected []chkb.MapEvent, errExpected bool) {
-		obtained, err := m.MapOne(event)
-		assert.Equal(GinkgoT(), expected, obtained)
-		if errExpected {
-			assert.Error(GinkgoT(), err)
-		} else {
-			assert.NoError(GinkgoT(), err)
-		}
-	},
-		Entry("Forward Up",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{{}},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_B, Action: chkb.KeyActionDown},
-			[]chkb.MapEvent{{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown}},
-			false,
-		),
-		Entry("Forward Down",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{{}},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_B, Action: chkb.KeyActionUp},
-			[]chkb.MapEvent{{KeyCode: chkb.KEY_B, Action: chkb.KbActionUp}},
-			false,
-		),
-		Entry("Block Tap",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{{}},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_B, Action: chkb.KeyActionTap},
-			nil,
-			true,
-		),
-		Entry("map Key up",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
-			[]chkb.MapEvent{{KeyCode: chkb.KEY_B, Action: chkb.KbActionUp}},
-			false,
-		),
-		Entry("map Key down",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
-			[]chkb.MapEvent{{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown}},
-			false,
-		),
-		Entry("no map Key tap",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
-			nil,
-			true,
-		),
-		Entry("Fallback default on down",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						OnMiss: []chkb.MapEvent{{Action: chkb.KbActionPopLayer, LayerName: "test"}},
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_C, Action: chkb.KeyActionDown},
-			[]chkb.MapEvent{{Action: chkb.KbActionPopLayer, LayerName: "test"}},
-			false,
-		),
-		Entry("no Fallback default on tap",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						OnMiss: []chkb.MapEvent{{Action: chkb.KbActionPopLayer, LayerName: "test"}},
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_C, Action: chkb.KeyActionTap},
-			nil,
-			true,
-		),
-		Entry("Fallback default multi layer",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						OnMiss: []chkb.MapEvent{{Action: chkb.KbActionTap, KeyCode: chkb.KEY_A}},
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-					{
-						OnMiss: []chkb.MapEvent{{Action: chkb.KbActionTap, KeyCode: chkb.KEY_B}},
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_B): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_C}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
-			[]chkb.MapEvent{{Action: chkb.KbActionTap, KeyCode: chkb.KEY_B}},
-			false,
-		),
-		Entry("Fallback default layer transparent multi action",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-					{
-						OnMiss: []chkb.MapEvent{{Action: chkb.KbActionPopLayer, LayerName: "test"}, {Action: chkb.KbActionMap}},
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_B): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_C}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_C, Action: chkb.KeyActionDown},
-			[]chkb.MapEvent{{Action: chkb.KbActionPopLayer, LayerName: "test"}, {Action: chkb.KbActionDown, KeyCode: chkb.KEY_C}},
-			false,
-		),
-		Entry("Fallback default multi layer transparent one layer",
-			&chkb.Mapper{
-				Layers: []*chkb.Layer{
-					{
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_A): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_B}}}},
-					},
-					{
-						OnMiss: []chkb.MapEvent{{Action: chkb.KbActionMap}},
-						KeyMap: chkb.KeyMap{chkb.KeyCode(chkb.KEY_B): {chkb.KeyActionMap: {{KeyCode: chkb.KEY_C}}}},
-					},
-				},
-			},
-			chkb.KeyEvent{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
-			[]chkb.MapEvent{{Action: chkb.KbActionDown, KeyCode: chkb.KEY_B}},
-			false,
-		),
-	)
-
-	DescribeTable("Map", func(m *chkb.Mapper, events []chkb.KeyEvent, expected []chkb.MapEvent, errExpected bool) {
-		obtained := []chkb.MapEvent{}
-		err := m.Maps(events, func(event chkb.MapEvent) error {
-			obtained = append(obtained, event)
-			return nil
-		})
-		for i := range obtained {
-			if len(expected) > i {
-				log.Printf("%s - %s", obtained[i], expected[i])
-			} else {
-				log.Printf("%s", obtained[i])
+	DescribeTable("Map",
+		func(m *chkb.Mapper, events []chkb.KeyEvent, expected []chkb.MapEvent, errExpected bool) {
+			obtained := []chkb.MapEvent{}
+			err := m.Maps(events, func(event chkb.MapEvent) error {
+				obtained = append(obtained, event)
+				return nil
+			})
+			for i := range obtained {
+				if len(expected) > i {
+					log.Printf("%s - %s", obtained[i], expected[i])
+				} else {
+					log.Printf("%s", obtained[i])
+				}
 			}
-		}
-		assert.Equal(GinkgoT(), expected, obtained)
-		if errExpected {
-			assert.Error(GinkgoT(), err)
-		} else {
-			assert.NoError(GinkgoT(), err)
-		}
-	},
+			assert.Equal(GinkgoT(), expected, obtained)
+			if errExpected {
+				assert.Error(GinkgoT(), err)
+			} else {
+				assert.NoError(GinkgoT(), err)
+			}
+		},
 		Entry("Map key",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
@@ -222,7 +77,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("Forward Real key if not mapped",
+		Entry("Forward real key if not mapped",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{},
 			}),
@@ -242,7 +97,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("forward if keymap only contains map mapped",
+		Entry("Forward if keymap only contains map mapped",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -306,7 +161,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("hold keys if has special",
+		Entry("Hold keys if has special",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -336,7 +191,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("Ignore Special",
+		Entry("Ignore special",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -364,7 +219,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("SmartTap/Tap",
+		Entry("Smart Tap-Tap",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -396,7 +251,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("SmartTap/Hold",
+		Entry("Smart Tap-Hold",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -429,7 +284,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("Smart/Hold-Hold-Tap",
+		Entry("Smart Hold-Hold-Tap",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
@@ -471,7 +326,7 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
-		Entry("Smart/Hold-Hold-Tap Block map",
+		Entry("Smart Hold-Hold-Tap Block map",
 			chkb.NewMapper().WithLayers(chkb.Layers{
 				&chkb.Layer{
 					KeyMap: chkb.KeyMap{
