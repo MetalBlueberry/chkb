@@ -83,6 +83,11 @@ func (ev MapEvent) String() string {
 	}
 }
 
+func (layer *Layer) isKeyMapped(keyCode KeyCode) bool {
+	_, ok := layer.KeyMap[keyCode]
+	return ok
+}
+
 func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 	keymap, ok := layer.KeyMap[event.KeyCode]
 	if !ok {
@@ -225,7 +230,7 @@ func (kb *Mapper) MapOne(event KeyEvent) ([]MapEvent, error) {
 			handled = true
 			break
 		}
-		if (event.Action == KeyActionDown) && len(kb.Layers[i].OnMiss) > 0 {
+		if (!kb.Layers[i].isKeyMapped(event.KeyCode)) && (event.Action == KeyActionDown) && len(kb.Layers[i].OnMiss) > 0 {
 			transparent := false
 			for j := range kb.Layers[i].OnMiss {
 				if kb.Layers[i].OnMiss[j].Action == KbActionMap {

@@ -389,6 +389,112 @@ var _ = Describe("Mapper", func() {
 			},
 			false,
 		),
+		Entry("onMiss do not trigger when key is mapped",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					OnMiss: []chkb.MapEvent{
+						{Action: chkb.KbActionPopLayer, LayerName: "test"},
+					},
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_A: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionMap: {
+								{KeyCode: chkb.KEY_B},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_B, Action: chkb.KbActionUp},
+			},
+			false,
+		),
+		Entry("onMiss do not trigger when key contains actions",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					OnMiss: []chkb.MapEvent{
+						{Action: chkb.KbActionPopLayer, LayerName: "test"},
+					},
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_A: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionTap: {
+								{Action: chkb.KbActionChangeLayer, LayerName: "other"},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_A, Action: chkb.KeyActionTap},
+			},
+			[]chkb.MapEvent{
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_A, Action: chkb.KbActionUp},
+				{Action: chkb.KbActionChangeLayer, LayerName: "other"},
+			},
+			false,
+		),
+		Entry("onMiss trigger when key is not mapped",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					OnMiss: []chkb.MapEvent{
+						{Action: chkb.KbActionPopLayer, LayerName: "test"},
+					},
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_A: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionMap: {
+								{KeyCode: chkb.KEY_B},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionTap},
+			},
+			[]chkb.MapEvent{
+				{Action: chkb.KbActionPopLayer, LayerName: "test"},
+			},
+			false,
+		),
+		Entry("onMiss forward keys if there is a map action",
+			chkb.NewMapper().WithLayers(chkb.Layers{
+				&chkb.Layer{
+					OnMiss: []chkb.MapEvent{
+						{Action: chkb.KbActionPopLayer, LayerName: "test"},
+						{Action: chkb.KbActionMap},
+					},
+					KeyMap: chkb.KeyMap{
+						chkb.KEY_A: map[chkb.KeyActions][]chkb.MapEvent{
+							chkb.KeyActionMap: {
+								{KeyCode: chkb.KEY_B},
+							},
+						},
+					},
+				},
+			}),
+			[]chkb.KeyEvent{
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionUp},
+				{KeyCode: chkb.KEY_C, Action: chkb.KeyActionTap},
+			},
+			[]chkb.MapEvent{
+				{Action: chkb.KbActionPopLayer, LayerName: "test"},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionDown},
+				{KeyCode: chkb.KEY_C, Action: chkb.KbActionUp},
+			},
+			false,
+		),
 	)
 
 })
