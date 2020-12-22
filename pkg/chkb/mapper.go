@@ -32,17 +32,20 @@ import (
 )
 
 type Mapper struct {
-	Layers   Layers
-	downkeys map[KeyCode][]MapEvent
-	holded   *list.List
-	holding  KeyCode
+	Layers Layers
+
+	downkeys        map[KeyCode][]MapEvent
+	virtualDownKeys map[KeyCode]bool
+	holded          *list.List
+	holding         KeyCode
 }
 
 func NewMapper() *Mapper {
 	kb := &Mapper{
-		Layers:   Layers{},
-		downkeys: map[KeyCode][]MapEvent{},
-		holded:   list.New(),
+		Layers:          Layers{},
+		downkeys:        map[KeyCode][]MapEvent{},
+		virtualDownKeys: map[KeyCode]bool{},
+		holded:          list.New(),
 	}
 	return kb
 }
@@ -153,12 +156,16 @@ func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 
 		switch event.Action {
 		case KeyActionUp:
+			// If key was down, raise virtual keys down
 			downkeys, ok := kb.downkeys[event.KeyCode]
 			if ok {
 				for _, downkey := range downkeys {
-					downkey.Action = KbActionUp
-					downkey.Time = event.Time
-					err := handle(downkey)
+					kb.virtualDownKeys[downkey.KeyCode] = false
+					err := handle(MapEvent{
+						Time:    event.Time,
+						Action:  KbActionUp,
+						KeyCode: downkey.KeyCode,
+					})
 					if err != nil {
 						return err
 					}
@@ -180,14 +187,20 @@ func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 			switch m.Action {
 			case KbActionDown:
 				kb.downkeys[event.KeyCode] = append(kb.downkeys[event.KeyCode], m)
+				kb.virtualDownKeys[m.KeyCode] = true
 				err := handle(m)
 				if err != nil {
 					return err
 				}
 			case KbActionUp:
-				_, ok := kb.downkeys[m.KeyCode]
-				if ok {
-					err := handle(m)
+				isDown, ok := kb.virtualDownKeys[m.KeyCode]
+				if ok && isDown {
+					kb.virtualDownKeys[m.KeyCode] = false
+					err := handle(MapEvent{
+						Time:    m.Time,
+						Action:  KbActionUp,
+						KeyCode: m.KeyCode,
+					})
 					if err != nil {
 						return err
 					}

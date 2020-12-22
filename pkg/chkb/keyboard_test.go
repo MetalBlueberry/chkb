@@ -299,6 +299,13 @@ var _ = Describe("Keyboard", func() {
 										{Action: chkb.KbActionNil},
 									},
 								},
+								evdev.KEY_8: {
+									chkb.KeyActionDoubleTap: {
+										{Action: chkb.KbActionDown, KeyCode: chkb.KEY_LEFTSHIFT},
+										{Action: chkb.KbActionTap, KeyCode: chkb.KEY_8},
+										{Action: chkb.KbActionUp, KeyCode: chkb.KEY_LEFTSHIFT},
+									},
+								},
 							},
 						},
 						"swapAB": {
@@ -335,6 +342,20 @@ var _ = Describe("Keyboard", func() {
 				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
 				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_L, Action: chkb.KbActionTap},
 				{Time: Elapsed(TapDelayMs + 1), KeyCode: evdev.KEY_O, Action: chkb.KbActionTap},
+			}),
+			Entry("Auto shift", []chkb.InputEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_8, Action: chkb.InputActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_8, Action: chkb.InputActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_8, Action: chkb.InputActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_8, Action: chkb.InputActionUp},
+			}, []chkb.MapEvent{
+				{Time: Elapsed(0), KeyCode: evdev.KEY_8, Action: chkb.KbActionDown},
+				{Time: Elapsed(1), KeyCode: evdev.KEY_8, Action: chkb.KbActionUp},
+				{Time: Elapsed(2), KeyCode: evdev.KEY_8, Action: chkb.KbActionDown},
+				{Time: Elapsed(3), KeyCode: evdev.KEY_8, Action: chkb.KbActionUp},
+				{Time: Elapsed(3 + TapDelayMs), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionDown},
+				{Time: Elapsed(3 + TapDelayMs), KeyCode: evdev.KEY_8, Action: chkb.KbActionTap},
+				{Time: Elapsed(3 + TapDelayMs), KeyCode: evdev.KEY_LEFTSHIFT, Action: chkb.KbActionUp},
 			}),
 		)
 	})
