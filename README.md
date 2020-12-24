@@ -58,9 +58,34 @@ layers:
           - keyCode: KEY_LEFTMETA
 ```
 
+## Change Layer
+
+A layer modifies how your keys behave. Base layer is pushed at startup and cannot be removed but it can be changed. Just make sure that you always have a way to move between layers or you will be stuck.
+
+### Move between base and control layers
+
+```yaml
+layers:
+  base:
+    keyMap:
+      KEY_CAPSLOCK:
+        Tap:
+          ## Change base layer for control layer
+          - action: ChangeLayer
+            layerName: control
+
+  control:
+    keyMap:
+      KEY_CAPSLOCK:
+        Tap:
+          ## Go back to base 
+          - action: ChangeLayer
+            layerName: base
+```
+
 ## Push/Pop layers
 
-A layer modifies how your keys behave. Base layer is pushed at startup and cannot be removed. You can put maps on this layer to push other layers so you can extend the functionality. The layers are push into a stack and readed from top to down. Once the event is handled by a layer, the bottom layers do not receive it.
+You can push other layers to extend the functionality of the base layer. The layers are push into a stack and read from top to down. Once the event is handled by a layer, the next layers do not receive it. Most users will be fine using only ChangeLayer. but this is still an interesting feature to modify only parts of your keyboard.
 
 ### swap AB keys
 
@@ -112,7 +137,7 @@ layers:
 
 ## Multiple maps
 
-There are cases where you want to do multiple actions with a single input event. You may have noticed that the Keyboard events are a list, This means you can use as many as you need. 
+There are cases where you want to do multiple actions with a single input event. You may have noticed that the Keyboard events are a list, This means you can use as many as you need.
 
 ### Pop layer and push another
 
