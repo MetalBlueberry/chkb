@@ -110,7 +110,9 @@ layers:
       # swap B
       KEY_B:
           - keyCode: KEY_A
-      # remove the layer if caps is tapped again
+      # remove the layer if caps is tapped again,
+      # as this event is handled by swapAB layer, 
+      # base layer wont trigger the Tap action
       KEY_CAPSLOCK:
         Tap:
           - action: PopLayer
