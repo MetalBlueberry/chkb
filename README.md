@@ -181,9 +181,31 @@ layers:
 
 onMiss event is triggered on keydown if a key contains no mapping in the current layer. It is useful to automatically leave a layer if you press something that it is not mapped. By default, the keydown event stops on the current layer, if you want to propagate it, you have to add the **Map** action to the onMiss action list
 
+```yaml
+layers:
+  base:
+    keyMap:
+      KEY_CAPSLOCK:
+        Tap:
+          - action: ChangeLayer
+            layerName: control
+
+  control:
+    onMiss:
+      ## If you press a non mapped key...
+      Tap:
+        ## Go back to base
+        - action: ChangeLayer
+          layerName: base
+        ## And forward the down even to base layer
+        - action: Map
+    keyMap:
+      ## (keymaps...)
+```
+
 ## Available key events
 
-key events are used to capture events from your keyboard and map them into other keyboard events. 
+key events are used to capture events from your keyboard and map them into other keyboard events.
 
 ```yaml
 layers:
