@@ -30,8 +30,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Captor extracts from a stream of keyup/keydown events the advanced
-// actions such as Tap/DoubleTap/Hold
+// Captor processes stream of keyup/keydown events to generate advanced actions
+// such as Tap/DoubleTap/Hold
 type Captor struct {
 	Clock  clock.Clock
 	Config *Config
@@ -93,7 +93,10 @@ const (
 	InputActionUp
 )
 
+// SendFunc is used to send KeyEvents
 type SendFunc func([]KeyEvent) error
+
+// CaptureFunc is used to capture input events
 type CaptureFunc func() ([]InputEvent, error)
 
 func (c *Captor) loop(capture CaptureFunc, send SendFunc) error {
@@ -154,7 +157,7 @@ func (c *Captor) loop(capture CaptureFunc, send SendFunc) error {
 // and call send function when it captures something.
 // capture should block is new data is not available.
 // send can be called from different gorouties but will not perform calls in parallel.
-func (c *Captor) Run(capture func() ([]InputEvent, error), send func([]KeyEvent) error) error {
+func (c *Captor) Run(capture CaptureFunc, send SendFunc) error {
 	for {
 		err := c.loop(capture, send)
 		if err != nil {
