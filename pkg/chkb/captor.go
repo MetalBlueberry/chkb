@@ -63,7 +63,7 @@ type idleTimer struct {
 	KeyCode KeyCode
 }
 
-func (c *Captor) newIdleTimer(keyCode KeyCode, send SendFunc) *idleTimer {
+func (c *Captor) newIdleTimer(keyCode KeyCode, send MapFunc) *idleTimer {
 	timer := &idleTimer{
 		Timeout: c.Clock.AfterFunc(c.Config.GetTapDelay(), c.idle(keyCode, send)),
 		KeyCode: keyCode,
@@ -93,13 +93,13 @@ const (
 	InputActionUp
 )
 
-// SendFunc is used to send KeyEvents
-type SendFunc func([]KeyEvent) error
+// MapFunc is used to send KeyEvents to the Mapper module
+type MapFunc func([]KeyEvent) error
 
 // CaptureFunc is used to capture input events
 type CaptureFunc func() ([]InputEvent, error)
 
-func (c *Captor) loop(capture CaptureFunc, send SendFunc) error {
+func (c *Captor) loop(capture CaptureFunc, send MapFunc) error {
 	events, err := capture()
 	if err != nil {
 		log.WithError(err).Error("cannot capture more events")
@@ -157,7 +157,7 @@ func (c *Captor) loop(capture CaptureFunc, send SendFunc) error {
 // and call send function when it captures something.
 // capture should block is new data is not available.
 // send can be called from different gorouties but will not perform calls in parallel.
-func (c *Captor) Run(capture CaptureFunc, send SendFunc) error {
+func (c *Captor) Run(capture CaptureFunc, send MapFunc) error {
 	for {
 		err := c.loop(capture, send)
 		if err != nil {

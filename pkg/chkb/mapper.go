@@ -52,6 +52,11 @@ func NewMapper() *Mapper {
 	return kb
 }
 
+func (mapper *Mapper) WithLayers(layers Layers) *Mapper {
+	mapper.Layers = layers
+	return mapper
+}
+
 type KeyCode uint16
 
 func (keyCode KeyCode) String() string {
@@ -130,39 +135,43 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 	return copymaps, len(copymaps) > 0
 }
 
-func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
+// HandleFunc is used to send MapEvents to handlers
+type HandleFunc func(MapEvent) error
+
+// Maps processes a slice of KeyEvents and calls handle func with the MapEvents
+func (mapper *Mapper) Maps(events []KeyEvent, handle HandleFunc) error {
 	for _, event := range events {
-		kb.held.PushBack(event)
+		mapper.held.PushBack(event)
 	}
 
-	for e := kb.held.Front(); e != nil; {
+	for e := mapper.held.Front(); e != nil; {
 		event := e.Value.(KeyEvent)
 
-		if kb.holding != KEY_RESERVED && kb.holding != event.KeyCode {
+		if mapper.holding != KEY_RESERVED && mapper.holding != event.KeyCode {
 			e = e.Next()
 			continue
 		}
-		kb.held.Remove(e)
-		e = kb.held.Front()
+		mapper.held.Remove(e)
+		e = mapper.held.Front()
 
 		switch event.Action {
 		case KeyActionDown:
-			keyMap, ok := kb.Layers.findKeyMap(event.KeyCode)
+			keyMap, ok := mapper.Layers.findKeyMap(event.KeyCode)
 			if ok && keyMap.hasSpecialMaps() {
-				kb.holding = event.KeyCode
+				mapper.holding = event.KeyCode
 			}
 		default:
-			kb.holding = KEY_RESERVED
+			mapper.holding = KEY_RESERVED
 		case KeyActionUp:
 		}
 
 		switch event.Action {
 		case KeyActionUp:
 			// If key was down, raise virtual keys down
-			downkeys, ok := kb.downkeys[event.KeyCode]
+			downkeys, ok := mapper.downkeys[event.KeyCode]
 			if ok {
 				for _, downkey := range downkeys {
-					kb.virtualDownKeys[downkey.KeyCode] = false
+					mapper.virtualDownKeys[downkey.KeyCode] = false
 					err := handle(MapEvent{
 						Time:    event.Time,
 						Action:  KbActionUp,
@@ -172,11 +181,11 @@ func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 						return err
 					}
 				}
-				delete(kb.downkeys, event.KeyCode)
+				delete(mapper.downkeys, event.KeyCode)
 			}
 		}
 
-		maps, err := kb.mapOne(event)
+		maps, err := mapper.mapOne(event)
 		if err != nil {
 			log.
 				WithField("event", event).
@@ -188,16 +197,16 @@ func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 		for _, m := range maps {
 			switch m.Action {
 			case KbActionDown:
-				kb.downkeys[event.KeyCode] = append(kb.downkeys[event.KeyCode], m)
-				kb.virtualDownKeys[m.KeyCode] = true
+				mapper.downkeys[event.KeyCode] = append(mapper.downkeys[event.KeyCode], m)
+				mapper.virtualDownKeys[m.KeyCode] = true
 				err := handle(m)
 				if err != nil {
 					return err
 				}
 			case KbActionUp:
-				isDown, ok := kb.virtualDownKeys[m.KeyCode]
+				isDown, ok := mapper.virtualDownKeys[m.KeyCode]
 				if ok && isDown {
-					kb.virtualDownKeys[m.KeyCode] = false
+					mapper.virtualDownKeys[m.KeyCode] = false
 					err := handle(MapEvent{
 						Time:    m.Time,
 						Action:  KbActionUp,
@@ -206,7 +215,7 @@ func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 					if err != nil {
 						return err
 					}
-					delete(kb.downkeys, m.KeyCode)
+					delete(mapper.downkeys, m.KeyCode)
 				}
 			default:
 				err := handle(m)
@@ -231,23 +240,23 @@ func (layers Layers) findKeyMap(keyCode KeyCode) (KeyMapActions, bool) {
 	return nil, false
 }
 
-func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
+func (mapper *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 	mapped := make([]MapEvent, 0)
 	handled := false
-	for i := len(kb.Layers) - 1; i >= 0; i-- {
-		kmaps, ok := kb.Layers[i].findMap(event)
+	for i := len(mapper.Layers) - 1; i >= 0; i-- {
+		kmaps, ok := mapper.Layers[i].findMap(event)
 		if ok {
 			mapped = append(mapped, kmaps...)
 			handled = true
 			break
 		}
-		if (!kb.Layers[i].isKeyMapped(event.KeyCode)) && (event.Action == KeyActionDown) && len(kb.Layers[i].OnMiss) > 0 {
+		if (!mapper.Layers[i].isKeyMapped(event.KeyCode)) && (event.Action == KeyActionDown) && len(mapper.Layers[i].OnMiss) > 0 {
 			transparent := false
-			for j := range kb.Layers[i].OnMiss {
-				if kb.Layers[i].OnMiss[j].Action == KbActionMap {
+			for j := range mapper.Layers[i].OnMiss {
+				if mapper.Layers[i].OnMiss[j].Action == KbActionMap {
 					transparent = true
 				} else {
-					mapped = append(mapped, kb.Layers[i].OnMiss[j])
+					mapped = append(mapped, mapper.Layers[i].OnMiss[j])
 				}
 			}
 			if !transparent {
@@ -278,29 +287,24 @@ func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 	return nil, errors.New("Ignore event")
 }
 
-func (kb *Mapper) addLayer(layer *Layer) {
-	kb.Layers = append(kb.Layers, layer)
+func (mapper *Mapper) addLayer(layer *Layer) {
+	mapper.Layers = append(mapper.Layers, layer)
 }
 
-func (kb *Mapper) removeLayer(layer *Layer) error {
-	if len(kb.Layers) == 1 {
+func (mapper *Mapper) removeLayer(layer *Layer) error {
+	if len(mapper.Layers) == 1 {
 		return fmt.Errorf("Cannot remove last layer")
 	}
-	for i := range kb.Layers {
-		if kb.Layers[i] == layer {
-			kb.Layers = append(kb.Layers[:i], kb.Layers[i+1:]...)
+	for i := range mapper.Layers {
+		if mapper.Layers[i] == layer {
+			mapper.Layers = append(mapper.Layers[:i], mapper.Layers[i+1:]...)
 			return nil
 		}
 	}
 	return fmt.Errorf("Layer not previously applied")
 }
 
-func (kb *Mapper) setLayer(layer *Layer) error {
-	kb.Layers[0] = layer
+func (mapper *Mapper) setLayer(layer *Layer) error {
+	mapper.Layers[0] = layer
 	return nil
-}
-
-func (kb *Mapper) WithLayers(layers Layers) *Mapper {
-	kb.Layers = layers
-	return kb
 }
