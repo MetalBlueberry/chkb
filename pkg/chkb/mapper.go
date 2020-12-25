@@ -176,7 +176,7 @@ func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 			}
 		}
 
-		maps, err := kb.MapOne(event)
+		maps, err := kb.mapOne(event)
 		if err != nil {
 			log.
 				WithField("event", event).
@@ -231,7 +231,7 @@ func (layers Layers) findKeyMap(keyCode KeyCode) (KeyMapActions, bool) {
 	return nil, false
 }
 
-func (kb *Mapper) MapOne(event KeyEvent) ([]MapEvent, error) {
+func (kb *Mapper) mapOne(event KeyEvent) ([]MapEvent, error) {
 	mapped := make([]MapEvent, 0)
 	handled := false
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
