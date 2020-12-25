@@ -20,6 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+// Package chkb turns a regular keyboard intro a fully programmable keyboard.
+// The Keyboard struct is the high level entry point that you can use to
+// access the keyboard functionality
 package chkb
 
 import (
