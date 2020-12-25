@@ -204,21 +204,6 @@ func (ev *KbActions) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-// UnmarshalYAML reads yaml configuration
-func (ev *KeyActions) UnmarshalYAML(value *yaml.Node) error {
-	var actionString string
-	err := value.Decode(&actionString)
-	if err != nil {
-		return err
-	}
-	action, err := ParseKeyAction(actionString)
-	if err != nil {
-		return err
-	}
-	*ev = action
-	return nil
-}
-
 // MarshalYAML writes yaml configuration
 func (action KeyActions) MarshalYAML() (interface{}, error) {
 	return action.String(), nil
