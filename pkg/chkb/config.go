@@ -142,8 +142,8 @@ func (km KeyMap) MarshalYAML() (interface{}, error) {
 	return km.StringMap(), nil
 }
 
-// KeyActionsMap is used to validate if a certain action exists
-var KeyActionsMap map[string]KeyActions = map[string]KeyActions{
+// keyActionsMap is used to validate if a certain action exists
+var keyActionsMap map[string]KeyActions = map[string]KeyActions{
 	KeyActionNil.String():       KeyActionNil,
 	KeyActionMap.String():       KeyActionMap,
 	KeyActionDown.String():      KeyActionDown,
@@ -158,7 +158,7 @@ func ParseKeyAction(value string) (KeyActions, error) {
 	if value == "" {
 		return KeyActionMap, nil
 	}
-	a, ok := KeyActionsMap[value]
+	a, ok := keyActionsMap[value]
 	if !ok {
 		return a, fmt.Errorf("Action %s not found", value)
 	}
@@ -170,7 +170,7 @@ func ParseKbAction(value string) (KbActions, error) {
 	if value == "" {
 		return KbActionMap, nil
 	}
-	a, ok := KbActionsMap[value]
+	a, ok := kbActionsMap[value]
 	if !ok {
 		return a, fmt.Errorf("Action %s not found", value)
 	}

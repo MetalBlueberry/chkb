@@ -79,7 +79,7 @@ func (action KbActions) Is(compare KbActions) bool {
 	return action == compare
 }
 
-var KbActionsMap map[string]KbActions = map[string]KbActions{
+var kbActionsMap map[string]KbActions = map[string]KbActions{
 	KbActionNil.String():         KbActionNil,
 	KbActionMap.String():         KbActionMap,
 	KbActionDown.String():        KbActionDown,
