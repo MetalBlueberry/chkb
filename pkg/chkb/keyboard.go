@@ -28,13 +28,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Keyboard is a cheap programmable keyboard
+// It coordinates the communication between the different modules
 type Keyboard struct {
-	*Captor
-	*Mapper
+	Captor *Captor
+	Mapper *Mapper
 	*Handler
 	Config
 }
 
+// NewKeyboard creates a new chkb keyboard
 func NewKeyboard(config Config, initialLayer string) *Keyboard {
 	kb := &Keyboard{
 		Captor:  NewCaptor(&config),
@@ -47,9 +50,10 @@ func NewKeyboard(config Config, initialLayer string) *Keyboard {
 	return kb
 }
 
-func (kb *Keyboard) Run(event func() ([]InputEvent, error)) error {
+// Run starts a capture loop,
+func (kb *Keyboard) Run(event CaptureFunc) error {
 	return kb.Captor.Run(event, func(captured []KeyEvent) error {
-		err := kb.Maps(captured, kb.Handler.Handle)
+		err := kb.Mapper.Maps(captured, kb.Handler.Handle)
 		if err != nil {
 			return err
 		}
@@ -57,6 +61,52 @@ func (kb *Keyboard) Run(event func() ([]InputEvent, error)) error {
 	})
 }
 
+// PushLayer adds a new layer to the keyboard
+func (kb *Keyboard) PushLayer(name string) (err error) {
+	log.
+		WithField("name", name).
+		Info("Push layer")
+	layer, ok := kb.Config.Layers[name]
+	if !ok {
+		return fmt.Errorf("Layer %s not found", name)
+	}
+	kb.Mapper.addLayer(layer)
+	return nil
+}
+
+// PopLayer removes a layer from the keyboard
+func (kb *Keyboard) PopLayer(name string) (err error) {
+	log.
+		WithField("name", name).
+		Info("Pop layer")
+	layer, ok := kb.Config.Layers[name]
+	if !ok {
+		return fmt.Errorf("Layer %s not found", name)
+	}
+	err = kb.Mapper.removeLayer(layer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ChangeLayer changes the base layer for the keyboard
+func (kb *Keyboard) ChangeLayer(name string) (err error) {
+	log.
+		WithField("name", name).
+		Info("Change layer")
+	layer, ok := kb.Config.Layers[name]
+	if !ok {
+		return fmt.Errorf("Layer %s not found", name)
+	}
+	err = kb.Mapper.setLayer(layer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Deliver implements Deliverer interface to handle Layer events
 func (kb *Keyboard) Deliver(event MapEvent) (bool, error) {
 	switch event.Action {
 	case KbActionPushLayer:
@@ -71,46 +121,4 @@ func (kb *Keyboard) Deliver(event MapEvent) (bool, error) {
 	default:
 		return false, nil
 	}
-}
-
-func (kb *Keyboard) PushLayer(name string) (err error) {
-	log.
-		WithField("name", name).
-		Info("Push layer")
-	layer, ok := kb.Config.Layers[name]
-	if !ok {
-		return fmt.Errorf("Layer %s not found", name)
-	}
-	kb.addLayer(layer)
-	return nil
-}
-
-func (kb *Keyboard) PopLayer(name string) (err error) {
-	log.
-		WithField("name", name).
-		Info("Pop layer")
-	layer, ok := kb.Config.Layers[name]
-	if !ok {
-		return fmt.Errorf("Layer %s not found", name)
-	}
-	err = kb.removeLayer(layer)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (kb *Keyboard) ChangeLayer(name string) (err error) {
-	log.
-		WithField("name", name).
-		Info("Change layer")
-	layer, ok := kb.Config.Layers[name]
-	if !ok {
-		return fmt.Errorf("Layer %s not found", name)
-	}
-	err = kb.setLayer(layer)
-	if err != nil {
-		return err
-	}
-	return nil
 }
