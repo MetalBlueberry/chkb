@@ -22,77 +22,23 @@ THE SOFTWARE.
 
 package chkb
 
-// COPY PASTE from evdev because it is private
 const (
-	EV_VERSION                           = 0x010001
-	ID_BUS                               = 0
-	ID_VENDOR                            = 1
-	ID_PRODUCT                           = 2
-	ID_VERSION                           = 3
-	BUS_PCI                              = 0x01
-	BUS_ISAPNP                           = 0x02
-	BUS_USB                              = 0x03
-	BUS_HIL                              = 0x04
-	BUS_BLUETOOTH                        = 0x05
-	BUS_VIRTUAL                          = 0x06
-	BUS_ISA                              = 0x10
-	BUS_I8042                            = 0x11
-	BUS_XTKBD                            = 0x12
-	BUS_RS232                            = 0x13
-	BUS_GAMEPORT                         = 0x14
-	BUS_PARPORT                          = 0x15
-	BUS_AMIGA                            = 0x16
-	BUS_ADB                              = 0x17
-	BUS_I2C                              = 0x18
-	BUS_HOST                             = 0x19
-	BUS_GSC                              = 0x1A
-	BUS_ATARI                            = 0x1B
-	BUS_SPI                              = 0x1C
-	BUS_RMI                              = 0x1D
-	BUS_CEC                              = 0x1E
-	FF_STATUS_STOPPED                    = 0x00
-	FF_STATUS_PLAYING                    = 0x01
-	FF_STATUS_MAX                        = 0x01
-	FF_RUMBLE                            = 0x50
-	FF_PERIODIC                          = 0x51
-	FF_CONSTANT                          = 0x52
-	FF_SPRING                            = 0x53
-	FF_FRICTION                          = 0x54
-	FF_DAMPER                            = 0x55
-	FF_INERTIA                           = 0x56
-	FF_RAMP                              = 0x57
-	FF_EFFECT_MIN                        = FF_RUMBLE
-	FF_EFFECT_MAX                        = FF_RAMP
-	FF_SQUARE                            = 0x58
-	FF_TRIANGLE                          = 0x59
-	FF_SINE                              = 0x5a
-	FF_SAW_UP                            = 0x5b
-	FF_SAW_DOWN                          = 0x5c
-	FF_CUSTOM                            = 0x5d
-	FF_WAVEFORM_MIN                      = FF_SQUARE
-	FF_WAVEFORM_MAX                      = FF_CUSTOM
-	FF_GAIN                              = 0x60
-	FF_AUTOCENTER                        = 0x61
-	FF_MAX_EFFECTS                       = FF_GAIN
-	FF_MAX                               = 0x7f
-	EV_SYN                               = 0x00
-	EV_KEY                               = 0x01
-	EV_REL                               = 0x02
-	EV_ABS                               = 0x03
-	EV_MSC                               = 0x04
-	EV_SW                                = 0x05
-	EV_LED                               = 0x11
-	EV_SND                               = 0x12
-	EV_REP                               = 0x14
-	EV_FF                                = 0x15
-	EV_PWR                               = 0x16
-	EV_FF_STATUS                         = 0x17
-	EV_MAX                               = 0x1f
-	SYN_REPORT                           = 0
-	SYN_CONFIG                           = 1
-	SYN_MT_REPORT                        = 2
-	SYN_DROPPED                          = 3
-	SYN_MAX                              = 0xf
+	EV_SYN       = 0x00
+	EV_KEY       = 0x01
+	EV_REL       = 0x02
+	EV_ABS       = 0x03
+	EV_MSC       = 0x04
+	EV_SW        = 0x05
+	EV_LED       = 0x11
+	EV_SND       = 0x12
+	EV_REP       = 0x14
+	EV_FF        = 0x15
+	EV_PWR       = 0x16
+	EV_FF_STATUS = 0x17
+	EV_MAX       = 0x1f
+)
+
+const (
 	KEY_RESERVED                 KeyCode = 0
 	KEY_ESC                      KeyCode = 1
 	KEY_1                        KeyCode = 2
@@ -339,79 +285,79 @@ const (
 	KEY_WWAN                     KeyCode = 246
 	KEY_RFKILL                   KeyCode = 247
 	KEY_MICMUTE                  KeyCode = 248
-	BTN_MISC                             = 0x100
-	BTN_0                                = 0x100
-	BTN_1                                = 0x101
-	BTN_2                                = 0x102
-	BTN_3                                = 0x103
-	BTN_4                                = 0x104
-	BTN_5                                = 0x105
-	BTN_6                                = 0x106
-	BTN_7                                = 0x107
-	BTN_8                                = 0x108
-	BTN_9                                = 0x109
-	BTN_MOUSE                            = 0x110
-	BTN_LEFT                             = 0x110
-	BTN_RIGHT                            = 0x111
-	BTN_MIDDLE                           = 0x112
-	BTN_SIDE                             = 0x113
-	BTN_EXTRA                            = 0x114
-	BTN_FORWARD                          = 0x115
-	BTN_BACK                             = 0x116
-	BTN_TASK                             = 0x117
-	BTN_JOYSTICK                         = 0x120
-	BTN_TRIGGER                          = 0x120
-	BTN_THUMB                            = 0x121
-	BTN_THUMB2                           = 0x122
-	BTN_TOP                              = 0x123
-	BTN_TOP2                             = 0x124
-	BTN_PINKIE                           = 0x125
-	BTN_BASE                             = 0x126
-	BTN_BASE2                            = 0x127
-	BTN_BASE3                            = 0x128
-	BTN_BASE4                            = 0x129
-	BTN_BASE5                            = 0x12a
-	BTN_BASE6                            = 0x12b
-	BTN_DEAD                             = 0x12f
-	BTN_GAMEPAD                          = 0x130
-	BTN_SOUTH                            = 0x130
-	BTN_A                                = BTN_SOUTH
-	BTN_EAST                             = 0x131
-	BTN_B                                = BTN_EAST
-	BTN_C                                = 0x132
-	BTN_NORTH                            = 0x133
-	BTN_X                                = BTN_NORTH
-	BTN_WEST                             = 0x134
-	BTN_Y                                = BTN_WEST
-	BTN_Z                                = 0x135
-	BTN_TL                               = 0x136
-	BTN_TR                               = 0x137
-	BTN_TL2                              = 0x138
-	BTN_TR2                              = 0x139
-	BTN_SELECT                           = 0x13a
-	BTN_START                            = 0x13b
-	BTN_MODE                             = 0x13c
-	BTN_THUMBL                           = 0x13d
-	BTN_THUMBR                           = 0x13e
-	BTN_DIGI                             = 0x140
-	BTN_TOOL_PEN                         = 0x140
-	BTN_TOOL_RUBBER                      = 0x141
-	BTN_TOOL_BRUSH                       = 0x142
-	BTN_TOOL_PENCIL                      = 0x143
-	BTN_TOOL_AIRBRUSH                    = 0x144
-	BTN_TOOL_FINGER                      = 0x145
-	BTN_TOOL_MOUSE                       = 0x146
-	BTN_TOOL_LENS                        = 0x147
-	BTN_TOOL_QUINTTAP                    = 0x148
-	BTN_TOUCH                            = 0x14a
-	BTN_STYLUS                           = 0x14b
-	BTN_STYLUS2                          = 0x14c
-	BTN_TOOL_DOUBLETAP                   = 0x14d
-	BTN_TOOL_TRIPLETAP                   = 0x14e
-	BTN_TOOL_QUADTAP                     = 0x14f
-	BTN_WHEEL                            = 0x150
-	BTN_GEAR_DOWN                        = 0x150
-	BTN_GEAR_UP                          = 0x151
+	BTN_MISC                     KeyCode = 0x100
+	BTN_0                        KeyCode = 0x100
+	BTN_1                        KeyCode = 0x101
+	BTN_2                        KeyCode = 0x102
+	BTN_3                        KeyCode = 0x103
+	BTN_4                        KeyCode = 0x104
+	BTN_5                        KeyCode = 0x105
+	BTN_6                        KeyCode = 0x106
+	BTN_7                        KeyCode = 0x107
+	BTN_8                        KeyCode = 0x108
+	BTN_9                        KeyCode = 0x109
+	BTN_MOUSE                    KeyCode = 0x110
+	BTN_LEFT                     KeyCode = 0x110
+	BTN_RIGHT                    KeyCode = 0x111
+	BTN_MIDDLE                   KeyCode = 0x112
+	BTN_SIDE                     KeyCode = 0x113
+	BTN_EXTRA                    KeyCode = 0x114
+	BTN_FORWARD                  KeyCode = 0x115
+	BTN_BACK                     KeyCode = 0x116
+	BTN_TASK                     KeyCode = 0x117
+	BTN_JOYSTICK                 KeyCode = 0x120
+	BTN_TRIGGER                  KeyCode = 0x120
+	BTN_THUMB                    KeyCode = 0x121
+	BTN_THUMB2                   KeyCode = 0x122
+	BTN_TOP                      KeyCode = 0x123
+	BTN_TOP2                     KeyCode = 0x124
+	BTN_PINKIE                   KeyCode = 0x125
+	BTN_BASE                     KeyCode = 0x126
+	BTN_BASE2                    KeyCode = 0x127
+	BTN_BASE3                    KeyCode = 0x128
+	BTN_BASE4                    KeyCode = 0x129
+	BTN_BASE5                    KeyCode = 0x12a
+	BTN_BASE6                    KeyCode = 0x12b
+	BTN_DEAD                     KeyCode = 0x12f
+	BTN_GAMEPAD                  KeyCode = 0x130
+	BTN_SOUTH                    KeyCode = 0x130
+	BTN_A                        KeyCode = BTN_SOUTH
+	BTN_EAST                     KeyCode = 0x131
+	BTN_B                        KeyCode = BTN_EAST
+	BTN_C                        KeyCode = 0x132
+	BTN_NORTH                    KeyCode = 0x133
+	BTN_X                        KeyCode = BTN_NORTH
+	BTN_WEST                     KeyCode = 0x134
+	BTN_Y                        KeyCode = BTN_WEST
+	BTN_Z                        KeyCode = 0x135
+	BTN_TL                       KeyCode = 0x136
+	BTN_TR                       KeyCode = 0x137
+	BTN_TL2                      KeyCode = 0x138
+	BTN_TR2                      KeyCode = 0x139
+	BTN_SELECT                   KeyCode = 0x13a
+	BTN_START                    KeyCode = 0x13b
+	BTN_MODE                     KeyCode = 0x13c
+	BTN_THUMBL                   KeyCode = 0x13d
+	BTN_THUMBR                   KeyCode = 0x13e
+	BTN_DIGI                     KeyCode = 0x140
+	BTN_TOOL_PEN                 KeyCode = 0x140
+	BTN_TOOL_RUBBER              KeyCode = 0x141
+	BTN_TOOL_BRUSH               KeyCode = 0x142
+	BTN_TOOL_PENCIL              KeyCode = 0x143
+	BTN_TOOL_AIRBRUSH            KeyCode = 0x144
+	BTN_TOOL_FINGER              KeyCode = 0x145
+	BTN_TOOL_MOUSE               KeyCode = 0x146
+	BTN_TOOL_LENS                KeyCode = 0x147
+	BTN_TOOL_QUINTTAP            KeyCode = 0x148
+	BTN_TOUCH                    KeyCode = 0x14a
+	BTN_STYLUS                   KeyCode = 0x14b
+	BTN_STYLUS2                  KeyCode = 0x14c
+	BTN_TOOL_DOUBLETAP           KeyCode = 0x14d
+	BTN_TOOL_TRIPLETAP           KeyCode = 0x14e
+	BTN_TOOL_QUADTAP             KeyCode = 0x14f
+	BTN_WHEEL                    KeyCode = 0x150
+	BTN_GEAR_DOWN                KeyCode = 0x150
+	BTN_GEAR_UP                  KeyCode = 0x151
 	KEY_OK                       KeyCode = 0x160
 	KEY_SELECT                   KeyCode = 0x161
 	KEY_GOTO                     KeyCode = 0x162
@@ -570,10 +516,10 @@ const (
 	KEY_ATTENDANT_OFF            KeyCode = 0x21c
 	KEY_ATTENDANT_TOGGLE         KeyCode = 0x21d
 	KEY_LIGHTS_TOGGLE            KeyCode = 0x21e
-	BTN_DPAD_UP                          = 0x220
-	BTN_DPAD_DOWN                        = 0x221
-	BTN_DPAD_LEFT                        = 0x222
-	BTN_DPAD_RIGHT                       = 0x223
+	BTN_DPAD_UP                  KeyCode = 0x220
+	BTN_DPAD_DOWN                KeyCode = 0x221
+	BTN_DPAD_LEFT                KeyCode = 0x222
+	BTN_DPAD_RIGHT               KeyCode = 0x223
 	KEY_ALS_TOGGLE               KeyCode = 0x230
 	KEY_BUTTONCONFIG             KeyCode = 0x240
 	KEY_TASKMANAGER              KeyCode = 0x241
@@ -608,465 +554,299 @@ const (
 	KEY_FASTREVERSE              KeyCode = 0x275
 	KEY_SLOWREVERSE              KeyCode = 0x276
 	KEY_DATA                     KeyCode = 0x275
-	BTN_TRIGGER_HAPPY                    = 0x2c0
-	BTN_TRIGGER_HAPPY1                   = 0x2c0
-	BTN_TRIGGER_HAPPY2                   = 0x2c1
-	BTN_TRIGGER_HAPPY3                   = 0x2c2
-	BTN_TRIGGER_HAPPY4                   = 0x2c3
-	BTN_TRIGGER_HAPPY5                   = 0x2c4
-	BTN_TRIGGER_HAPPY6                   = 0x2c5
-	BTN_TRIGGER_HAPPY7                   = 0x2c6
-	BTN_TRIGGER_HAPPY8                   = 0x2c7
-	BTN_TRIGGER_HAPPY9                   = 0x2c8
-	BTN_TRIGGER_HAPPY10                  = 0x2c9
-	BTN_TRIGGER_HAPPY11                  = 0x2ca
-	BTN_TRIGGER_HAPPY12                  = 0x2cb
-	BTN_TRIGGER_HAPPY13                  = 0x2cc
-	BTN_TRIGGER_HAPPY14                  = 0x2cd
-	BTN_TRIGGER_HAPPY15                  = 0x2ce
-	BTN_TRIGGER_HAPPY16                  = 0x2cf
-	BTN_TRIGGER_HAPPY17                  = 0x2d0
-	BTN_TRIGGER_HAPPY18                  = 0x2d1
-	BTN_TRIGGER_HAPPY19                  = 0x2d2
-	BTN_TRIGGER_HAPPY20                  = 0x2d3
-	BTN_TRIGGER_HAPPY21                  = 0x2d4
-	BTN_TRIGGER_HAPPY22                  = 0x2d5
-	BTN_TRIGGER_HAPPY23                  = 0x2d6
-	BTN_TRIGGER_HAPPY24                  = 0x2d7
-	BTN_TRIGGER_HAPPY25                  = 0x2d8
-	BTN_TRIGGER_HAPPY26                  = 0x2d9
-	BTN_TRIGGER_HAPPY27                  = 0x2da
-	BTN_TRIGGER_HAPPY28                  = 0x2db
-	BTN_TRIGGER_HAPPY29                  = 0x2dc
-	BTN_TRIGGER_HAPPY30                  = 0x2dd
-	BTN_TRIGGER_HAPPY31                  = 0x2de
-	BTN_TRIGGER_HAPPY32                  = 0x2df
-	BTN_TRIGGER_HAPPY33                  = 0x2e0
-	BTN_TRIGGER_HAPPY34                  = 0x2e1
-	BTN_TRIGGER_HAPPY35                  = 0x2e2
-	BTN_TRIGGER_HAPPY36                  = 0x2e3
-	BTN_TRIGGER_HAPPY37                  = 0x2e4
-	BTN_TRIGGER_HAPPY38                  = 0x2e5
-	BTN_TRIGGER_HAPPY39                  = 0x2e6
-	BTN_TRIGGER_HAPPY40                  = 0x2e7
+	BTN_TRIGGER_HAPPY            KeyCode = 0x2c0
+	BTN_TRIGGER_HAPPY1           KeyCode = 0x2c0
+	BTN_TRIGGER_HAPPY2           KeyCode = 0x2c1
+	BTN_TRIGGER_HAPPY3           KeyCode = 0x2c2
+	BTN_TRIGGER_HAPPY4           KeyCode = 0x2c3
+	BTN_TRIGGER_HAPPY5           KeyCode = 0x2c4
+	BTN_TRIGGER_HAPPY6           KeyCode = 0x2c5
+	BTN_TRIGGER_HAPPY7           KeyCode = 0x2c6
+	BTN_TRIGGER_HAPPY8           KeyCode = 0x2c7
+	BTN_TRIGGER_HAPPY9           KeyCode = 0x2c8
+	BTN_TRIGGER_HAPPY10          KeyCode = 0x2c9
+	BTN_TRIGGER_HAPPY11          KeyCode = 0x2ca
+	BTN_TRIGGER_HAPPY12          KeyCode = 0x2cb
+	BTN_TRIGGER_HAPPY13          KeyCode = 0x2cc
+	BTN_TRIGGER_HAPPY14          KeyCode = 0x2cd
+	BTN_TRIGGER_HAPPY15          KeyCode = 0x2ce
+	BTN_TRIGGER_HAPPY16          KeyCode = 0x2cf
+	BTN_TRIGGER_HAPPY17          KeyCode = 0x2d0
+	BTN_TRIGGER_HAPPY18          KeyCode = 0x2d1
+	BTN_TRIGGER_HAPPY19          KeyCode = 0x2d2
+	BTN_TRIGGER_HAPPY20          KeyCode = 0x2d3
+	BTN_TRIGGER_HAPPY21          KeyCode = 0x2d4
+	BTN_TRIGGER_HAPPY22          KeyCode = 0x2d5
+	BTN_TRIGGER_HAPPY23          KeyCode = 0x2d6
+	BTN_TRIGGER_HAPPY24          KeyCode = 0x2d7
+	BTN_TRIGGER_HAPPY25          KeyCode = 0x2d8
+	BTN_TRIGGER_HAPPY26          KeyCode = 0x2d9
+	BTN_TRIGGER_HAPPY27          KeyCode = 0x2da
+	BTN_TRIGGER_HAPPY28          KeyCode = 0x2db
+	BTN_TRIGGER_HAPPY29          KeyCode = 0x2dc
+	BTN_TRIGGER_HAPPY30          KeyCode = 0x2dd
+	BTN_TRIGGER_HAPPY31          KeyCode = 0x2de
+	BTN_TRIGGER_HAPPY32          KeyCode = 0x2df
+	BTN_TRIGGER_HAPPY33          KeyCode = 0x2e0
+	BTN_TRIGGER_HAPPY34          KeyCode = 0x2e1
+	BTN_TRIGGER_HAPPY35          KeyCode = 0x2e2
+	BTN_TRIGGER_HAPPY36          KeyCode = 0x2e3
+	BTN_TRIGGER_HAPPY37          KeyCode = 0x2e4
+	BTN_TRIGGER_HAPPY38          KeyCode = 0x2e5
+	BTN_TRIGGER_HAPPY39          KeyCode = 0x2e6
+	BTN_TRIGGER_HAPPY40          KeyCode = 0x2e7
 	KEY_MIN_INTERESTING          KeyCode = 0x2ff
 	KEY_MAX                      KeyCode = 0x2ff
-	REL_X                                = 0x00
-	REL_Y                                = 0x01
-	REL_Z                                = 0x02
-	REL_RX                               = 0x03
-	REL_RY                               = 0x04
-	REL_RZ                               = 0x05
-	REL_HWHEEL                           = 0x06
-	REL_DIAL                             = 0x07
-	REL_WHEEL                            = 0x08
-	REL_MISC                             = 0x09
-	REL_MAX                              = 0x0f
-	ABS_X                                = 0x00
-	ABS_Y                                = 0x01
-	ABS_Z                                = 0x02
-	ABS_RX                               = 0x03
-	ABS_RY                               = 0x04
-	ABS_RZ                               = 0x05
-	ABS_THROTTLE                         = 0x06
-	ABS_RUDDER                           = 0x07
-	ABS_WHEEL                            = 0x08
-	ABS_GAS                              = 0x09
-	ABS_BRAKE                            = 0x0a
-	ABS_HAT0X                            = 0x10
-	ABS_HAT0Y                            = 0x11
-	ABS_HAT1X                            = 0x12
-	ABS_HAT1Y                            = 0x13
-	ABS_HAT2X                            = 0x14
-	ABS_HAT2Y                            = 0x15
-	ABS_HAT3X                            = 0x16
-	ABS_HAT3Y                            = 0x17
-	ABS_PRESSURE                         = 0x18
-	ABS_DISTANCE                         = 0x19
-	ABS_TILT_X                           = 0x1a
-	ABS_TILT_Y                           = 0x1b
-	ABS_TOOL_WIDTH                       = 0x1c
-	ABS_VOLUME                           = 0x20
-	ABS_MISC                             = 0x28
-	ABS_MT_SLOT                          = 0x2f
-	ABS_MT_TOUCH_MAJOR                   = 0x30
-	ABS_MT_TOUCH_MINOR                   = 0x31
-	ABS_MT_WIDTH_MAJOR                   = 0x32
-	ABS_MT_WIDTH_MINOR                   = 0x33
-	ABS_MT_ORIENTATION                   = 0x34
-	ABS_MT_POSITION_X                    = 0x35
-	ABS_MT_POSITION_Y                    = 0x36
-	ABS_MT_TOOL_TYPE                     = 0x37
-	ABS_MT_BLOB_ID                       = 0x38
-	ABS_MT_TRACKING_ID                   = 0x39
-	ABS_MT_PRESSURE                      = 0x3a
-	ABS_MT_DISTANCE                      = 0x3b
-	ABS_MT_TOOL_X                        = 0x3c
-	ABS_MT_TOOL_Y                        = 0x3d
-	ABS_MAX                              = 0x3f
-	SW_LID                               = 0x00
-	SW_TABLET_MODE                       = 0x01
-	SW_HEADPHONE_INSERT                  = 0x02
-	SW_RFKILL_ALL                        = 0x03
-	SW_RADIO                             = SW_RFKILL_ALL
-	SW_MICROPHONE_INSERT                 = 0x04
-	SW_DOCK                              = 0x05
-	SW_LINEOUT_INSERT                    = 0x06
-	SW_JACK_PHYSICAL_INSERT              = 0x07
-	SW_VIDEOOUT_INSERT                   = 0x08
-	SW_CAMERA_LENS_COVER                 = 0x09
-	SW_KEYPAD_SLIDE                      = 0x0a
-	SW_FRONT_PROXIMITY                   = 0x0b
-	SW_ROTATE_LOCK                       = 0x0c
-	SW_LINEIN_INSERT                     = 0x0d
-	SW_MUTE_DEVICE                       = 0x0e
-	SW_PEN_INSERTED                      = 0x0f
-	SW_MAX                               = 0x0f
-	MSC_SERIAL                           = 0x00
-	MSC_PULSELED                         = 0x01
-	MSC_GESTURE                          = 0x02
-	MSC_RAW                              = 0x03
-	MSC_SCAN                             = 0x04
-	MSC_TIMESTAMP                        = 0x05
-	MSC_MAX                              = 0x07
-	LED_NUML                             = 0x00
-	LED_CAPSL                            = 0x01
-	LED_SCROLLL                          = 0x02
-	LED_COMPOSE                          = 0x03
-	LED_KANA                             = 0x04
-	LED_SLEEP                            = 0x05
-	LED_SUSPEND                          = 0x06
-	LED_MUTE                             = 0x07
-	LED_MISC                             = 0x08
-	LED_MAIL                             = 0x09
-	LED_CHARGING                         = 0x0a
-	LED_MAX                              = 0x0f
-	REP_DELAY                            = 0x00
-	REP_PERIOD                           = 0x01
-	REP_MAX                              = 0x01
-	SND_CLICK                            = 0x00
-	SND_BELL                             = 0x01
-	SND_TONE                             = 0x02
-	SND_MAX                              = 0x07
 )
 
-var ecodes = map[string]int{
-	"EV_VERSION":                   EV_VERSION,
-	"ID_BUS":                       ID_BUS,
-	"ID_VENDOR":                    ID_VENDOR,
-	"ID_PRODUCT":                   ID_PRODUCT,
-	"ID_VERSION":                   ID_VERSION,
-	"BUS_PCI":                      BUS_PCI,
-	"BUS_ISAPNP":                   BUS_ISAPNP,
-	"BUS_USB":                      BUS_USB,
-	"BUS_HIL":                      BUS_HIL,
-	"BUS_BLUETOOTH":                BUS_BLUETOOTH,
-	"BUS_VIRTUAL":                  BUS_VIRTUAL,
-	"BUS_ISA":                      BUS_ISA,
-	"BUS_I8042":                    BUS_I8042,
-	"BUS_XTKBD":                    BUS_XTKBD,
-	"BUS_RS232":                    BUS_RS232,
-	"BUS_GAMEPORT":                 BUS_GAMEPORT,
-	"BUS_PARPORT":                  BUS_PARPORT,
-	"BUS_AMIGA":                    BUS_AMIGA,
-	"BUS_ADB":                      BUS_ADB,
-	"BUS_I2C":                      BUS_I2C,
-	"BUS_HOST":                     BUS_HOST,
-	"BUS_GSC":                      BUS_GSC,
-	"BUS_ATARI":                    BUS_ATARI,
-	"BUS_SPI":                      BUS_SPI,
-	"BUS_RMI":                      BUS_RMI,
-	"BUS_CEC":                      BUS_CEC,
-	"FF_STATUS_STOPPED":            FF_STATUS_STOPPED,
-	"FF_STATUS_PLAYING":            FF_STATUS_PLAYING,
-	"FF_STATUS_MAX":                FF_STATUS_MAX,
-	"FF_RUMBLE":                    FF_RUMBLE,
-	"FF_PERIODIC":                  FF_PERIODIC,
-	"FF_CONSTANT":                  FF_CONSTANT,
-	"FF_SPRING":                    FF_SPRING,
-	"FF_FRICTION":                  FF_FRICTION,
-	"FF_DAMPER":                    FF_DAMPER,
-	"FF_INERTIA":                   FF_INERTIA,
-	"FF_RAMP":                      FF_RAMP,
-	"FF_EFFECT_MIN":                FF_EFFECT_MIN,
-	"FF_EFFECT_MAX":                FF_EFFECT_MAX,
-	"FF_SQUARE":                    FF_SQUARE,
-	"FF_TRIANGLE":                  FF_TRIANGLE,
-	"FF_SINE":                      FF_SINE,
-	"FF_SAW_UP":                    FF_SAW_UP,
-	"FF_SAW_DOWN":                  FF_SAW_DOWN,
-	"FF_CUSTOM":                    FF_CUSTOM,
-	"FF_WAVEFORM_MIN":              FF_WAVEFORM_MIN,
-	"FF_WAVEFORM_MAX":              FF_WAVEFORM_MAX,
-	"FF_GAIN":                      FF_GAIN,
-	"FF_AUTOCENTER":                FF_AUTOCENTER,
-	"FF_MAX_EFFECTS":               FF_MAX_EFFECTS,
-	"FF_MAX":                       FF_MAX,
-	"EV_SYN":                       EV_SYN,
-	"EV_KEY":                       EV_KEY,
-	"EV_REL":                       EV_REL,
-	"EV_ABS":                       EV_ABS,
-	"EV_MSC":                       EV_MSC,
-	"EV_SW":                        EV_SW,
-	"EV_LED":                       EV_LED,
-	"EV_SND":                       EV_SND,
-	"EV_REP":                       EV_REP,
-	"EV_FF":                        EV_FF,
-	"EV_PWR":                       EV_PWR,
-	"EV_FF_STATUS":                 EV_FF_STATUS,
-	"EV_MAX":                       EV_MAX,
-	"SYN_REPORT":                   SYN_REPORT,
-	"SYN_CONFIG":                   SYN_CONFIG,
-	"SYN_MT_REPORT":                SYN_MT_REPORT,
-	"SYN_DROPPED":                  SYN_DROPPED,
-	"SYN_MAX":                      SYN_MAX,
-	"KEY_RESERVED":                 int(KEY_RESERVED),
-	"KEY_ESC":                      int(KEY_ESC),
-	"KEY_1":                        int(KEY_1),
-	"KEY_2":                        int(KEY_2),
-	"KEY_3":                        int(KEY_3),
-	"KEY_4":                        int(KEY_4),
-	"KEY_5":                        int(KEY_5),
-	"KEY_6":                        int(KEY_6),
-	"KEY_7":                        int(KEY_7),
-	"KEY_8":                        int(KEY_8),
-	"KEY_9":                        int(KEY_9),
-	"KEY_0":                        int(KEY_0),
-	"KEY_MINUS":                    int(KEY_MINUS),
-	"KEY_EQUAL":                    int(KEY_EQUAL),
-	"KEY_BACKSPACE":                int(KEY_BACKSPACE),
-	"KEY_TAB":                      int(KEY_TAB),
-	"KEY_Q":                        int(KEY_Q),
-	"KEY_W":                        int(KEY_W),
-	"KEY_E":                        int(KEY_E),
-	"KEY_R":                        int(KEY_R),
-	"KEY_T":                        int(KEY_T),
-	"KEY_Y":                        int(KEY_Y),
-	"KEY_U":                        int(KEY_U),
-	"KEY_I":                        int(KEY_I),
-	"KEY_O":                        int(KEY_O),
-	"KEY_P":                        int(KEY_P),
-	"KEY_LEFTBRACE":                int(KEY_LEFTBRACE),
-	"KEY_RIGHTBRACE":               int(KEY_RIGHTBRACE),
-	"KEY_ENTER":                    int(KEY_ENTER),
-	"KEY_LEFTCTRL":                 int(KEY_LEFTCTRL),
-	"KEY_A":                        int(KEY_A),
-	"KEY_S":                        int(KEY_S),
-	"KEY_D":                        int(KEY_D),
-	"KEY_F":                        int(KEY_F),
-	"KEY_G":                        int(KEY_G),
-	"KEY_H":                        int(KEY_H),
-	"KEY_J":                        int(KEY_J),
-	"KEY_K":                        int(KEY_K),
-	"KEY_L":                        int(KEY_L),
-	"KEY_SEMICOLON":                int(KEY_SEMICOLON),
-	"KEY_APOSTROPHE":               int(KEY_APOSTROPHE),
-	"KEY_GRAVE":                    int(KEY_GRAVE),
-	"KEY_LEFTSHIFT":                int(KEY_LEFTSHIFT),
-	"KEY_BACKSLASH":                int(KEY_BACKSLASH),
-	"KEY_Z":                        int(KEY_Z),
-	"KEY_X":                        int(KEY_X),
-	"KEY_C":                        int(KEY_C),
-	"KEY_V":                        int(KEY_V),
-	"KEY_B":                        int(KEY_B),
-	"KEY_N":                        int(KEY_N),
-	"KEY_M":                        int(KEY_M),
-	"KEY_COMMA":                    int(KEY_COMMA),
-	"KEY_DOT":                      int(KEY_DOT),
-	"KEY_SLASH":                    int(KEY_SLASH),
-	"KEY_RIGHTSHIFT":               int(KEY_RIGHTSHIFT),
-	"KEY_KPASTERISK":               int(KEY_KPASTERISK),
-	"KEY_LEFTALT":                  int(KEY_LEFTALT),
-	"KEY_SPACE":                    int(KEY_SPACE),
-	"KEY_CAPSLOCK":                 int(KEY_CAPSLOCK),
-	"KEY_F1":                       int(KEY_F1),
-	"KEY_F2":                       int(KEY_F2),
-	"KEY_F3":                       int(KEY_F3),
-	"KEY_F4":                       int(KEY_F4),
-	"KEY_F5":                       int(KEY_F5),
-	"KEY_F6":                       int(KEY_F6),
-	"KEY_F7":                       int(KEY_F7),
-	"KEY_F8":                       int(KEY_F8),
-	"KEY_F9":                       int(KEY_F9),
-	"KEY_F10":                      int(KEY_F10),
-	"KEY_NUMLOCK":                  int(KEY_NUMLOCK),
-	"KEY_SCROLLLOCK":               int(KEY_SCROLLLOCK),
-	"KEY_KP7":                      int(KEY_KP7),
-	"KEY_KP8":                      int(KEY_KP8),
-	"KEY_KP9":                      int(KEY_KP9),
-	"KEY_KPMINUS":                  int(KEY_KPMINUS),
-	"KEY_KP4":                      int(KEY_KP4),
-	"KEY_KP5":                      int(KEY_KP5),
-	"KEY_KP6":                      int(KEY_KP6),
-	"KEY_KPPLUS":                   int(KEY_KPPLUS),
-	"KEY_KP1":                      int(KEY_KP1),
-	"KEY_KP2":                      int(KEY_KP2),
-	"KEY_KP3":                      int(KEY_KP3),
-	"KEY_KP0":                      int(KEY_KP0),
-	"KEY_KPDOT":                    int(KEY_KPDOT),
-	"KEY_ZENKAKUHANKAKU":           int(KEY_ZENKAKUHANKAKU),
-	"KEY_102ND":                    int(KEY_102ND),
-	"KEY_F11":                      int(KEY_F11),
-	"KEY_F12":                      int(KEY_F12),
-	"KEY_RO":                       int(KEY_RO),
-	"KEY_KATAKANA":                 int(KEY_KATAKANA),
-	"KEY_HIRAGANA":                 int(KEY_HIRAGANA),
-	"KEY_HENKAN":                   int(KEY_HENKAN),
-	"KEY_KATAKANAHIRAGANA":         int(KEY_KATAKANAHIRAGANA),
-	"KEY_MUHENKAN":                 int(KEY_MUHENKAN),
-	"KEY_KPJPCOMMA":                int(KEY_KPJPCOMMA),
-	"KEY_KPENTER":                  int(KEY_KPENTER),
-	"KEY_RIGHTCTRL":                int(KEY_RIGHTCTRL),
-	"KEY_KPSLASH":                  int(KEY_KPSLASH),
-	"KEY_SYSRQ":                    int(KEY_SYSRQ),
-	"KEY_RIGHTALT":                 int(KEY_RIGHTALT),
-	"KEY_LINEFEED":                 int(KEY_LINEFEED),
-	"KEY_HOME":                     int(KEY_HOME),
-	"KEY_UP":                       int(KEY_UP),
-	"KEY_PAGEUP":                   int(KEY_PAGEUP),
-	"KEY_LEFT":                     int(KEY_LEFT),
-	"KEY_RIGHT":                    int(KEY_RIGHT),
-	"KEY_END":                      int(KEY_END),
-	"KEY_DOWN":                     int(KEY_DOWN),
-	"KEY_PAGEDOWN":                 int(KEY_PAGEDOWN),
-	"KEY_INSERT":                   int(KEY_INSERT),
-	"KEY_DELETE":                   int(KEY_DELETE),
-	"KEY_MACRO":                    int(KEY_MACRO),
-	"KEY_MUTE":                     int(KEY_MUTE),
-	"KEY_VOLUMEDOWN":               int(KEY_VOLUMEDOWN),
-	"KEY_VOLUMEUP":                 int(KEY_VOLUMEUP),
-	"KEY_POWER":                    int(KEY_POWER),
-	"KEY_KPEQUAL":                  int(KEY_KPEQUAL),
-	"KEY_KPPLUSMINUS":              int(KEY_KPPLUSMINUS),
-	"KEY_PAUSE":                    int(KEY_PAUSE),
-	"KEY_SCALE":                    int(KEY_SCALE),
-	"KEY_KPCOMMA":                  int(KEY_KPCOMMA),
-	"KEY_HANGEUL":                  int(KEY_HANGEUL),
-	"KEY_HANGUEL":                  int(KEY_HANGUEL),
-	"KEY_HANJA":                    int(KEY_HANJA),
-	"KEY_YEN":                      int(KEY_YEN),
-	"KEY_LEFTMETA":                 int(KEY_LEFTMETA),
-	"KEY_RIGHTMETA":                int(KEY_RIGHTMETA),
-	"KEY_COMPOSE":                  int(KEY_COMPOSE),
-	"KEY_STOP":                     int(KEY_STOP),
-	"KEY_AGAIN":                    int(KEY_AGAIN),
-	"KEY_PROPS":                    int(KEY_PROPS),
-	"KEY_UNDO":                     int(KEY_UNDO),
-	"KEY_FRONT":                    int(KEY_FRONT),
-	"KEY_COPY":                     int(KEY_COPY),
-	"KEY_OPEN":                     int(KEY_OPEN),
-	"KEY_PASTE":                    int(KEY_PASTE),
-	"KEY_FIND":                     int(KEY_FIND),
-	"KEY_CUT":                      int(KEY_CUT),
-	"KEY_HELP":                     int(KEY_HELP),
-	"KEY_MENU":                     int(KEY_MENU),
-	"KEY_CALC":                     int(KEY_CALC),
-	"KEY_SETUP":                    int(KEY_SETUP),
-	"KEY_SLEEP":                    int(KEY_SLEEP),
-	"KEY_WAKEUP":                   int(KEY_WAKEUP),
-	"KEY_FILE":                     int(KEY_FILE),
-	"KEY_SENDFILE":                 int(KEY_SENDFILE),
-	"KEY_DELETEFILE":               int(KEY_DELETEFILE),
-	"KEY_XFER":                     int(KEY_XFER),
-	"KEY_PROG1":                    int(KEY_PROG1),
-	"KEY_PROG2":                    int(KEY_PROG2),
-	"KEY_WWW":                      int(KEY_WWW),
-	"KEY_MSDOS":                    int(KEY_MSDOS),
-	"KEY_COFFEE":                   int(KEY_COFFEE),
-	"KEY_SCREENLOCK":               int(KEY_SCREENLOCK),
-	"KEY_ROTATE_DISPLAY":           int(KEY_ROTATE_DISPLAY),
-	"KEY_DIRECTION":                int(KEY_DIRECTION),
-	"KEY_CYCLEWINDOWS":             int(KEY_CYCLEWINDOWS),
-	"KEY_MAIL":                     int(KEY_MAIL),
-	"KEY_BOOKMARKS":                int(KEY_BOOKMARKS),
-	"KEY_COMPUTER":                 int(KEY_COMPUTER),
-	"KEY_BACK":                     int(KEY_BACK),
-	"KEY_FORWARD":                  int(KEY_FORWARD),
-	"KEY_CLOSECD":                  int(KEY_CLOSECD),
-	"KEY_EJECTCD":                  int(KEY_EJECTCD),
-	"KEY_EJECTCLOSECD":             int(KEY_EJECTCLOSECD),
-	"KEY_NEXTSONG":                 int(KEY_NEXTSONG),
-	"KEY_PLAYPAUSE":                int(KEY_PLAYPAUSE),
-	"KEY_PREVIOUSSONG":             int(KEY_PREVIOUSSONG),
-	"KEY_STOPCD":                   int(KEY_STOPCD),
-	"KEY_RECORD":                   int(KEY_RECORD),
-	"KEY_REWIND":                   int(KEY_REWIND),
-	"KEY_PHONE":                    int(KEY_PHONE),
-	"KEY_ISO":                      int(KEY_ISO),
-	"KEY_CONFIG":                   int(KEY_CONFIG),
-	"KEY_HOMEPAGE":                 int(KEY_HOMEPAGE),
-	"KEY_REFRESH":                  int(KEY_REFRESH),
-	"KEY_EXIT":                     int(KEY_EXIT),
-	"KEY_MOVE":                     int(KEY_MOVE),
-	"KEY_EDIT":                     int(KEY_EDIT),
-	"KEY_SCROLLUP":                 int(KEY_SCROLLUP),
-	"KEY_SCROLLDOWN":               int(KEY_SCROLLDOWN),
-	"KEY_KPLEFTPAREN":              int(KEY_KPLEFTPAREN),
-	"KEY_KPRIGHTPAREN":             int(KEY_KPRIGHTPAREN),
-	"KEY_NEW":                      int(KEY_NEW),
-	"KEY_REDO":                     int(KEY_REDO),
-	"KEY_F13":                      int(KEY_F13),
-	"KEY_F14":                      int(KEY_F14),
-	"KEY_F15":                      int(KEY_F15),
-	"KEY_F16":                      int(KEY_F16),
-	"KEY_F17":                      int(KEY_F17),
-	"KEY_F18":                      int(KEY_F18),
-	"KEY_F19":                      int(KEY_F19),
-	"KEY_F20":                      int(KEY_F20),
-	"KEY_F21":                      int(KEY_F21),
-	"KEY_F22":                      int(KEY_F22),
-	"KEY_F23":                      int(KEY_F23),
-	"KEY_F24":                      int(KEY_F24),
-	"KEY_PLAYCD":                   int(KEY_PLAYCD),
-	"KEY_PAUSECD":                  int(KEY_PAUSECD),
-	"KEY_PROG3":                    int(KEY_PROG3),
-	"KEY_PROG4":                    int(KEY_PROG4),
-	"KEY_DASHBOARD":                int(KEY_DASHBOARD),
-	"KEY_SUSPEND":                  int(KEY_SUSPEND),
-	"KEY_CLOSE":                    int(KEY_CLOSE),
-	"KEY_PLAY":                     int(KEY_PLAY),
-	"KEY_FASTFORWARD":              int(KEY_FASTFORWARD),
-	"KEY_BASSBOOST":                int(KEY_BASSBOOST),
-	"KEY_PRINT":                    int(KEY_PRINT),
-	"KEY_HP":                       int(KEY_HP),
-	"KEY_CAMERA":                   int(KEY_CAMERA),
-	"KEY_SOUND":                    int(KEY_SOUND),
-	"KEY_QUESTION":                 int(KEY_QUESTION),
-	"KEY_EMAIL":                    int(KEY_EMAIL),
-	"KEY_CHAT":                     int(KEY_CHAT),
-	"KEY_SEARCH":                   int(KEY_SEARCH),
-	"KEY_CONNECT":                  int(KEY_CONNECT),
-	"KEY_FINANCE":                  int(KEY_FINANCE),
-	"KEY_SPORT":                    int(KEY_SPORT),
-	"KEY_SHOP":                     int(KEY_SHOP),
-	"KEY_ALTERASE":                 int(KEY_ALTERASE),
-	"KEY_CANCEL":                   int(KEY_CANCEL),
-	"KEY_BRIGHTNESSDOWN":           int(KEY_BRIGHTNESSDOWN),
-	"KEY_BRIGHTNESSUP":             int(KEY_BRIGHTNESSUP),
-	"KEY_MEDIA":                    int(KEY_MEDIA),
-	"KEY_SWITCHVIDEOMODE":          int(KEY_SWITCHVIDEOMODE),
-	"KEY_KBDILLUMTOGGLE":           int(KEY_KBDILLUMTOGGLE),
-	"KEY_KBDILLUMDOWN":             int(KEY_KBDILLUMDOWN),
-	"KEY_KBDILLUMUP":               int(KEY_KBDILLUMUP),
-	"KEY_SEND":                     int(KEY_SEND),
-	"KEY_REPLY":                    int(KEY_REPLY),
-	"KEY_FORWARDMAIL":              int(KEY_FORWARDMAIL),
-	"KEY_SAVE":                     int(KEY_SAVE),
-	"KEY_DOCUMENTS":                int(KEY_DOCUMENTS),
-	"KEY_BATTERY":                  int(KEY_BATTERY),
-	"KEY_BLUETOOTH":                int(KEY_BLUETOOTH),
-	"KEY_WLAN":                     int(KEY_WLAN),
-	"KEY_UWB":                      int(KEY_UWB),
-	"KEY_UNKNOWN":                  int(KEY_UNKNOWN),
-	"KEY_VIDEO_NEXT":               int(KEY_VIDEO_NEXT),
-	"KEY_VIDEO_PREV":               int(KEY_VIDEO_PREV),
-	"KEY_BRIGHTNESS_CYCLE":         int(KEY_BRIGHTNESS_CYCLE),
-	"KEY_BRIGHTNESS_AUTO":          int(KEY_BRIGHTNESS_AUTO),
-	"KEY_DISPLAY_OFF":              int(KEY_DISPLAY_OFF),
-	"KEY_WWAN":                     int(KEY_WWAN),
-	"KEY_RFKILL":                   int(KEY_RFKILL),
-	"KEY_MICMUTE":                  int(KEY_MICMUTE),
-	"BTN_MISC":                     int(BTN_MISC),
+var ecodes = map[string]KeyCode{
+	"KEY_RESERVED":                 KEY_RESERVED,
+	"KEY_ESC":                      KEY_ESC,
+	"KEY_1":                        KEY_1,
+	"KEY_2":                        KEY_2,
+	"KEY_3":                        KEY_3,
+	"KEY_4":                        KEY_4,
+	"KEY_5":                        KEY_5,
+	"KEY_6":                        KEY_6,
+	"KEY_7":                        KEY_7,
+	"KEY_8":                        KEY_8,
+	"KEY_9":                        KEY_9,
+	"KEY_0":                        KEY_0,
+	"KEY_MINUS":                    KEY_MINUS,
+	"KEY_EQUAL":                    KEY_EQUAL,
+	"KEY_BACKSPACE":                KEY_BACKSPACE,
+	"KEY_TAB":                      KEY_TAB,
+	"KEY_Q":                        KEY_Q,
+	"KEY_W":                        KEY_W,
+	"KEY_E":                        KEY_E,
+	"KEY_R":                        KEY_R,
+	"KEY_T":                        KEY_T,
+	"KEY_Y":                        KEY_Y,
+	"KEY_U":                        KEY_U,
+	"KEY_I":                        KEY_I,
+	"KEY_O":                        KEY_O,
+	"KEY_P":                        KEY_P,
+	"KEY_LEFTBRACE":                KEY_LEFTBRACE,
+	"KEY_RIGHTBRACE":               KEY_RIGHTBRACE,
+	"KEY_ENTER":                    KEY_ENTER,
+	"KEY_LEFTCTRL":                 KEY_LEFTCTRL,
+	"KEY_A":                        KEY_A,
+	"KEY_S":                        KEY_S,
+	"KEY_D":                        KEY_D,
+	"KEY_F":                        KEY_F,
+	"KEY_G":                        KEY_G,
+	"KEY_H":                        KEY_H,
+	"KEY_J":                        KEY_J,
+	"KEY_K":                        KEY_K,
+	"KEY_L":                        KEY_L,
+	"KEY_SEMICOLON":                KEY_SEMICOLON,
+	"KEY_APOSTROPHE":               KEY_APOSTROPHE,
+	"KEY_GRAVE":                    KEY_GRAVE,
+	"KEY_LEFTSHIFT":                KEY_LEFTSHIFT,
+	"KEY_BACKSLASH":                KEY_BACKSLASH,
+	"KEY_Z":                        KEY_Z,
+	"KEY_X":                        KEY_X,
+	"KEY_C":                        KEY_C,
+	"KEY_V":                        KEY_V,
+	"KEY_B":                        KEY_B,
+	"KEY_N":                        KEY_N,
+	"KEY_M":                        KEY_M,
+	"KEY_COMMA":                    KEY_COMMA,
+	"KEY_DOT":                      KEY_DOT,
+	"KEY_SLASH":                    KEY_SLASH,
+	"KEY_RIGHTSHIFT":               KEY_RIGHTSHIFT,
+	"KEY_KPASTERISK":               KEY_KPASTERISK,
+	"KEY_LEFTALT":                  KEY_LEFTALT,
+	"KEY_SPACE":                    KEY_SPACE,
+	"KEY_CAPSLOCK":                 KEY_CAPSLOCK,
+	"KEY_F1":                       KEY_F1,
+	"KEY_F2":                       KEY_F2,
+	"KEY_F3":                       KEY_F3,
+	"KEY_F4":                       KEY_F4,
+	"KEY_F5":                       KEY_F5,
+	"KEY_F6":                       KEY_F6,
+	"KEY_F7":                       KEY_F7,
+	"KEY_F8":                       KEY_F8,
+	"KEY_F9":                       KEY_F9,
+	"KEY_F10":                      KEY_F10,
+	"KEY_NUMLOCK":                  KEY_NUMLOCK,
+	"KEY_SCROLLLOCK":               KEY_SCROLLLOCK,
+	"KEY_KP7":                      KEY_KP7,
+	"KEY_KP8":                      KEY_KP8,
+	"KEY_KP9":                      KEY_KP9,
+	"KEY_KPMINUS":                  KEY_KPMINUS,
+	"KEY_KP4":                      KEY_KP4,
+	"KEY_KP5":                      KEY_KP5,
+	"KEY_KP6":                      KEY_KP6,
+	"KEY_KPPLUS":                   KEY_KPPLUS,
+	"KEY_KP1":                      KEY_KP1,
+	"KEY_KP2":                      KEY_KP2,
+	"KEY_KP3":                      KEY_KP3,
+	"KEY_KP0":                      KEY_KP0,
+	"KEY_KPDOT":                    KEY_KPDOT,
+	"KEY_ZENKAKUHANKAKU":           KEY_ZENKAKUHANKAKU,
+	"KEY_102ND":                    KEY_102ND,
+	"KEY_F11":                      KEY_F11,
+	"KEY_F12":                      KEY_F12,
+	"KEY_RO":                       KEY_RO,
+	"KEY_KATAKANA":                 KEY_KATAKANA,
+	"KEY_HIRAGANA":                 KEY_HIRAGANA,
+	"KEY_HENKAN":                   KEY_HENKAN,
+	"KEY_KATAKANAHIRAGANA":         KEY_KATAKANAHIRAGANA,
+	"KEY_MUHENKAN":                 KEY_MUHENKAN,
+	"KEY_KPJPCOMMA":                KEY_KPJPCOMMA,
+	"KEY_KPENTER":                  KEY_KPENTER,
+	"KEY_RIGHTCTRL":                KEY_RIGHTCTRL,
+	"KEY_KPSLASH":                  KEY_KPSLASH,
+	"KEY_SYSRQ":                    KEY_SYSRQ,
+	"KEY_RIGHTALT":                 KEY_RIGHTALT,
+	"KEY_LINEFEED":                 KEY_LINEFEED,
+	"KEY_HOME":                     KEY_HOME,
+	"KEY_UP":                       KEY_UP,
+	"KEY_PAGEUP":                   KEY_PAGEUP,
+	"KEY_LEFT":                     KEY_LEFT,
+	"KEY_RIGHT":                    KEY_RIGHT,
+	"KEY_END":                      KEY_END,
+	"KEY_DOWN":                     KEY_DOWN,
+	"KEY_PAGEDOWN":                 KEY_PAGEDOWN,
+	"KEY_INSERT":                   KEY_INSERT,
+	"KEY_DELETE":                   KEY_DELETE,
+	"KEY_MACRO":                    KEY_MACRO,
+	"KEY_MUTE":                     KEY_MUTE,
+	"KEY_VOLUMEDOWN":               KEY_VOLUMEDOWN,
+	"KEY_VOLUMEUP":                 KEY_VOLUMEUP,
+	"KEY_POWER":                    KEY_POWER,
+	"KEY_KPEQUAL":                  KEY_KPEQUAL,
+	"KEY_KPPLUSMINUS":              KEY_KPPLUSMINUS,
+	"KEY_PAUSE":                    KEY_PAUSE,
+	"KEY_SCALE":                    KEY_SCALE,
+	"KEY_KPCOMMA":                  KEY_KPCOMMA,
+	"KEY_HANGEUL":                  KEY_HANGEUL,
+	"KEY_HANGUEL":                  KEY_HANGUEL,
+	"KEY_HANJA":                    KEY_HANJA,
+	"KEY_YEN":                      KEY_YEN,
+	"KEY_LEFTMETA":                 KEY_LEFTMETA,
+	"KEY_RIGHTMETA":                KEY_RIGHTMETA,
+	"KEY_COMPOSE":                  KEY_COMPOSE,
+	"KEY_STOP":                     KEY_STOP,
+	"KEY_AGAIN":                    KEY_AGAIN,
+	"KEY_PROPS":                    KEY_PROPS,
+	"KEY_UNDO":                     KEY_UNDO,
+	"KEY_FRONT":                    KEY_FRONT,
+	"KEY_COPY":                     KEY_COPY,
+	"KEY_OPEN":                     KEY_OPEN,
+	"KEY_PASTE":                    KEY_PASTE,
+	"KEY_FIND":                     KEY_FIND,
+	"KEY_CUT":                      KEY_CUT,
+	"KEY_HELP":                     KEY_HELP,
+	"KEY_MENU":                     KEY_MENU,
+	"KEY_CALC":                     KEY_CALC,
+	"KEY_SETUP":                    KEY_SETUP,
+	"KEY_SLEEP":                    KEY_SLEEP,
+	"KEY_WAKEUP":                   KEY_WAKEUP,
+	"KEY_FILE":                     KEY_FILE,
+	"KEY_SENDFILE":                 KEY_SENDFILE,
+	"KEY_DELETEFILE":               KEY_DELETEFILE,
+	"KEY_XFER":                     KEY_XFER,
+	"KEY_PROG1":                    KEY_PROG1,
+	"KEY_PROG2":                    KEY_PROG2,
+	"KEY_WWW":                      KEY_WWW,
+	"KEY_MSDOS":                    KEY_MSDOS,
+	"KEY_COFFEE":                   KEY_COFFEE,
+	"KEY_SCREENLOCK":               KEY_SCREENLOCK,
+	"KEY_ROTATE_DISPLAY":           KEY_ROTATE_DISPLAY,
+	"KEY_DIRECTION":                KEY_DIRECTION,
+	"KEY_CYCLEWINDOWS":             KEY_CYCLEWINDOWS,
+	"KEY_MAIL":                     KEY_MAIL,
+	"KEY_BOOKMARKS":                KEY_BOOKMARKS,
+	"KEY_COMPUTER":                 KEY_COMPUTER,
+	"KEY_BACK":                     KEY_BACK,
+	"KEY_FORWARD":                  KEY_FORWARD,
+	"KEY_CLOSECD":                  KEY_CLOSECD,
+	"KEY_EJECTCD":                  KEY_EJECTCD,
+	"KEY_EJECTCLOSECD":             KEY_EJECTCLOSECD,
+	"KEY_NEXTSONG":                 KEY_NEXTSONG,
+	"KEY_PLAYPAUSE":                KEY_PLAYPAUSE,
+	"KEY_PREVIOUSSONG":             KEY_PREVIOUSSONG,
+	"KEY_STOPCD":                   KEY_STOPCD,
+	"KEY_RECORD":                   KEY_RECORD,
+	"KEY_REWIND":                   KEY_REWIND,
+	"KEY_PHONE":                    KEY_PHONE,
+	"KEY_ISO":                      KEY_ISO,
+	"KEY_CONFIG":                   KEY_CONFIG,
+	"KEY_HOMEPAGE":                 KEY_HOMEPAGE,
+	"KEY_REFRESH":                  KEY_REFRESH,
+	"KEY_EXIT":                     KEY_EXIT,
+	"KEY_MOVE":                     KEY_MOVE,
+	"KEY_EDIT":                     KEY_EDIT,
+	"KEY_SCROLLUP":                 KEY_SCROLLUP,
+	"KEY_SCROLLDOWN":               KEY_SCROLLDOWN,
+	"KEY_KPLEFTPAREN":              KEY_KPLEFTPAREN,
+	"KEY_KPRIGHTPAREN":             KEY_KPRIGHTPAREN,
+	"KEY_NEW":                      KEY_NEW,
+	"KEY_REDO":                     KEY_REDO,
+	"KEY_F13":                      KEY_F13,
+	"KEY_F14":                      KEY_F14,
+	"KEY_F15":                      KEY_F15,
+	"KEY_F16":                      KEY_F16,
+	"KEY_F17":                      KEY_F17,
+	"KEY_F18":                      KEY_F18,
+	"KEY_F19":                      KEY_F19,
+	"KEY_F20":                      KEY_F20,
+	"KEY_F21":                      KEY_F21,
+	"KEY_F22":                      KEY_F22,
+	"KEY_F23":                      KEY_F23,
+	"KEY_F24":                      KEY_F24,
+	"KEY_PLAYCD":                   KEY_PLAYCD,
+	"KEY_PAUSECD":                  KEY_PAUSECD,
+	"KEY_PROG3":                    KEY_PROG3,
+	"KEY_PROG4":                    KEY_PROG4,
+	"KEY_DASHBOARD":                KEY_DASHBOARD,
+	"KEY_SUSPEND":                  KEY_SUSPEND,
+	"KEY_CLOSE":                    KEY_CLOSE,
+	"KEY_PLAY":                     KEY_PLAY,
+	"KEY_FASTFORWARD":              KEY_FASTFORWARD,
+	"KEY_BASSBOOST":                KEY_BASSBOOST,
+	"KEY_PRINT":                    KEY_PRINT,
+	"KEY_HP":                       KEY_HP,
+	"KEY_CAMERA":                   KEY_CAMERA,
+	"KEY_SOUND":                    KEY_SOUND,
+	"KEY_QUESTION":                 KEY_QUESTION,
+	"KEY_EMAIL":                    KEY_EMAIL,
+	"KEY_CHAT":                     KEY_CHAT,
+	"KEY_SEARCH":                   KEY_SEARCH,
+	"KEY_CONNECT":                  KEY_CONNECT,
+	"KEY_FINANCE":                  KEY_FINANCE,
+	"KEY_SPORT":                    KEY_SPORT,
+	"KEY_SHOP":                     KEY_SHOP,
+	"KEY_ALTERASE":                 KEY_ALTERASE,
+	"KEY_CANCEL":                   KEY_CANCEL,
+	"KEY_BRIGHTNESSDOWN":           KEY_BRIGHTNESSDOWN,
+	"KEY_BRIGHTNESSUP":             KEY_BRIGHTNESSUP,
+	"KEY_MEDIA":                    KEY_MEDIA,
+	"KEY_SWITCHVIDEOMODE":          KEY_SWITCHVIDEOMODE,
+	"KEY_KBDILLUMTOGGLE":           KEY_KBDILLUMTOGGLE,
+	"KEY_KBDILLUMDOWN":             KEY_KBDILLUMDOWN,
+	"KEY_KBDILLUMUP":               KEY_KBDILLUMUP,
+	"KEY_SEND":                     KEY_SEND,
+	"KEY_REPLY":                    KEY_REPLY,
+	"KEY_FORWARDMAIL":              KEY_FORWARDMAIL,
+	"KEY_SAVE":                     KEY_SAVE,
+	"KEY_DOCUMENTS":                KEY_DOCUMENTS,
+	"KEY_BATTERY":                  KEY_BATTERY,
+	"KEY_BLUETOOTH":                KEY_BLUETOOTH,
+	"KEY_WLAN":                     KEY_WLAN,
+	"KEY_UWB":                      KEY_UWB,
+	"KEY_UNKNOWN":                  KEY_UNKNOWN,
+	"KEY_VIDEO_NEXT":               KEY_VIDEO_NEXT,
+	"KEY_VIDEO_PREV":               KEY_VIDEO_PREV,
+	"KEY_BRIGHTNESS_CYCLE":         KEY_BRIGHTNESS_CYCLE,
+	"KEY_BRIGHTNESS_AUTO":          KEY_BRIGHTNESS_AUTO,
+	"KEY_DISPLAY_OFF":              KEY_DISPLAY_OFF,
+	"KEY_WWAN":                     KEY_WWAN,
+	"KEY_RFKILL":                   KEY_RFKILL,
+	"KEY_MICMUTE":                  KEY_MICMUTE,
+	"BTN_MISC":                     BTN_MISC,
 	"BTN_0":                        BTN_0,
 	"BTN_1":                        BTN_1,
 	"BTN_2":                        BTN_2,
@@ -1139,202 +919,202 @@ var ecodes = map[string]int{
 	"BTN_WHEEL":                    BTN_WHEEL,
 	"BTN_GEAR_DOWN":                BTN_GEAR_DOWN,
 	"BTN_GEAR_UP":                  BTN_GEAR_UP,
-	"KEY_OK":                       int(KEY_OK),
-	"KEY_SELECT":                   int(KEY_SELECT),
-	"KEY_GOTO":                     int(KEY_GOTO),
-	"KEY_CLEAR":                    int(KEY_CLEAR),
-	"KEY_POWER2":                   int(KEY_POWER2),
-	"KEY_OPTION":                   int(KEY_OPTION),
-	"KEY_INFO":                     int(KEY_INFO),
-	"KEY_TIME":                     int(KEY_TIME),
-	"KEY_VENDOR":                   int(KEY_VENDOR),
-	"KEY_ARCHIVE":                  int(KEY_ARCHIVE),
-	"KEY_PROGRAM":                  int(KEY_PROGRAM),
-	"KEY_CHANNEL":                  int(KEY_CHANNEL),
-	"KEY_FAVORITES":                int(KEY_FAVORITES),
-	"KEY_EPG":                      int(KEY_EPG),
-	"KEY_PVR":                      int(KEY_PVR),
-	"KEY_MHP":                      int(KEY_MHP),
-	"KEY_LANGUAGE":                 int(KEY_LANGUAGE),
-	"KEY_TITLE":                    int(KEY_TITLE),
-	"KEY_SUBTITLE":                 int(KEY_SUBTITLE),
-	"KEY_ANGLE":                    int(KEY_ANGLE),
-	"KEY_ZOOM":                     int(KEY_ZOOM),
-	"KEY_MODE":                     int(KEY_MODE),
-	"KEY_KEYBOARD":                 int(KEY_KEYBOARD),
-	"KEY_SCREEN":                   int(KEY_SCREEN),
-	"KEY_PC":                       int(KEY_PC),
-	"KEY_TV":                       int(KEY_TV),
-	"KEY_TV2":                      int(KEY_TV2),
-	"KEY_VCR":                      int(KEY_VCR),
-	"KEY_VCR2":                     int(KEY_VCR2),
-	"KEY_SAT":                      int(KEY_SAT),
-	"KEY_SAT2":                     int(KEY_SAT2),
-	"KEY_CD":                       int(KEY_CD),
-	"KEY_TAPE":                     int(KEY_TAPE),
-	"KEY_RADIO":                    int(KEY_RADIO),
-	"KEY_TUNER":                    int(KEY_TUNER),
-	"KEY_PLAYER":                   int(KEY_PLAYER),
-	"KEY_TEXT":                     int(KEY_TEXT),
-	"KEY_DVD":                      int(KEY_DVD),
-	"KEY_AUX":                      int(KEY_AUX),
-	"KEY_MP3":                      int(KEY_MP3),
-	"KEY_AUDIO":                    int(KEY_AUDIO),
-	"KEY_VIDEO":                    int(KEY_VIDEO),
-	"KEY_DIRECTORY":                int(KEY_DIRECTORY),
-	"KEY_LIST":                     int(KEY_LIST),
-	"KEY_MEMO":                     int(KEY_MEMO),
-	"KEY_CALENDAR":                 int(KEY_CALENDAR),
-	"KEY_RED":                      int(KEY_RED),
-	"KEY_GREEN":                    int(KEY_GREEN),
-	"KEY_YELLOW":                   int(KEY_YELLOW),
-	"KEY_BLUE":                     int(KEY_BLUE),
-	"KEY_CHANNELUP":                int(KEY_CHANNELUP),
-	"KEY_CHANNELDOWN":              int(KEY_CHANNELDOWN),
-	"KEY_FIRST":                    int(KEY_FIRST),
-	"KEY_LAST":                     int(KEY_LAST),
-	"KEY_AB":                       int(KEY_AB),
-	"KEY_NEXT":                     int(KEY_NEXT),
-	"KEY_RESTART":                  int(KEY_RESTART),
-	"KEY_SLOW":                     int(KEY_SLOW),
-	"KEY_SHUFFLE":                  int(KEY_SHUFFLE),
-	"KEY_BREAK":                    int(KEY_BREAK),
-	"KEY_PREVIOUS":                 int(KEY_PREVIOUS),
-	"KEY_DIGITS":                   int(KEY_DIGITS),
-	"KEY_TEEN":                     int(KEY_TEEN),
-	"KEY_TWEN":                     int(KEY_TWEN),
-	"KEY_VIDEOPHONE":               int(KEY_VIDEOPHONE),
-	"KEY_GAMES":                    int(KEY_GAMES),
-	"KEY_ZOOMIN":                   int(KEY_ZOOMIN),
-	"KEY_ZOOMOUT":                  int(KEY_ZOOMOUT),
-	"KEY_ZOOMRESET":                int(KEY_ZOOMRESET),
-	"KEY_WORDPROCESSOR":            int(KEY_WORDPROCESSOR),
-	"KEY_EDITOR":                   int(KEY_EDITOR),
-	"KEY_SPREADSHEET":              int(KEY_SPREADSHEET),
-	"KEY_GRAPHICSEDITOR":           int(KEY_GRAPHICSEDITOR),
-	"KEY_PRESENTATION":             int(KEY_PRESENTATION),
-	"KEY_DATABASE":                 int(KEY_DATABASE),
-	"KEY_NEWS":                     int(KEY_NEWS),
-	"KEY_VOICEMAIL":                int(KEY_VOICEMAIL),
-	"KEY_ADDRESSBOOK":              int(KEY_ADDRESSBOOK),
-	"KEY_MESSENGER":                int(KEY_MESSENGER),
-	"KEY_DISPLAYTOGGLE":            int(KEY_DISPLAYTOGGLE),
-	"KEY_BRIGHTNESS_TOGGLE":        int(KEY_BRIGHTNESS_TOGGLE),
-	"KEY_SPELLCHECK":               int(KEY_SPELLCHECK),
-	"KEY_LOGOFF":                   int(KEY_LOGOFF),
-	"KEY_DOLLAR":                   int(KEY_DOLLAR),
-	"KEY_EURO":                     int(KEY_EURO),
-	"KEY_FRAMEBACK":                int(KEY_FRAMEBACK),
-	"KEY_FRAMEFORWARD":             int(KEY_FRAMEFORWARD),
-	"KEY_CONTEXT_MENU":             int(KEY_CONTEXT_MENU),
-	"KEY_MEDIA_REPEAT":             int(KEY_MEDIA_REPEAT),
-	"KEY_10CHANNELSUP":             int(KEY_10CHANNELSUP),
-	"KEY_10CHANNELSDOWN":           int(KEY_10CHANNELSDOWN),
-	"KEY_IMAGES":                   int(KEY_IMAGES),
-	"KEY_DEL_EOL":                  int(KEY_DEL_EOL),
-	"KEY_DEL_EOS":                  int(KEY_DEL_EOS),
-	"KEY_INS_LINE":                 int(KEY_INS_LINE),
-	"KEY_DEL_LINE":                 int(KEY_DEL_LINE),
-	"KEY_FN":                       int(KEY_FN),
-	"KEY_FN_ESC":                   int(KEY_FN_ESC),
-	"KEY_FN_F1":                    int(KEY_FN_F1),
-	"KEY_FN_F2":                    int(KEY_FN_F2),
-	"KEY_FN_F3":                    int(KEY_FN_F3),
-	"KEY_FN_F4":                    int(KEY_FN_F4),
-	"KEY_FN_F5":                    int(KEY_FN_F5),
-	"KEY_FN_F6":                    int(KEY_FN_F6),
-	"KEY_FN_F7":                    int(KEY_FN_F7),
-	"KEY_FN_F8":                    int(KEY_FN_F8),
-	"KEY_FN_F9":                    int(KEY_FN_F9),
-	"KEY_FN_F10":                   int(KEY_FN_F10),
-	"KEY_FN_F11":                   int(KEY_FN_F11),
-	"KEY_FN_F12":                   int(KEY_FN_F12),
-	"KEY_FN_1":                     int(KEY_FN_1),
-	"KEY_FN_2":                     int(KEY_FN_2),
-	"KEY_FN_D":                     int(KEY_FN_D),
-	"KEY_FN_E":                     int(KEY_FN_E),
-	"KEY_FN_F":                     int(KEY_FN_F),
-	"KEY_FN_S":                     int(KEY_FN_S),
-	"KEY_FN_B":                     int(KEY_FN_B),
-	"KEY_BRL_DOT1":                 int(KEY_BRL_DOT1),
-	"KEY_BRL_DOT2":                 int(KEY_BRL_DOT2),
-	"KEY_BRL_DOT3":                 int(KEY_BRL_DOT3),
-	"KEY_BRL_DOT4":                 int(KEY_BRL_DOT4),
-	"KEY_BRL_DOT5":                 int(KEY_BRL_DOT5),
-	"KEY_BRL_DOT6":                 int(KEY_BRL_DOT6),
-	"KEY_BRL_DOT7":                 int(KEY_BRL_DOT7),
-	"KEY_BRL_DOT8":                 int(KEY_BRL_DOT8),
-	"KEY_BRL_DOT9":                 int(KEY_BRL_DOT9),
-	"KEY_BRL_DOT10":                int(KEY_BRL_DOT10),
-	"KEY_NUMERIC_0":                int(KEY_NUMERIC_0),
-	"KEY_NUMERIC_1":                int(KEY_NUMERIC_1),
-	"KEY_NUMERIC_2":                int(KEY_NUMERIC_2),
-	"KEY_NUMERIC_3":                int(KEY_NUMERIC_3),
-	"KEY_NUMERIC_4":                int(KEY_NUMERIC_4),
-	"KEY_NUMERIC_5":                int(KEY_NUMERIC_5),
-	"KEY_NUMERIC_6":                int(KEY_NUMERIC_6),
-	"KEY_NUMERIC_7":                int(KEY_NUMERIC_7),
-	"KEY_NUMERIC_8":                int(KEY_NUMERIC_8),
-	"KEY_NUMERIC_9":                int(KEY_NUMERIC_9),
-	"KEY_NUMERIC_STAR":             int(KEY_NUMERIC_STAR),
-	"KEY_NUMERIC_POUND":            int(KEY_NUMERIC_POUND),
-	"KEY_NUMERIC_A":                int(KEY_NUMERIC_A),
-	"KEY_NUMERIC_B":                int(KEY_NUMERIC_B),
-	"KEY_NUMERIC_C":                int(KEY_NUMERIC_C),
-	"KEY_NUMERIC_D":                int(KEY_NUMERIC_D),
-	"KEY_CAMERA_FOCUS":             int(KEY_CAMERA_FOCUS),
-	"KEY_WPS_BUTTON":               int(KEY_WPS_BUTTON),
-	"KEY_TOUCHPAD_TOGGLE":          int(KEY_TOUCHPAD_TOGGLE),
-	"KEY_TOUCHPAD_ON":              int(KEY_TOUCHPAD_ON),
-	"KEY_TOUCHPAD_OFF":             int(KEY_TOUCHPAD_OFF),
-	"KEY_CAMERA_ZOOMIN":            int(KEY_CAMERA_ZOOMIN),
-	"KEY_CAMERA_ZOOMOUT":           int(KEY_CAMERA_ZOOMOUT),
-	"KEY_CAMERA_UP":                int(KEY_CAMERA_UP),
-	"KEY_CAMERA_DOWN":              int(KEY_CAMERA_DOWN),
-	"KEY_CAMERA_LEFT":              int(KEY_CAMERA_LEFT),
-	"KEY_CAMERA_RIGHT":             int(KEY_CAMERA_RIGHT),
-	"KEY_ATTENDANT_ON":             int(KEY_ATTENDANT_ON),
-	"KEY_ATTENDANT_OFF":            int(KEY_ATTENDANT_OFF),
-	"KEY_ATTENDANT_TOGGLE":         int(KEY_ATTENDANT_TOGGLE),
-	"KEY_LIGHTS_TOGGLE":            int(KEY_LIGHTS_TOGGLE),
+	"KEY_OK":                       KEY_OK,
+	"KEY_SELECT":                   KEY_SELECT,
+	"KEY_GOTO":                     KEY_GOTO,
+	"KEY_CLEAR":                    KEY_CLEAR,
+	"KEY_POWER2":                   KEY_POWER2,
+	"KEY_OPTION":                   KEY_OPTION,
+	"KEY_INFO":                     KEY_INFO,
+	"KEY_TIME":                     KEY_TIME,
+	"KEY_VENDOR":                   KEY_VENDOR,
+	"KEY_ARCHIVE":                  KEY_ARCHIVE,
+	"KEY_PROGRAM":                  KEY_PROGRAM,
+	"KEY_CHANNEL":                  KEY_CHANNEL,
+	"KEY_FAVORITES":                KEY_FAVORITES,
+	"KEY_EPG":                      KEY_EPG,
+	"KEY_PVR":                      KEY_PVR,
+	"KEY_MHP":                      KEY_MHP,
+	"KEY_LANGUAGE":                 KEY_LANGUAGE,
+	"KEY_TITLE":                    KEY_TITLE,
+	"KEY_SUBTITLE":                 KEY_SUBTITLE,
+	"KEY_ANGLE":                    KEY_ANGLE,
+	"KEY_ZOOM":                     KEY_ZOOM,
+	"KEY_MODE":                     KEY_MODE,
+	"KEY_KEYBOARD":                 KEY_KEYBOARD,
+	"KEY_SCREEN":                   KEY_SCREEN,
+	"KEY_PC":                       KEY_PC,
+	"KEY_TV":                       KEY_TV,
+	"KEY_TV2":                      KEY_TV2,
+	"KEY_VCR":                      KEY_VCR,
+	"KEY_VCR2":                     KEY_VCR2,
+	"KEY_SAT":                      KEY_SAT,
+	"KEY_SAT2":                     KEY_SAT2,
+	"KEY_CD":                       KEY_CD,
+	"KEY_TAPE":                     KEY_TAPE,
+	"KEY_RADIO":                    KEY_RADIO,
+	"KEY_TUNER":                    KEY_TUNER,
+	"KEY_PLAYER":                   KEY_PLAYER,
+	"KEY_TEXT":                     KEY_TEXT,
+	"KEY_DVD":                      KEY_DVD,
+	"KEY_AUX":                      KEY_AUX,
+	"KEY_MP3":                      KEY_MP3,
+	"KEY_AUDIO":                    KEY_AUDIO,
+	"KEY_VIDEO":                    KEY_VIDEO,
+	"KEY_DIRECTORY":                KEY_DIRECTORY,
+	"KEY_LIST":                     KEY_LIST,
+	"KEY_MEMO":                     KEY_MEMO,
+	"KEY_CALENDAR":                 KEY_CALENDAR,
+	"KEY_RED":                      KEY_RED,
+	"KEY_GREEN":                    KEY_GREEN,
+	"KEY_YELLOW":                   KEY_YELLOW,
+	"KEY_BLUE":                     KEY_BLUE,
+	"KEY_CHANNELUP":                KEY_CHANNELUP,
+	"KEY_CHANNELDOWN":              KEY_CHANNELDOWN,
+	"KEY_FIRST":                    KEY_FIRST,
+	"KEY_LAST":                     KEY_LAST,
+	"KEY_AB":                       KEY_AB,
+	"KEY_NEXT":                     KEY_NEXT,
+	"KEY_RESTART":                  KEY_RESTART,
+	"KEY_SLOW":                     KEY_SLOW,
+	"KEY_SHUFFLE":                  KEY_SHUFFLE,
+	"KEY_BREAK":                    KEY_BREAK,
+	"KEY_PREVIOUS":                 KEY_PREVIOUS,
+	"KEY_DIGITS":                   KEY_DIGITS,
+	"KEY_TEEN":                     KEY_TEEN,
+	"KEY_TWEN":                     KEY_TWEN,
+	"KEY_VIDEOPHONE":               KEY_VIDEOPHONE,
+	"KEY_GAMES":                    KEY_GAMES,
+	"KEY_ZOOMIN":                   KEY_ZOOMIN,
+	"KEY_ZOOMOUT":                  KEY_ZOOMOUT,
+	"KEY_ZOOMRESET":                KEY_ZOOMRESET,
+	"KEY_WORDPROCESSOR":            KEY_WORDPROCESSOR,
+	"KEY_EDITOR":                   KEY_EDITOR,
+	"KEY_SPREADSHEET":              KEY_SPREADSHEET,
+	"KEY_GRAPHICSEDITOR":           KEY_GRAPHICSEDITOR,
+	"KEY_PRESENTATION":             KEY_PRESENTATION,
+	"KEY_DATABASE":                 KEY_DATABASE,
+	"KEY_NEWS":                     KEY_NEWS,
+	"KEY_VOICEMAIL":                KEY_VOICEMAIL,
+	"KEY_ADDRESSBOOK":              KEY_ADDRESSBOOK,
+	"KEY_MESSENGER":                KEY_MESSENGER,
+	"KEY_DISPLAYTOGGLE":            KEY_DISPLAYTOGGLE,
+	"KEY_BRIGHTNESS_TOGGLE":        KEY_BRIGHTNESS_TOGGLE,
+	"KEY_SPELLCHECK":               KEY_SPELLCHECK,
+	"KEY_LOGOFF":                   KEY_LOGOFF,
+	"KEY_DOLLAR":                   KEY_DOLLAR,
+	"KEY_EURO":                     KEY_EURO,
+	"KEY_FRAMEBACK":                KEY_FRAMEBACK,
+	"KEY_FRAMEFORWARD":             KEY_FRAMEFORWARD,
+	"KEY_CONTEXT_MENU":             KEY_CONTEXT_MENU,
+	"KEY_MEDIA_REPEAT":             KEY_MEDIA_REPEAT,
+	"KEY_10CHANNELSUP":             KEY_10CHANNELSUP,
+	"KEY_10CHANNELSDOWN":           KEY_10CHANNELSDOWN,
+	"KEY_IMAGES":                   KEY_IMAGES,
+	"KEY_DEL_EOL":                  KEY_DEL_EOL,
+	"KEY_DEL_EOS":                  KEY_DEL_EOS,
+	"KEY_INS_LINE":                 KEY_INS_LINE,
+	"KEY_DEL_LINE":                 KEY_DEL_LINE,
+	"KEY_FN":                       KEY_FN,
+	"KEY_FN_ESC":                   KEY_FN_ESC,
+	"KEY_FN_F1":                    KEY_FN_F1,
+	"KEY_FN_F2":                    KEY_FN_F2,
+	"KEY_FN_F3":                    KEY_FN_F3,
+	"KEY_FN_F4":                    KEY_FN_F4,
+	"KEY_FN_F5":                    KEY_FN_F5,
+	"KEY_FN_F6":                    KEY_FN_F6,
+	"KEY_FN_F7":                    KEY_FN_F7,
+	"KEY_FN_F8":                    KEY_FN_F8,
+	"KEY_FN_F9":                    KEY_FN_F9,
+	"KEY_FN_F10":                   KEY_FN_F10,
+	"KEY_FN_F11":                   KEY_FN_F11,
+	"KEY_FN_F12":                   KEY_FN_F12,
+	"KEY_FN_1":                     KEY_FN_1,
+	"KEY_FN_2":                     KEY_FN_2,
+	"KEY_FN_D":                     KEY_FN_D,
+	"KEY_FN_E":                     KEY_FN_E,
+	"KEY_FN_F":                     KEY_FN_F,
+	"KEY_FN_S":                     KEY_FN_S,
+	"KEY_FN_B":                     KEY_FN_B,
+	"KEY_BRL_DOT1":                 KEY_BRL_DOT1,
+	"KEY_BRL_DOT2":                 KEY_BRL_DOT2,
+	"KEY_BRL_DOT3":                 KEY_BRL_DOT3,
+	"KEY_BRL_DOT4":                 KEY_BRL_DOT4,
+	"KEY_BRL_DOT5":                 KEY_BRL_DOT5,
+	"KEY_BRL_DOT6":                 KEY_BRL_DOT6,
+	"KEY_BRL_DOT7":                 KEY_BRL_DOT7,
+	"KEY_BRL_DOT8":                 KEY_BRL_DOT8,
+	"KEY_BRL_DOT9":                 KEY_BRL_DOT9,
+	"KEY_BRL_DOT10":                KEY_BRL_DOT10,
+	"KEY_NUMERIC_0":                KEY_NUMERIC_0,
+	"KEY_NUMERIC_1":                KEY_NUMERIC_1,
+	"KEY_NUMERIC_2":                KEY_NUMERIC_2,
+	"KEY_NUMERIC_3":                KEY_NUMERIC_3,
+	"KEY_NUMERIC_4":                KEY_NUMERIC_4,
+	"KEY_NUMERIC_5":                KEY_NUMERIC_5,
+	"KEY_NUMERIC_6":                KEY_NUMERIC_6,
+	"KEY_NUMERIC_7":                KEY_NUMERIC_7,
+	"KEY_NUMERIC_8":                KEY_NUMERIC_8,
+	"KEY_NUMERIC_9":                KEY_NUMERIC_9,
+	"KEY_NUMERIC_STAR":             KEY_NUMERIC_STAR,
+	"KEY_NUMERIC_POUND":            KEY_NUMERIC_POUND,
+	"KEY_NUMERIC_A":                KEY_NUMERIC_A,
+	"KEY_NUMERIC_B":                KEY_NUMERIC_B,
+	"KEY_NUMERIC_C":                KEY_NUMERIC_C,
+	"KEY_NUMERIC_D":                KEY_NUMERIC_D,
+	"KEY_CAMERA_FOCUS":             KEY_CAMERA_FOCUS,
+	"KEY_WPS_BUTTON":               KEY_WPS_BUTTON,
+	"KEY_TOUCHPAD_TOGGLE":          KEY_TOUCHPAD_TOGGLE,
+	"KEY_TOUCHPAD_ON":              KEY_TOUCHPAD_ON,
+	"KEY_TOUCHPAD_OFF":             KEY_TOUCHPAD_OFF,
+	"KEY_CAMERA_ZOOMIN":            KEY_CAMERA_ZOOMIN,
+	"KEY_CAMERA_ZOOMOUT":           KEY_CAMERA_ZOOMOUT,
+	"KEY_CAMERA_UP":                KEY_CAMERA_UP,
+	"KEY_CAMERA_DOWN":              KEY_CAMERA_DOWN,
+	"KEY_CAMERA_LEFT":              KEY_CAMERA_LEFT,
+	"KEY_CAMERA_RIGHT":             KEY_CAMERA_RIGHT,
+	"KEY_ATTENDANT_ON":             KEY_ATTENDANT_ON,
+	"KEY_ATTENDANT_OFF":            KEY_ATTENDANT_OFF,
+	"KEY_ATTENDANT_TOGGLE":         KEY_ATTENDANT_TOGGLE,
+	"KEY_LIGHTS_TOGGLE":            KEY_LIGHTS_TOGGLE,
 	"BTN_DPAD_UP":                  BTN_DPAD_UP,
 	"BTN_DPAD_DOWN":                BTN_DPAD_DOWN,
 	"BTN_DPAD_LEFT":                BTN_DPAD_LEFT,
 	"BTN_DPAD_RIGHT":               BTN_DPAD_RIGHT,
-	"KEY_ALS_TOGGLE":               int(KEY_ALS_TOGGLE),
-	"KEY_BUTTONCONFIG":             int(KEY_BUTTONCONFIG),
-	"KEY_TASKMANAGER":              int(KEY_TASKMANAGER),
-	"KEY_JOURNAL":                  int(KEY_JOURNAL),
-	"KEY_CONTROLPANEL":             int(KEY_CONTROLPANEL),
-	"KEY_APPSELECT":                int(KEY_APPSELECT),
-	"KEY_SCREENSAVER":              int(KEY_SCREENSAVER),
-	"KEY_VOICECOMMAND":             int(KEY_VOICECOMMAND),
-	"KEY_BRIGHTNESS_MIN":           int(KEY_BRIGHTNESS_MIN),
-	"KEY_BRIGHTNESS_MAX":           int(KEY_BRIGHTNESS_MAX),
-	"KEY_KBDINPUTASSIST_PREV":      int(KEY_KBDINPUTASSIST_PREV),
-	"KEY_KBDINPUTASSIST_NEXT":      int(KEY_KBDINPUTASSIST_NEXT),
-	"KEY_KBDINPUTASSIST_PREVGROUP": int(KEY_KBDINPUTASSIST_PREVGROUP),
-	"KEY_KBDINPUTASSIST_NEXTGROUP": int(KEY_KBDINPUTASSIST_NEXTGROUP),
-	"KEY_KBDINPUTASSIST_ACCEPT":    int(KEY_KBDINPUTASSIST_ACCEPT),
-	"KEY_KBDINPUTASSIST_CANCEL":    int(KEY_KBDINPUTASSIST_CANCEL),
-	"KEY_RIGHT_UP":                 int(KEY_RIGHT_UP),
-	"KEY_RIGHT_DOWN":               int(KEY_RIGHT_DOWN),
-	"KEY_LEFT_UP":                  int(KEY_LEFT_UP),
-	"KEY_LEFT_DOWN":                int(KEY_LEFT_DOWN),
-	"KEY_ROOT_MENU":                int(KEY_ROOT_MENU),
-	"KEY_MEDIA_TOP_MENU":           int(KEY_MEDIA_TOP_MENU),
-	"KEY_NUMERIC_11":               int(KEY_NUMERIC_11),
-	"KEY_NUMERIC_12":               int(KEY_NUMERIC_12),
-	"KEY_AUDIO_DESC":               int(KEY_AUDIO_DESC),
-	"KEY_3D_MODE":                  int(KEY_3D_MODE),
-	"KEY_NEXT_FAVORITE":            int(KEY_NEXT_FAVORITE),
-	"KEY_STOP_RECORD":              int(KEY_STOP_RECORD),
-	"KEY_PAUSE_RECORD":             int(KEY_PAUSE_RECORD),
-	"KEY_VOD":                      int(KEY_VOD),
-	"KEY_UNMUTE":                   int(KEY_UNMUTE),
-	"KEY_FASTREVERSE":              int(KEY_FASTREVERSE),
-	"KEY_SLOWREVERSE":              int(KEY_SLOWREVERSE),
-	"KEY_DATA":                     int(KEY_DATA),
+	"KEY_ALS_TOGGLE":               KEY_ALS_TOGGLE,
+	"KEY_BUTTONCONFIG":             KEY_BUTTONCONFIG,
+	"KEY_TASKMANAGER":              KEY_TASKMANAGER,
+	"KEY_JOURNAL":                  KEY_JOURNAL,
+	"KEY_CONTROLPANEL":             KEY_CONTROLPANEL,
+	"KEY_APPSELECT":                KEY_APPSELECT,
+	"KEY_SCREENSAVER":              KEY_SCREENSAVER,
+	"KEY_VOICECOMMAND":             KEY_VOICECOMMAND,
+	"KEY_BRIGHTNESS_MIN":           KEY_BRIGHTNESS_MIN,
+	"KEY_BRIGHTNESS_MAX":           KEY_BRIGHTNESS_MAX,
+	"KEY_KBDINPUTASSIST_PREV":      KEY_KBDINPUTASSIST_PREV,
+	"KEY_KBDINPUTASSIST_NEXT":      KEY_KBDINPUTASSIST_NEXT,
+	"KEY_KBDINPUTASSIST_PREVGROUP": KEY_KBDINPUTASSIST_PREVGROUP,
+	"KEY_KBDINPUTASSIST_NEXTGROUP": KEY_KBDINPUTASSIST_NEXTGROUP,
+	"KEY_KBDINPUTASSIST_ACCEPT":    KEY_KBDINPUTASSIST_ACCEPT,
+	"KEY_KBDINPUTASSIST_CANCEL":    KEY_KBDINPUTASSIST_CANCEL,
+	"KEY_RIGHT_UP":                 KEY_RIGHT_UP,
+	"KEY_RIGHT_DOWN":               KEY_RIGHT_DOWN,
+	"KEY_LEFT_UP":                  KEY_LEFT_UP,
+	"KEY_LEFT_DOWN":                KEY_LEFT_DOWN,
+	"KEY_ROOT_MENU":                KEY_ROOT_MENU,
+	"KEY_MEDIA_TOP_MENU":           KEY_MEDIA_TOP_MENU,
+	"KEY_NUMERIC_11":               KEY_NUMERIC_11,
+	"KEY_NUMERIC_12":               KEY_NUMERIC_12,
+	"KEY_AUDIO_DESC":               KEY_AUDIO_DESC,
+	"KEY_3D_MODE":                  KEY_3D_MODE,
+	"KEY_NEXT_FAVORITE":            KEY_NEXT_FAVORITE,
+	"KEY_STOP_RECORD":              KEY_STOP_RECORD,
+	"KEY_PAUSE_RECORD":             KEY_PAUSE_RECORD,
+	"KEY_VOD":                      KEY_VOD,
+	"KEY_UNMUTE":                   KEY_UNMUTE,
+	"KEY_FASTREVERSE":              KEY_FASTREVERSE,
+	"KEY_SLOWREVERSE":              KEY_SLOWREVERSE,
+	"KEY_DATA":                     KEY_DATA,
 	"BTN_TRIGGER_HAPPY":            BTN_TRIGGER_HAPPY,
 	"BTN_TRIGGER_HAPPY1":           BTN_TRIGGER_HAPPY1,
 	"BTN_TRIGGER_HAPPY2":           BTN_TRIGGER_HAPPY2,
@@ -1376,103 +1156,6 @@ var ecodes = map[string]int{
 	"BTN_TRIGGER_HAPPY38":          BTN_TRIGGER_HAPPY38,
 	"BTN_TRIGGER_HAPPY39":          BTN_TRIGGER_HAPPY39,
 	"BTN_TRIGGER_HAPPY40":          BTN_TRIGGER_HAPPY40,
-	"KEY_MIN_INTERESTING":          int(KEY_MIN_INTERESTING),
-	"KEY_MAX":                      int(KEY_MAX),
-	"REL_X":                        REL_X,
-	"REL_Y":                        REL_Y,
-	"REL_Z":                        REL_Z,
-	"REL_RX":                       REL_RX,
-	"REL_RY":                       REL_RY,
-	"REL_RZ":                       REL_RZ,
-	"REL_HWHEEL":                   REL_HWHEEL,
-	"REL_DIAL":                     REL_DIAL,
-	"REL_WHEEL":                    REL_WHEEL,
-	"REL_MISC":                     REL_MISC,
-	"REL_MAX":                      REL_MAX,
-	"ABS_X":                        ABS_X,
-	"ABS_Y":                        ABS_Y,
-	"ABS_Z":                        ABS_Z,
-	"ABS_RX":                       ABS_RX,
-	"ABS_RY":                       ABS_RY,
-	"ABS_RZ":                       ABS_RZ,
-	"ABS_THROTTLE":                 ABS_THROTTLE,
-	"ABS_RUDDER":                   ABS_RUDDER,
-	"ABS_WHEEL":                    ABS_WHEEL,
-	"ABS_GAS":                      ABS_GAS,
-	"ABS_BRAKE":                    ABS_BRAKE,
-	"ABS_HAT0X":                    ABS_HAT0X,
-	"ABS_HAT0Y":                    ABS_HAT0Y,
-	"ABS_HAT1X":                    ABS_HAT1X,
-	"ABS_HAT1Y":                    ABS_HAT1Y,
-	"ABS_HAT2X":                    ABS_HAT2X,
-	"ABS_HAT2Y":                    ABS_HAT2Y,
-	"ABS_HAT3X":                    ABS_HAT3X,
-	"ABS_HAT3Y":                    ABS_HAT3Y,
-	"ABS_PRESSURE":                 ABS_PRESSURE,
-	"ABS_DISTANCE":                 ABS_DISTANCE,
-	"ABS_TILT_X":                   ABS_TILT_X,
-	"ABS_TILT_Y":                   ABS_TILT_Y,
-	"ABS_TOOL_WIDTH":               ABS_TOOL_WIDTH,
-	"ABS_VOLUME":                   ABS_VOLUME,
-	"ABS_MISC":                     ABS_MISC,
-	"ABS_MT_SLOT":                  ABS_MT_SLOT,
-	"ABS_MT_TOUCH_MAJOR":           ABS_MT_TOUCH_MAJOR,
-	"ABS_MT_TOUCH_MINOR":           ABS_MT_TOUCH_MINOR,
-	"ABS_MT_WIDTH_MAJOR":           ABS_MT_WIDTH_MAJOR,
-	"ABS_MT_WIDTH_MINOR":           ABS_MT_WIDTH_MINOR,
-	"ABS_MT_ORIENTATION":           ABS_MT_ORIENTATION,
-	"ABS_MT_POSITION_X":            ABS_MT_POSITION_X,
-	"ABS_MT_POSITION_Y":            ABS_MT_POSITION_Y,
-	"ABS_MT_TOOL_TYPE":             ABS_MT_TOOL_TYPE,
-	"ABS_MT_BLOB_ID":               ABS_MT_BLOB_ID,
-	"ABS_MT_TRACKING_ID":           ABS_MT_TRACKING_ID,
-	"ABS_MT_PRESSURE":              ABS_MT_PRESSURE,
-	"ABS_MT_DISTANCE":              ABS_MT_DISTANCE,
-	"ABS_MT_TOOL_X":                ABS_MT_TOOL_X,
-	"ABS_MT_TOOL_Y":                ABS_MT_TOOL_Y,
-	"ABS_MAX":                      ABS_MAX,
-	"SW_LID":                       SW_LID,
-	"SW_TABLET_MODE":               SW_TABLET_MODE,
-	"SW_HEADPHONE_INSERT":          SW_HEADPHONE_INSERT,
-	"SW_RFKILL_ALL":                SW_RFKILL_ALL,
-	"SW_RADIO":                     SW_RADIO,
-	"SW_MICROPHONE_INSERT":         SW_MICROPHONE_INSERT,
-	"SW_DOCK":                      SW_DOCK,
-	"SW_LINEOUT_INSERT":            SW_LINEOUT_INSERT,
-	"SW_JACK_PHYSICAL_INSERT":      SW_JACK_PHYSICAL_INSERT,
-	"SW_VIDEOOUT_INSERT":           SW_VIDEOOUT_INSERT,
-	"SW_CAMERA_LENS_COVER":         SW_CAMERA_LENS_COVER,
-	"SW_KEYPAD_SLIDE":              SW_KEYPAD_SLIDE,
-	"SW_FRONT_PROXIMITY":           SW_FRONT_PROXIMITY,
-	"SW_ROTATE_LOCK":               SW_ROTATE_LOCK,
-	"SW_LINEIN_INSERT":             SW_LINEIN_INSERT,
-	"SW_MUTE_DEVICE":               SW_MUTE_DEVICE,
-	"SW_PEN_INSERTED":              SW_PEN_INSERTED,
-	"SW_MAX":                       SW_MAX,
-	"MSC_SERIAL":                   MSC_SERIAL,
-	"MSC_PULSELED":                 MSC_PULSELED,
-	"MSC_GESTURE":                  MSC_GESTURE,
-	"MSC_RAW":                      MSC_RAW,
-	"MSC_SCAN":                     MSC_SCAN,
-	"MSC_TIMESTAMP":                MSC_TIMESTAMP,
-	"MSC_MAX":                      MSC_MAX,
-	"LED_NUML":                     LED_NUML,
-	"LED_CAPSL":                    LED_CAPSL,
-	"LED_SCROLLL":                  LED_SCROLLL,
-	"LED_COMPOSE":                  LED_COMPOSE,
-	"LED_KANA":                     LED_KANA,
-	"LED_SLEEP":                    LED_SLEEP,
-	"LED_SUSPEND":                  LED_SUSPEND,
-	"LED_MUTE":                     LED_MUTE,
-	"LED_MISC":                     LED_MISC,
-	"LED_MAIL":                     LED_MAIL,
-	"LED_CHARGING":                 LED_CHARGING,
-	"LED_MAX":                      LED_MAX,
-	"REP_DELAY":                    REP_DELAY,
-	"REP_PERIOD":                   REP_PERIOD,
-	"REP_MAX":                      REP_MAX,
-	"SND_CLICK":                    SND_CLICK,
-	"SND_BELL":                     SND_BELL,
-	"SND_TONE":                     SND_TONE,
-	"SND_MAX":                      SND_MAX,
+	"KEY_MIN_INTERESTING":          KEY_MIN_INTERESTING,
+	"KEY_MAX":                      KEY_MAX,
 }
