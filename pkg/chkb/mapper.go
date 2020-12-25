@@ -181,7 +181,7 @@ func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 			log.
 				WithField("event", event).
 				WithError(err).
-				Debug("Ignored event")
+				Trace("Ignored event")
 			continue
 		}
 
@@ -237,10 +237,6 @@ func (kb *Mapper) MapOne(event KeyEvent) ([]MapEvent, error) {
 	for i := len(kb.Layers) - 1; i >= 0; i-- {
 		kmaps, ok := kb.Layers[i].findMap(event)
 		if ok {
-			log.
-				WithField("from", event).
-				WithField("to", kmaps).
-				Info("Map Key")
 			mapped = append(mapped, kmaps...)
 			handled = true
 			break

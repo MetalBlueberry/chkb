@@ -38,7 +38,7 @@ func (kb *Keyboard) Deliver(event chkb.MapEvent) (bool, error) {
 	log.
 		WithField("Action", event.Action).
 		WithField("Key", event.KeyCode).
-		Debug("Key Event")
+		Debug("Keyboard Action")
 	switch event.Action {
 	case chkb.KbActionDown:
 		return true, kb.KeyDown(int(event.KeyCode))

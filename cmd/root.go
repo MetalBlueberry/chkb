@@ -209,7 +209,10 @@ func capture(dev *evdev.InputDevice, evs chan []chkb.InputEvent) {
 			if err != nil {
 				continue
 			}
-			log.WithField("event", ev).Debug("Captured")
+			log.
+				WithField("Action", ev.Action).
+				WithField("Key", ev.KeyCode).
+				Debug("Captured")
 			inputEvents = append(inputEvents, ev)
 		}
 		evs <- inputEvents
