@@ -32,6 +32,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Mapper converts KeyEvents into MapEvents based on the layer configuration.
 type Mapper struct {
 	Layers Layers
 
