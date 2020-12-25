@@ -38,7 +38,7 @@ type Mapper struct {
 
 	downkeys        map[KeyCode][]MapEvent
 	virtualDownKeys map[KeyCode]bool
-	holded          *list.List
+	held            *list.List
 	holding         KeyCode
 }
 
@@ -47,7 +47,7 @@ func NewMapper() *Mapper {
 		Layers:          Layers{},
 		downkeys:        map[KeyCode][]MapEvent{},
 		virtualDownKeys: map[KeyCode]bool{},
-		holded:          list.New(),
+		held:            list.New(),
 	}
 	return kb
 }
@@ -132,18 +132,18 @@ func (layer *Layer) findMap(event KeyEvent) ([]MapEvent, bool) {
 
 func (kb *Mapper) Maps(events []KeyEvent, handle func(MapEvent) error) error {
 	for _, event := range events {
-		kb.holded.PushBack(event)
+		kb.held.PushBack(event)
 	}
 
-	for e := kb.holded.Front(); e != nil; {
+	for e := kb.held.Front(); e != nil; {
 		event := e.Value.(KeyEvent)
 
 		if kb.holding != KEY_RESERVED && kb.holding != event.KeyCode {
 			e = e.Next()
 			continue
 		}
-		kb.holded.Remove(e)
-		e = kb.holded.Front()
+		kb.held.Remove(e)
+		e = kb.held.Front()
 
 		switch event.Action {
 		case KeyActionDown:
