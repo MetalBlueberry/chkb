@@ -41,7 +41,7 @@ sudo udevadm trigger
 Run `chkb` from the directory containing this file providing as first parameter the path to your device. If everything works, you should see a message `push layer base` which means that everything is running. You can start typing to see some captured events.
 
 ```sh
-./chkb /dev/input/by-id/usb-Logitech_USB_Receiver-if01-event-kbd
+./chkb -i /dev/input/by-id/usb-Logitech_USB_Receiver-if01-event-kbd
 # TIP add -v flag for debug info
 ```
 
